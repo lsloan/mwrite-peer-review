@@ -27,6 +27,10 @@ DEBUG = True
 
 ALLOWED_HOSTS = []
 
+# LTI configuration
+LTI_CONSUMER_SECRETS = {'12345': 'secret'}  # TODO temporary, obviously
+LTI_APP_REDIRECT = '/'
+LTI_ENFORCE_SSL = False  # TODO is this correct?
 
 # Application definition
 
@@ -37,6 +41,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'djangolti'
 ]
 
 MIDDLEWARE = [
@@ -47,6 +52,10 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+]
+
+AUTHENTICATION_BACKENDS = [
+    'djangolti.backends.LtiBackend'
 ]
 
 ROOT_URLCONF = 'mwrite_peer_review.urls'
