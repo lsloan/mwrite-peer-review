@@ -1,0 +1,41 @@
+{% extends 'djangolti/index.html' %}
+
+{% block content %}
+<style>
+table {
+    margin-top: 15px;
+    border: 1px solid #000;
+    border-radius: 4px;
+    padding: 3px;
+}
+
+caption {
+    text-align: left;
+    font-weight: bold;
+}
+
+th, td {
+    font-family: monospace;
+    text-align: left;
+    border-bottom: 1px solid #ddd;
+    margin: 0;
+}
+
+
+
+</style>
+<a href="{{ redirect }}">continue to {{ redirect }}</a>
+
+<table>
+        <caption>LTI Launch Parmeters</caption>
+    <tbody>
+        {% for param, value in launch_params %}
+        <tr>
+            <th>{{ param  }}</th>
+            <td>{{ value }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+{% endblock %}
