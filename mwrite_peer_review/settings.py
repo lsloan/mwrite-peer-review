@@ -25,13 +25,23 @@ def read_file_from_env(var):
 def getenv_bool(var, default='0'):
     return getenv(var, default).lower() in ('yes', 'on', 'true', '1',)
 
+
+def getenv_csv(var, default=''):
+    val = getenv(var, default)
+
+    if len(val) == 0:
+        return []
+
+    return [x.strip(' ') for x in val.split(',')]
+
+
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 SECRET_KEY = read_file_from_env('MWRITE_PEER_REVIEW_SECRET_KEY_PATH')
 
 DEBUG = getenv_bool('MWRITE_PEER_REVIEW_DEBUG_MODE')
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = getenv_csv('MWRITE_PEER_REVIEW_ALLOWED_HOSTS')
 
 # LTI configuration
 LTI_CONSUMER_SECRETS = json.loads(read_file_from_env('MWRITE_PEER_REVIEW_LTI_CREDENTIALS_PATH'))
