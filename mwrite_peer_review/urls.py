@@ -14,8 +14,12 @@ Including another URLconf
     2. Add a URL to urlpatterns:  url(r'^blog/', include('blog.urls'))
 """
 from django.conf.urls import url
-from django.contrib import admin
+import djangolti.views
+import proxy.views
 
 urlpatterns = [
-    url(r'^admin/', admin.site.urls),
+    # TODO maybe related to the extra param in post
+    url(r'^launch', djangolti.views.LaunchView.as_view(), name='launch'),
+    url(r'^$', proxy.views.IndexView.as_view(), name='index'),
+    url(r'^unauthorized', proxy.views.UnauthorizedView.as_view(), name='unauthorized')
 ]

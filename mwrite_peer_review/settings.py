@@ -11,25 +11,34 @@ https://docs.djangoproject.com/en/1.10/ref/settings/
 """
 
 import os
+import json
+from os import getenv
 
-# Build paths inside the project like this: os.path.join(BASE_DIR, ...)
+
+def read_file_from_env(var):
+    filename = os.environ[var]
+    with open(filename, 'r') as file:
+        contents = file.read()
+    return contents.strip()
+
+
+def getenv_bool(var, default='0'):
+    return getenv(var, default).lower() in ('yes', 'on', 'true', '1',)
+
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
+SECRET_KEY = read_file_from_env('MWRITE_PEER_REVIEW_SECRET_KEY_PATH')
 
-# Quick-start development settings - unsuitable for production
-# See https://docs.djangoproject.com/en/1.10/howto/deployment/checklist/
-
-# SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 's=^bpb77&#^q51329lvj6w-a8!139)vosjvd=mu4&se0#yh7kv'
-
-# SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = getenv_bool('MWRITE_PEER_REVIEW_DEBUG_MODE')
 
 ALLOWED_HOSTS = []
 
+# LTI configuration
+LTI_CONSUMER_SECRETS = json.loads(read_file_from_env('MWRITE_PEER_REVIEW_LTI_CREDENTIALS_PATH'))
+LTI_APP_REDIRECT = '/'
+LTI_ENFORCE_SSL = False  # TODO want this to be True in prod; add config for X-Forwarded etc.
 
 # Application definition
-
 INSTALLED_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',
@@ -37,6 +46,8 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'djangolti',
+    'proxy'
 ]
 
 MIDDLEWARE = [
@@ -48,6 +59,16 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
+
+AUTHENTICATION_BACKENDS = [
+    'djangolti.backends.LtiBackend'
+]
+
+SESSION_COOKIE_NAME = 'id'
+SESSION_COOKIE_AGE = 3600
+SESSION_COOKIE_SECURE = not DEBUG
+SESSION_COOKIE_HTTPONLY = True
+SESSION_EXPIRE_AT_BROWSER_CLOSE = True
 
 ROOT_URLCONF = 'mwrite_peer_review.urls'
 
@@ -74,10 +95,7 @@ WSGI_APPLICATION = 'mwrite_peer_review.wsgi.application'
 # https://docs.djangoproject.com/en/1.10/ref/settings/#databases
 
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
-    }
+    'default': json.loads(read_file_from_env('MWRITE_PEER_REVIEW_DATABASE_CONFIG_PATH'))
 }
 
 
