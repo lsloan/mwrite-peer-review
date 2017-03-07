@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/1.10/ref/settings/
 """
 
 import os
+import logging
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -28,9 +29,9 @@ DEBUG = True
 ALLOWED_HOSTS = []
 
 # LTI configuration
-LTI_CONSUMER_SECRETS = {'12345': 'secret'}  # TODO temporary, obviously
+LTI_CONSUMER_SECRETS = {'12345678901234567890': 'secret'}  # TODO temporary; should be unicode with Py2
 LTI_APP_REDIRECT = '/'
-LTI_ENFORCE_SSL = False  # TODO is this correct?
+LTI_ENFORCE_SSL = False  # TODO want this to be True in prod; add config for X-Forwarded etc.
 
 # Application definition
 
@@ -41,7 +42,8 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'djangolti'
+    'djangolti',
+    'proxy'
 ]
 
 MIDDLEWARE = [

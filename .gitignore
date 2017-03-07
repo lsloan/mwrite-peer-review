@@ -69,3 +69,5 @@ venv/
 ENV/
 .spyderproject
 .ropeproject
+
+db.sqlite3
