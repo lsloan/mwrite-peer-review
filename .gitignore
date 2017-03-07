@@ -71,4 +71,4 @@ ENV/
 .ropeproject
 
 db.sqlite3
-local_config/
+config/
