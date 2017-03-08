@@ -59,7 +59,8 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'djangolti',
-    'httpproxy'
+    'httpproxy',
+    'peer_review'
 ]
 
 MIDDLEWARE = [
