@@ -17,12 +17,11 @@ from django.conf import settings
 from django.conf.urls import url
 import djangolti.views
 import peer_review.views
-import httpproxy.views
 
 urlpatterns = [
     url(r'^unauthorized', peer_review.views.UnauthorizedView.as_view(), name='unauthorized'),
     url(r'^launch', djangolti.views.LaunchView.as_view(), name='launch'),
     url(r'^$', peer_review.views.IndexView.as_view(), name='index'),
-    url(r'^(?P<url>health)', httpproxy.views.HttpProxy.as_view(base_url=settings.MWRITE_PEER_REVIEW_LEGACY_URL)),
+    url(r'^(?P<url>health)', peer_review.views.FixedHttpProxy.as_view(base_url=settings.MWRITE_PEER_REVIEW_LEGACY_URL)),
     url(r'^(?P<url>.*)$', peer_review.views.LtiProxyView.as_view(base_url=settings.MWRITE_PEER_REVIEW_LEGACY_URL))
 ]
