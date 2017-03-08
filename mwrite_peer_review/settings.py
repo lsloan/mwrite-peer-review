@@ -43,6 +43,8 @@ DEBUG = getenv_bool('MWRITE_PEER_REVIEW_DEBUG_MODE')
 
 ALLOWED_HOSTS = getenv_csv('MWRITE_PEER_REVIEW_ALLOWED_HOSTS')
 
+MWRITE_PEER_REVIEW_LEGACY_HOST = os.environ['MWRITE_PEER_REVIEW_LEGACY_HOST']
+
 # LTI configuration
 LTI_CONSUMER_SECRETS = json.loads(read_file_from_env('MWRITE_PEER_REVIEW_LTI_CREDENTIALS_PATH'))
 LTI_APP_REDIRECT = '/'
@@ -57,7 +59,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'djangolti',
-    'proxy'
+    'httpproxy'
 ]
 
 MIDDLEWARE = [

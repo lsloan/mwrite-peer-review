@@ -13,13 +13,16 @@ Including another URLconf
     1. Import the include() function: from django.conf.urls import url, include
     2. Add a URL to urlpatterns:  url(r'^blog/', include('blog.urls'))
 """
+from django.conf import settings
 from django.conf.urls import url
 import djangolti.views
-import proxy.views
+import peer_review.views
+import httpproxy.views
 
 urlpatterns = [
     # TODO maybe related to the extra param in post
     url(r'^launch', djangolti.views.LaunchView.as_view(), name='launch'),
-    url(r'^$', proxy.views.IndexView.as_view(), name='index'),
-    url(r'^unauthorized', proxy.views.UnauthorizedView.as_view(), name='unauthorized')
+    url(r'^$', peer_review.views.IndexView.as_view(), name='index'),
+    url(r'^(?P<url>health)', httpproxy.views.HttpProxy.as_view(base_url=settings.MWRITE_PEER_REVIEW_LEGACY_HOST)),
+    url(r'^unauthorized', peer_review.views.UnauthorizedView.as_view(), name='unauthorized')
 ]
