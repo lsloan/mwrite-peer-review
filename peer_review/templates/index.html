@@ -3,5 +3,10 @@
     <body>
         <p>You made it!</p>
         <a href="/dashboard/student">dashboard</a>
+        <ul>
+            {% for k, v in launch_params.items %}
+            <li><b>{{k}}</b>: {{v}}</li>
+            {% endfor %}
+        </ul>
     </body>
 </html>
