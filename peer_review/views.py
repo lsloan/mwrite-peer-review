@@ -1,5 +1,5 @@
 import logging
-from toolz.dicttoolz import merge
+from toolz.dicttoolz import merge, valmap
 from httpproxy.views import HttpProxy
 from django.views.generic import TemplateView
 from django.contrib.auth.mixins import LoginRequiredMixin
@@ -39,21 +39,36 @@ class LtiView(LoginRequiredMixin):
 class LtiProxyView(FixedHttpProxy, LtiView):
 
     @staticmethod
-    def _launch_params_to_proxy_headers(lti_launch_params, param_keys):
+    def _get_required_headers(lti_launch_params):
         try:
-            headers = {}
-            for param in param_keys:
-                headers[param] = lti_launch_params[param]
+            headers = {'roles':                            lti_launch_params['roles'],
+                       'custom_canvas_user_id':            lti_launch_params['custom_canvas_user_id'],
+                       'lis_person_contact_email_primary': lti_launch_params['lis_person_contact_email_primary']}
         except KeyError as e:
             key = e.args[0]
-            raise RuntimeError('LTI launch parameters does not contain \'%s\'' % key) from e
+            raise RuntimeError('LTI launch parameter \'%s\' not found' % key) from e
         return headers
 
+    @staticmethod
+    def _get_optional_headers(lti_launch_params):
+        headers = {}
+        if 'custom_canvas_course_id' in lti_launch_params or 'custom_canvas_assignment_id' in lti_launch_params:
+            if 'custom_canvas_course_id' in lti_launch_params:
+                headers['custom_canvas_course_id'] = lti_launch_params['custom_canvas_course_id']
+            if 'custom_canvas_assignment_id' in lti_launch_params:
+                headers['custom_canvas_assignment_id'] = lti_launch_params['custom_canvas_assignment_id']
+        else:
+            raise RuntimeError('LTI launch parameters must contain \'%s\' or \'%s\'' %
+                               ('custom_canvas_course_id', 'custom_canvas_assignment_id'))
+        return headers
+
+    def get_proxy_headers(self):
+        lti_launch_params = self.request.session['lti_launch_params']
+        headers = merge(self._get_required_headers(lti_launch_params), self._get_optional_headers(lti_launch_params))
+        return valmap(str, headers)
+
     def get_response(self, body=None, headers=None):
-        params = ['custom_canvas_course_id', 'custom_canvas_assignment_id', 'custom_canvas_user_id',
-                  'lis_person_contact_email_primary', 'roles']
-        headers = merge(headers if headers else {},
-                        self._launch_params_to_proxy_headers(self.request.session['lti_launch_params'], params))
+        headers = merge(headers if headers else {}, self.get_proxy_headers())
         return super(LtiProxyView, self).get_response(body, headers)
 
 
