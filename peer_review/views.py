@@ -40,9 +40,13 @@ class LtiProxyView(FixedHttpProxy, LtiView):
 
     @staticmethod
     def _launch_params_to_proxy_headers(lti_launch_params, param_keys):
-        headers = {}
-        for param in param_keys:
-            headers[param] = lti_launch_params[param]
+        try:
+            headers = {}
+            for param in param_keys:
+                headers[param] = lti_launch_params[param]
+        except KeyError as e:
+            key = e.args[0]
+            raise RuntimeError('LTI launch parameters does not contain \'%s\'' % key) from e
         return headers
 
     def get_response(self, body=None, headers=None):
