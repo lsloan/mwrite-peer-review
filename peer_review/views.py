@@ -1,7 +1,9 @@
 import logging
+from toolz.dicttoolz import merge
+from httpproxy.views import HttpProxy
 from django.views.generic import TemplateView
 from django.contrib.auth.mixins import LoginRequiredMixin
-from httpproxy.views import HttpProxy
+
 
 # TODO remove when django-http-proxy fixes https://github.com/yvandermeer/django-http-proxy/issues/25
 from django.http import HttpResponse
@@ -35,7 +37,20 @@ class LtiView(LoginRequiredMixin):
 
 
 class LtiProxyView(FixedHttpProxy, LtiView):
-    pass
+
+    @staticmethod
+    def _launch_params_to_proxy_headers(lti_launch_params, param_keys):
+        headers = {}
+        for param in param_keys:
+            headers[param] = lti_launch_params[param]
+        return headers
+
+    def get_response(self, body=None, headers=None):
+        params = ['custom_canvas_course_id', 'custom_canvas_assignment_id', 'custom_canvas_user_id',
+                  'lis_person_contact_email_primary', 'roles']
+        headers = merge(headers if headers else {},
+                        self._launch_params_to_proxy_headers(self.request.session['lti_launch_params'], params))
+        return super(LtiProxyView, self).get_response(body, headers)
 
 
 class IndexView(LtiView, TemplateView):
