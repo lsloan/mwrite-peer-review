@@ -15,10 +15,16 @@ Including another URLconf
 """
 from django.conf import settings
 from django.conf.urls import url
+from django.http import Http404
 import djangolti.views
 import peer_review.views
 
+
+def not_found(request):
+    raise Http404
+
 urlpatterns = [
+    url(r'^favicon.ico$', not_found),
     url(r'^unauthorized', peer_review.views.UnauthorizedView.as_view(), name='unauthorized'),
     url(r'^launch', djangolti.views.LaunchView.as_view(), name='launch'),
     url(r'^$', peer_review.views.IndexView.as_view(), name='index'),
