@@ -65,6 +65,7 @@ class LtiProxyView(FixedHttpProxy, LtiView):
 
     def get_proxy_headers(self):
         lti_launch_params = self.request.session['lti_launch_params']
+        logger.debug('lti launch params = %s' % str(lti_launch_params))
         headers = merge(self._get_required_headers(lti_launch_params), self._get_optional_headers(lti_launch_params))
         return valmap(str, headers)
 
