@@ -27,7 +27,7 @@ urlpatterns = [
     url(r'^favicon.ico$', not_found),
     url(r'^unauthorized', peer_review.views.UnauthorizedView.as_view(), name='unauthorized'),
     url(r'^launch', djangolti.views.LaunchView.as_view(), name='launch'),
-    url(r'^$', peer_review.views.IndexView.as_view(), name='index'),
+    #url(r'^$', peer_review.views.IndexView.as_view(), name='index'),
     url(r'^(?P<url>health)$', peer_review.views.FixedHttpProxy.as_view(base_url=settings.MWRITE_PEER_REVIEW_LEGACY_URL)),
     url(r'^(?P<url>.*)$', peer_review.views.LtiProxyView.as_view(base_url=settings.MWRITE_PEER_REVIEW_LEGACY_URL))
 ]
