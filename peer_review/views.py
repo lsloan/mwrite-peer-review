@@ -41,9 +41,10 @@ class LtiProxyView(FixedHttpProxy, LtiView):
     @staticmethod
     def _get_required_headers(lti_launch_params):
         try:
-            headers = {'roles':                            lti_launch_params['roles'],
+            headers = {'roles':                            ','.join(lti_launch_params['roles']),
                        'custom_canvas_user_id':            lti_launch_params['custom_canvas_user_id'],
-                       'lis_person_contact_email_primary': lti_launch_params['lis_person_contact_email_primary']}
+                       'lis_person_contact_email_primary': lti_launch_params['lis_person_contact_email_primary'],
+                       'context_title':                    lti_launch_params['context_title']}
         except KeyError as e:
             key = e.args[0]
             raise RuntimeError('LTI launch parameter \'%s\' not found' % key) from e
