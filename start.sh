@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-GUNICORN_WORKERS=4
+GUNICORN_WORKERS=1
 GUNICORN_PORT=8000
 
 set -x
