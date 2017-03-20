@@ -1,6 +1,8 @@
 import logging
 from toolz.dicttoolz import merge, valmap
 from httpproxy.views import HttpProxy
+from django.utils.decorators import method_decorator
+from django.views.decorators.csrf import csrf_exempt
 from django.views.generic import TemplateView
 from django.contrib.auth.mixins import LoginRequiredMixin
 
@@ -37,6 +39,7 @@ class LtiView(LoginRequiredMixin):
 
 
 # TODO need to rearrange required/optional LTI headers; not quite right (but good enough for now)
+@method_decorator(csrf_exempt, name='dispatch')
 class LtiProxyView(LtiView, FixedHttpProxy):
 
     @staticmethod
