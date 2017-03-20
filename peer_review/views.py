@@ -36,7 +36,8 @@ class LtiView(LoginRequiredMixin):
     redirect_field_name = ''
 
 
-class LtiProxyView(FixedHttpProxy, LtiView):
+# TODO need to rearrange required/optional LTI headers; not quite right (but good enough for now)
+class LtiProxyView(LtiView, FixedHttpProxy):
 
     @staticmethod
     def _get_required_headers(lti_launch_params):
