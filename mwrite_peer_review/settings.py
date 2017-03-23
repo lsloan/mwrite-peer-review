@@ -50,6 +50,10 @@ LTI_CONSUMER_SECRETS = json.loads(read_file_from_env('MWRITE_PEER_REVIEW_LTI_CRE
 LTI_APP_REDIRECT = '/'
 LTI_ENFORCE_SSL = False  # TODO want this to be True in prod; add config for X-Forwarded etc.
 
+# Canvas API configuration
+CANVAS_API_URL = os.environ['MWRITE_PEER_REVIEW_CANVAS_API_URL']
+CANVAS_API_TOKEN = os.environ['MWRITE_PEER_REVIEW_CANVAS_API_TOKEN']
+
 # Application definition
 INSTALLED_APPS = [
     'django.contrib.admin',
