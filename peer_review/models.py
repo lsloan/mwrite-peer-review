@@ -15,4 +15,6 @@ class CanvasAssignment(models.Model):
 
     def __init__(self, *args, **kwargs):
         self.validation = kwargs.get('validation')
+        if 'validation' in kwargs:
+            del kwargs['validation']
         super(CanvasAssignment, self).__init__(*args, **kwargs)
