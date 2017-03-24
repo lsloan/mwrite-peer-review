@@ -1,11 +1,24 @@
 import logging
 from toolz.functoolz import thread_last
 from toolz.itertoolz import unique
+from django.conf import settings
 from django.utils.dateparse import parse_datetime
+from peer_review.util import utc_to_timezone
 from peer_review.canvas import retrieve
-from peer_review.models import CanvasAssignment, AssignmentValidation
+from peer_review.models import CanvasAssignment
 
 log = logging.getLogger(__name__)
+
+
+class AssignmentValidation:
+
+    def __init__(self, **kwargs):
+        self.submission_upload_type = kwargs.get('submission_upload_type')
+        self.allowed_submission_file_extensions = kwargs.get('allowed_extensions')
+        self.local_due_date = utc_to_timezone(kwargs.get('due_date_utc'), settings.MWRITE_PEER_REVIEW_TIMEZONE)
+        self.number_of_due_dates = kwargs.get('number_of_due_dates')
+        self.section_name = kwargs.get('section_name')
+        self.number_of_sections = kwargs.get('number_of_sections')
 
 
 def _single_due_date_from_overrides(overrides):
