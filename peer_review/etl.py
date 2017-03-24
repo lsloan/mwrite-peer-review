@@ -14,7 +14,7 @@ class AssignmentValidation:
     def __init__(self, **kwargs):
         self.submission_upload_type = kwargs.get('submission_upload_type')
         self.allowed_submission_file_extensions = kwargs.get('allowed_extensions')
-        self.local_due_date = utc_to_timezone(kwargs.get('due_date_utc'), settings.MWRITE_PEER_REVIEW_TIMEZONE)
+        self.local_due_date = utc_to_timezone(kwargs.get('due_date_utc'), settings.TIME_ZONE)
         self.number_of_due_dates = kwargs.get('number_of_due_dates')
         self.section_name = kwargs.get('section_name')
         self.number_of_sections = kwargs.get('number_of_sections')
@@ -38,11 +38,13 @@ def _due_dates_from_overrides(assignment, overrides):
     return due_date_utc, number_of_due_dates
 
 
-def _is_peer_review_assignment(base_url, assignment):
-    raise NotImplemented()
+def _is_peer_review_assignment(assignment):
+    return 'external_tool_tag_attributes' in assignment and \
+           'url' in assignment['external_tool_tag_attributes'] and \
+           settings.APP_HOST in assignment['external_tool_tag_attributes']['url']
 
 
-def _convert_assignment(base_url, assignment):
+def _convert_assignment(assignment):
     course_id = assignment['course_id']
     assignment_id = assignment['id']
     overrides = retrieve('assignment-overrides', course_id, assignment_id) if assignment['has_overrides'] else None
@@ -59,13 +61,13 @@ def _convert_assignment(base_url, assignment):
                             course_id=course_id,
                             title=assignment['name'],
                             due_date_utc=due_date_utc,
-                            is_peer_review_assignment=_is_peer_review_assignment(base_url, assignment),
+                            is_peer_review_assignment=_is_peer_review_assignment(assignment),
                             validation=validation)
 
 
-def persist_assignments(base_url, course_id):
+def persist_assignments(course_id):
     canvas_assignments = retrieve('assignments', course_id)
-    assignments = [_convert_assignment(base_url, canvas_assignment) for canvas_assignment in canvas_assignments]
+    assignments = [_convert_assignment(canvas_assignment) for canvas_assignment in canvas_assignments]
     for assignment in assignments:
         assignment.save()
     return assignments
