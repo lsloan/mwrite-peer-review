@@ -1,7 +1,7 @@
 from django.db import models
 
 
-class CanvasAssignments(models.Model):
+class CanvasAssignment(models.Model):
 
     class Meta:
         managed = False
