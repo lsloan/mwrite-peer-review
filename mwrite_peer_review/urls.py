@@ -17,7 +17,8 @@ from django.conf import settings
 from django.conf.urls import url
 from django.http import Http404
 import djangolti.views
-import peer_review.views
+from peer_review.views.special import FixedHttpProxy, LtiProxyView, DebugLtiParamsView
+import peer_review.views.core as views
 
 
 def not_found(request):
@@ -25,16 +26,16 @@ def not_found(request):
 
 urlpatterns = [
     url(r'^favicon.ico$', not_found),
-    url(r'^unauthorized', peer_review.views.UnauthorizedView.as_view(), name='unauthorized'),
+    url(r'^unauthorized', views.UnauthorizedView.as_view(), name='unauthorized'),
     url(r'^launch', djangolti.views.LaunchView.as_view(), name='launch'),
-    url(r'^(?P<url>health)$', peer_review.views.FixedHttpProxy.as_view(base_url=settings.MWRITE_PEER_REVIEW_LEGACY_URL)),
-    url(r'^(?P<url>.*)$', peer_review.views.LtiProxyView.as_view(base_url=settings.MWRITE_PEER_REVIEW_LEGACY_URL))
+    url(r'^(?P<url>health)$', FixedHttpProxy.as_view(base_url=settings.MWRITE_PEER_REVIEW_LEGACY_URL)),
+    url(r'^(?P<url>.*)$', LtiProxyView.as_view(base_url=settings.MWRITE_PEER_REVIEW_LEGACY_URL))
 ]
 
 if settings.DEBUG:
     from django.contrib.auth.views import login as auth_login
     debug_patterns = [
         url(r'^accounts/login/$', auth_login, name='login'),
-        url(r'^debug/lti$', peer_review.views.DebugLtiParamsView.as_view())
+        url(r'^debug/lti$', DebugLtiParamsView.as_view())
     ]
     urlpatterns = debug_patterns + urlpatterns

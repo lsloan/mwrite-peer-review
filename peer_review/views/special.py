@@ -8,11 +8,9 @@ from django.views.decorators.csrf import csrf_exempt
 from django.views.generic import TemplateView, FormView
 from django.contrib.auth.mixins import LoginRequiredMixin
 
-
 # TODO remove when django-http-proxy fixes https://github.com/yvandermeer/django-http-proxy/issues/25
 from django.http import HttpResponse
 from django.utils.six.moves import urllib
-
 
 logger = logging.getLogger(__name__)
 
