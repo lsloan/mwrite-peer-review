@@ -13,7 +13,7 @@
         {% endif %}
         <form data-rubric-form=""
               onsubmit="submitRubricCriteria(); return false;"
-              action="/rubric/course/{{ course_id }}/assignment/{{ passback-assignment_id }}">
+              action="/rubric/course/{{ course_id }}/assignment/{{ passback_assignment_id }}">
             {% csrf_token %}
             <div id="rubric-data"
                  hidden=""
