@@ -33,8 +33,8 @@ class RubricCreationFormView(LtiView, TemplateView):
                                        .exclude(id__in=claimed_assignments)
 
     def get_context_data(self, **kwargs):
-        course_id = self.request.session['custom_canvas_course_id']
-        passback_assignment_id = self.request.session['custom_canvas_assignment_id']
+        course_id = kwargs['course_id']
+        passback_assignment_id = kwargs['assignment_id']
         existing_rubric = Rubric.objects.get(passback_assignment_id=passback_assignment_id)
         review_is_in_progress = PeerReviewDistribution.objects.get(rubric=existing_rubric).is_distribution_complete
         existing_criteria = Criterion.objects.filter(rubric=existing_rubric)
