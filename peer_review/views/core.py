@@ -7,7 +7,7 @@ from django.views.generic import TemplateView
 from toolz.functoolz import thread_last
 from toolz.itertoolz import unique
 from peer_review.views.special import LtiView
-from peer_review.etl import persist_assignments
+from peer_review.etl import persist_assignments, AssignmentValidation
 from peer_review.models import Rubric, Criterion, CanvasAssignment, PeerReviewDistribution
 
 logger = logging.getLogger(__name__)
@@ -58,7 +58,8 @@ class RubricCreationFormView(LtiView, TemplateView):
             'course_id': course_id,
             'passback_assignment_id': passback_assignment_id,
             'potential_prompts_and_rubrics': json.dumps({a.id: a.title for a in unclaimed_assignments}),
-            'validations': json.dumps({assignment.id: assignment.validation for assignment in fetched_assignments}),
+            'validations': json.dumps({assignment.id: assignment.validation for assignment in fetched_assignments},
+                                      default=AssignmentValidation.json_default),
             'should_show_revision_info': not (review_is_in_progress and not existing_revision),
             'mode': mode,
             'existing_prompt': existing_prompt,

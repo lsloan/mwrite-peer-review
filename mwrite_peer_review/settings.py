@@ -151,6 +151,7 @@ USE_I18N = True
 USE_L10N = True
 USE_TZ = True
 TIME_ZONE = os.environ['MWRITE_PEER_REVIEW_TIMEZONE']
+TIME_OUTPUT_FORMAT = '%b %-d %-I:%M %p'  # if running on Windows, replace - with #
 
 
 # Static files (CSS, JavaScript, Images)
