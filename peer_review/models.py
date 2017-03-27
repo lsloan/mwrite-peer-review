@@ -56,7 +56,7 @@ class Rubric(models.Model):
     reviewed_assignment = models.ForeignKey(CanvasAssignment, models.DO_NOTHING, unique=True, blank=True, null=True)
     passback_assignment = models.ForeignKey(CanvasAssignment, models.DO_NOTHING, unique=True)
     revision_assignment = models.ForeignKey(CanvasAssignment, models.DO_NOTHING, unique=True, blank=True, null=True)
-    revision_fetch_complete = models.IntegerField()
+    revision_fetch_complete = models.BooleanField(default=False)
 
 
 # noinspection PyClassHasNoInit
@@ -104,5 +104,5 @@ class PeerReviewDistribution(models.Model):
         db_table = 'peer_review_distributions'
 
     rubric = models.ForeignKey(Rubric, models.DO_NOTHING)
-    is_distribution_complete = models.IntegerField()
+    is_distribution_complete = models.BooleanField(default=False)
     distributed_at_utc = models.DateTimeField(blank=True, null=True)
