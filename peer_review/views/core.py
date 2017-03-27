@@ -35,11 +35,17 @@ class RubricCreationFormView(LtiView, TemplateView):
     def get_context_data(self, **kwargs):
         course_id = kwargs['course_id']
         passback_assignment_id = kwargs['assignment_id']
-        existing_rubric = Rubric.objects.get(passback_assignment_id=passback_assignment_id)
-        review_is_in_progress = PeerReviewDistribution.objects.get(rubric=existing_rubric).is_distribution_complete
-        existing_criteria = Criterion.objects.filter(rubric=existing_rubric)
-        existing_prompt = existing_rubric.reviewed_assignment
-        existing_revision = existing_rubric.revision_assignment
+        try:
+            existing_rubric = Rubric.objects.get(passback_assignment_id=passback_assignment_id)
+        except Rubric.DoesNotExist:
+            existing_rubric = None
+        if existing_rubric:
+            review_is_in_progress = PeerReviewDistribution.objects.get(rubric=existing_rubric).is_distribution_complete
+        else:
+            review_is_in_progress = False
+        existing_criteria = Criterion.objects.filter(rubric=existing_rubric) if existing_rubric else None
+        existing_prompt = existing_rubric.reviewed_assignment if existing_rubric else None
+        existing_revision = existing_rubric.revision_assignment if existing_rubric else None
         fetched_assignments = persist_assignments(course_id)
         unclaimed_assignments = self._get_unclaimed_assignments(course_id)
         if review_is_in_progress:
