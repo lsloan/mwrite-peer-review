@@ -3,7 +3,7 @@ from toolz.functoolz import thread_last
 from toolz.itertoolz import unique
 from django.conf import settings
 from django.utils.dateparse import parse_datetime
-from peer_review.util import utc_to_timezone
+from peer_review.util import utc_to_timezone, to_camel_case
 from peer_review.canvas import retrieve
 from peer_review.models import CanvasAssignment
 
@@ -22,7 +22,7 @@ class AssignmentValidation:
 
     @staticmethod
     def json_default(validation):
-        return validation.__dict__
+        return {to_camel_case(k): v for k, v in validation.__dict__.items()}
 
 
 def _due_dates_from_overrides(assignment, overrides):
