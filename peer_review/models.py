@@ -10,8 +10,8 @@ class CanvasAssignment(models.Model):
     id = models.AutoField(primary_key=True)
     title = models.TextField()
     course_id = models.IntegerField()
-    due_date_utc = models.DateTimeField()
-    is_peer_review_assignment = models.BooleanField()
+    due_date_utc = models.DateTimeField(blank=True, null=True)
+    is_peer_review_assignment = models.BooleanField(blank=True, null=True, default=False)
 
     def __init__(self, *args, **kwargs):
         self.validation = kwargs.get('validation')
