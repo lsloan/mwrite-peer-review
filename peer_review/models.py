@@ -1,7 +1,7 @@
 from django.db import models
 
 
-class CanvasAssignments(models.Model):
+class CanvasAssignment(models.Model):
 
     class Meta:
         managed = False
@@ -12,3 +12,9 @@ class CanvasAssignments(models.Model):
     course_id = models.IntegerField()
     due_date_utc = models.DateTimeField()
     is_peer_review_assignment = models.BooleanField()
+
+    def __init__(self, *args, **kwargs):
+        self.validation = kwargs.get('validation')
+        if 'validation' in kwargs:
+            del kwargs['validation']
+        super(CanvasAssignment, self).__init__(*args, **kwargs)

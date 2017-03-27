@@ -45,6 +45,8 @@ ALLOWED_HOSTS = getenv_csv('MWRITE_PEER_REVIEW_ALLOWED_HOSTS')
 
 MWRITE_PEER_REVIEW_LEGACY_URL = os.environ['MWRITE_PEER_REVIEW_LEGACY_URL']
 
+APP_HOST = os.environ['MWRITE_PEER_REVIEW_APP_HOST']
+
 # LTI configuration
 LTI_CONSUMER_SECRETS = json.loads(read_file_from_env('MWRITE_PEER_REVIEW_LTI_CREDENTIALS_PATH'))
 LTI_APP_REDIRECT = '/'
@@ -142,14 +144,10 @@ AUTH_PASSWORD_VALIDATORS = [
 # https://docs.djangoproject.com/en/1.10/topics/i18n/
 
 LANGUAGE_CODE = 'en-us'
-
-TIME_ZONE = 'UTC'
-
 USE_I18N = True
-
 USE_L10N = True
-
 USE_TZ = True
+TIME_ZONE = os.environ['MWRITE_PEER_REVIEW_TIMEZONE']
 
 
 # Static files (CSS, JavaScript, Images)
