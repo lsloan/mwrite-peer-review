@@ -131,7 +131,7 @@
                         </div>
                         {% if not review_is_in_progress %}
                             <a class="btn-floating waves-effect waves-light grey lighten-1"
-                               onClick="{{ criterion_card_html }}">
+                               onClick="addRubricCriteria('{% autoescape off %}{{ criterion_card_html | force_escape }}{% endautoescape %}');">
                                 <i class="material-icons">add</i>
                             </a>
                         {% endif %}

@@ -2,7 +2,7 @@ import json
 import logging
 from itertools import chain
 from django.db.models import Q
-from django.template import loader, Context
+from django.template.loader import render_to_string
 from django.views.generic import TemplateView
 from toolz.functoolz import thread_last
 from toolz.itertoolz import unique
@@ -67,6 +67,6 @@ class RubricCreationFormView(LtiView, TemplateView):
             'existing_rubric': existing_rubric,
             'existing_criteria': existing_criteria,
             'review_is_in_progress': review_is_in_progress,
-            'criterion_card_html': loader.get_template('criterion.html')
-                                         .render(Context({'description': '', 'read_only': False, 'counter': 0}))
+            'criterion_card_html': render_to_string('criterion.html',
+                                                    {'description': '', 'read_only': False, 'counter': 0})
         }
