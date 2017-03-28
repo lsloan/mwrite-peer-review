@@ -11,7 +11,7 @@ class CanvasAssignment(models.Model):
     title = models.TextField()
     course_id = models.IntegerField()
     due_date_utc = models.DateTimeField(blank=True, null=True)
-    is_peer_review_assignment = models.BooleanField(blank=True, null=True, default=False)
+    is_peer_review_assignment = models.BooleanField(default=False)
 
     def __init__(self, *args, **kwargs):
         self.validation = kwargs.get('validation')
@@ -53,9 +53,22 @@ class Rubric(models.Model):
         db_table = 'rubrics'
 
     description = models.TextField()
-    reviewed_assignment = models.ForeignKey(CanvasAssignment, models.DO_NOTHING, unique=True, blank=True, null=True)
-    passback_assignment = models.ForeignKey(CanvasAssignment, models.DO_NOTHING, unique=True)
-    revision_assignment = models.ForeignKey(CanvasAssignment, models.DO_NOTHING, unique=True, blank=True, null=True)
+    reviewed_assignment = models.OneToOneField(CanvasAssignment,
+                                               models.DO_NOTHING,
+                                               unique=True,
+                                               blank=True,
+                                               null=True,
+                                               related_name='reviewed_assignment')
+    passback_assignment = models.OneToOneField(CanvasAssignment,
+                                               models.DO_NOTHING,
+                                               unique=True,
+                                               related_name='passback_assignment')
+    revision_assignment = models.OneToOneField(CanvasAssignment,
+                                               models.DO_NOTHING,
+                                               unique=True,
+                                               blank=True,
+                                               null=True,
+                                               related_name='revision_assignment')
     revision_fetch_complete = models.BooleanField(default=False)
 
 
