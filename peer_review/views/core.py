@@ -33,8 +33,8 @@ class RubricCreationFormView(LtiView, TemplateView):
                                        .exclude(id__in=claimed_assignments)
 
     def get_context_data(self, **kwargs):
-        course_id = kwargs['course_id']
-        passback_assignment_id = kwargs['assignment_id']
+        course_id = int(kwargs['course_id'])
+        passback_assignment_id = int(kwargs['assignment_id'])
         try:
             existing_rubric = Rubric.objects.get(passback_assignment_id=passback_assignment_id)
         except Rubric.DoesNotExist:
