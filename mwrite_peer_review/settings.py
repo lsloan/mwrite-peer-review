@@ -82,6 +82,9 @@ MIDDLEWARE = [
 AUTHENTICATION_BACKENDS = [
     'djangolti.backends.LtiBackend'
 ]
+if DEBUG:
+    AUTHENTICATION_BACKENDS += ['django.contrib.auth.backends.ModelBackend']
+    LOGIN_REDIRECT_URL = '/debug/lti'
 
 SESSION_COOKIE_NAME = 'id'
 SESSION_COOKIE_AGE = 3600
