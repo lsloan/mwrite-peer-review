@@ -2,10 +2,14 @@ import json
 import logging
 from itertools import chain
 from django.db.models import Q
+from django.db import transaction
+from django.http import HttpResponse
 from django.template.loader import render_to_string
 from django.views.generic import TemplateView
-from toolz.functoolz import thread_last
 from toolz.itertoolz import unique
+from toolz.dicttoolz import keymap
+from toolz.functoolz import thread_last
+from peer_review.util import to_snake_case
 from peer_review.views.special import LtiView
 from peer_review.etl import persist_assignments, AssignmentValidation
 from peer_review.models import Rubric, Criterion, CanvasAssignment, PeerReviewDistribution
@@ -19,6 +23,9 @@ class UnauthorizedView(TemplateView):
 
 class RubricCreationFormView(LtiView, TemplateView):
     template_name = 'rubric_creation_form.html'
+
+    class ReviewsInProgressException(Exception):
+        pass
 
     @staticmethod
     def _get_unclaimed_assignments(course_id):
@@ -78,3 +85,49 @@ class RubricCreationFormView(LtiView, TemplateView):
             'review_is_in_progress': review_is_in_progress,
             'criterion_card_html': criterion_card_html.replace('\n', '')
         }
+
+    # noinspection PyMethodMayBeStatic
+    def post(self, request, *args, **kwargs):
+        params = keymap(to_snake_case, json.loads(request.body.decode('utf-8')))
+        passback_assignment_id = int(kwargs['assignment_id'])
+        if 'criteria' not in params or len(params['criteria']) < 1:
+            return HttpResponse('Missing criteria.', status=400)
+        try:
+            prompt_assignment_id = int(params['prompt_assignment'])
+        except ValueError:
+            return HttpResponse('Prompt assignment was not an integer.', status=400)
+        if 'prompt_assignment' not in params or not params['prompt_assignment'].strip():
+            return HttpResponse('Missing prompt assignment.', status=400)
+        if 'rubric_description' not in params or not params['rubric_description'].strip():
+            return HttpResponse('Missing rubric description.', status=400)
+        if 'revision_assignment' in params and params['revision_assignment'].strip():
+            revision_assignment_id = int(params['revision_assignment'])
+        else:
+            revision_assignment_id = None
+        rubric_description = params['rubric_description'].strip()
+        criteria = [Criterion(description=c['description']) for c in params['criteria']]
+        try:
+            with transaction.atomic():
+                prompt_assignment = CanvasAssignment.objects.get(id=prompt_assignment_id)
+                passback_assignment = CanvasAssignment.objects.get(id=passback_assignment_id)
+                revision_assignment = CanvasAssignment.objects.get(id=revision_assignment_id)
+                rubric, created = Rubric.objects.update_or_create(reviewed_assignment=prompt_assignment_id,
+                                                                  defaults={'description': rubric_description,
+                                                                            'reviewed_assignment': prompt_assignment,
+                                                                            'passback_assignment': passback_assignment,
+                                                                            'revision_assignment': revision_assignment})
+                if not created:
+                    try:
+                        if PeerReviewDistribution.objects.get(rubric_id=rubric.id).is_distribution_complete:
+                            raise RubricCreationFormView.ReviewsInProgressException
+                    except PeerReviewDistribution.DoesNotExist:
+                        pass
+                    Criterion.objects.filter(rubric_id=rubric.id).delete()
+                rubric.save()
+                for c in criteria:
+                    c.rubric_id = rubric.id
+                    c.save()
+            return HttpResponse(status=201)
+        except RubricCreationFormView.ReviewsInProgressException:
+            return HttpResponse('Rubric is read-only because reviews are in progress.', status=403)
+
