@@ -32,8 +32,10 @@
                         <div>
                             <div class="input-field"
                                  data-assignment-selector-parent="">
-                                <select id="prompt-selector"
-                                        {% if review_is_in_progress %}disabled=""{% endif %}>
+                                <select id="prompt-selector" {% if review_is_in_progress %}disabled=""{% endif %}>
+                                    {% if existing_prompt %}
+                                        <option value="{{ existing_prompt.id }}">{{ existing_prompt.title }}</option>
+                                    {% endif %}
                                 </select>
                                 <label for="prompt-selector">
                                     The rubric will be applied to the following assignment:
@@ -68,6 +70,9 @@
                                 <div class="input-field" data-assignment-selector-parent="">
                                     <select id="revision-selector"
                                             {% if review_is_in_progress %}disabled=""{% endif %}>
+                                        {% if existing_revision %}
+                                            <option value="{{ existing_revision.id }}">{{ existing_revision.title }}</option>
+                                        {% endif %}
                                     </select>
                                     <label for="revision-selector">
                                         If students will be completing a revision, please select the revision assignment

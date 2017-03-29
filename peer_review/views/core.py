@@ -17,7 +17,6 @@ class UnauthorizedView(TemplateView):
     template_name = '403.html'
 
 
-# TODO test for existing rubrics
 class RubricCreationFormView(LtiView, TemplateView):
     template_name = 'rubric_creation_form.html'
 
@@ -41,14 +40,22 @@ class RubricCreationFormView(LtiView, TemplateView):
         except Rubric.DoesNotExist:
             existing_rubric = None
         if existing_rubric:
-            review_is_in_progress = PeerReviewDistribution.objects.get(rubric=existing_rubric).is_distribution_complete
+            try:
+                review_is_in_progress = PeerReviewDistribution.objects.get(rubric=existing_rubric) \
+                                                              .is_distribution_complete
+            except PeerReviewDistribution.DoesNotExist:
+                review_is_in_progress = False
         else:
             review_is_in_progress = False
         existing_criteria = Criterion.objects.filter(rubric=existing_rubric) if existing_rubric else None
         existing_prompt = existing_rubric.reviewed_assignment if existing_rubric else None
         existing_revision = existing_rubric.revision_assignment if existing_rubric else None
         fetched_assignments = persist_assignments(course_id)
-        unclaimed_assignments = self._get_unclaimed_assignments(course_id)
+        assignments = list(self._get_unclaimed_assignments(course_id))
+        if existing_prompt:
+            assignments.insert(0, existing_prompt)
+        if existing_revision:
+            assignments.insert(0, existing_revision)
         if review_is_in_progress:
             mode = 'view'
         elif existing_rubric:
@@ -59,7 +66,7 @@ class RubricCreationFormView(LtiView, TemplateView):
         return {
             'course_id': course_id,
             'passback_assignment_id': passback_assignment_id,
-            'potential_prompts_and_rubrics': json.dumps({a.id: a.title for a in unclaimed_assignments}),
+            'potential_prompts_and_rubrics': json.dumps({a.id: a.title for a in assignments}),
             'validations': json.dumps({assignment.id: assignment.validation for assignment in fetched_assignments},
                                       default=AssignmentValidation.json_default),
             'should_show_revision_info': not (review_is_in_progress and not existing_revision),
