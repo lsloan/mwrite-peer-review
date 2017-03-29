@@ -17,6 +17,10 @@ class UnauthorizedView(TemplateView):
     template_name = '403.html'
 
 
+# TODO need to correct:
+# TODO   1) peer review assignments show up in dropdowns
+# TODO   2) all text boxes have a bunch of spaces in them
+# TODO   4) test for existing rubrics
 class RubricCreationFormView(LtiView, TemplateView):
     template_name = 'rubric_creation_form.html'
 
@@ -54,7 +58,7 @@ class RubricCreationFormView(LtiView, TemplateView):
             mode = 'edit'
         else:
             mode = 'create'
-        criterion_card_html = render_to_string('criterion.html', {'description': '', 'read_only': False, 'counter': 0})
+        criterion_card_html = render_to_string('criterion.html', {'description': '', 'read_only': False, 'counter': 1})
         return {
             'course_id': course_id,
             'passback_assignment_id': passback_assignment_id,
