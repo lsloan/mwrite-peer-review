@@ -8,11 +8,9 @@ from django.views.decorators.csrf import csrf_exempt
 from django.views.generic import TemplateView, FormView
 from django.contrib.auth.mixins import LoginRequiredMixin
 
-
 # TODO remove when django-http-proxy fixes https://github.com/yvandermeer/django-http-proxy/issues/25
 from django.http import HttpResponse
 from django.utils.six.moves import urllib
-
 
 logger = logging.getLogger(__name__)
 
@@ -78,15 +76,6 @@ class LtiProxyView(LtiView, FixedHttpProxy):
     def get_response(self, body=None, headers=None):
         headers = merge(headers if headers else {}, self.get_proxy_headers())
         return super(LtiProxyView, self).get_response(body, headers)
-
-
-class IndexView(LtiView, TemplateView):
-    template_name = 'index.html'
-
-    def get_context_data(self, **kwargs):
-        context = super(IndexView, self).get_context_data(**kwargs)
-        context['launch_params'] = self.request.session['lti_launch_params']
-        return context
 
 
 class UnauthorizedView(TemplateView):

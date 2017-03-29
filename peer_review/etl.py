@@ -3,7 +3,7 @@ from toolz.functoolz import thread_last
 from toolz.itertoolz import unique
 from django.conf import settings
 from django.utils.dateparse import parse_datetime
-from peer_review.util import utc_to_timezone
+from peer_review.util import utc_to_timezone, to_camel_case
 from peer_review.canvas import retrieve
 from peer_review.models import CanvasAssignment
 
@@ -14,10 +14,15 @@ class AssignmentValidation:
     def __init__(self, **kwargs):
         self.submission_upload_type = kwargs.get('submission_upload_type')
         self.allowed_submission_file_extensions = kwargs.get('allowed_extensions')
-        self.local_due_date = utc_to_timezone(kwargs.get('due_date_utc'), settings.TIME_ZONE)
+        local_due_date_dt = utc_to_timezone(kwargs.get('due_date_utc'), settings.TIME_ZONE)
+        self.local_due_date = local_due_date_dt.strftime(settings.TIME_OUTPUT_FORMAT)
         self.number_of_due_dates = kwargs.get('number_of_due_dates')
         self.section_name = kwargs.get('section_name')
         self.number_of_sections = kwargs.get('number_of_sections')
+
+    @staticmethod
+    def json_default(validation):
+        return {to_camel_case(k): v for k, v in validation.__dict__.items()}
 
 
 def _due_dates_from_overrides(assignment, overrides):
