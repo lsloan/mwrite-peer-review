@@ -98,9 +98,7 @@
                             <label>Rubric Description</label>
                             <textarea id="rubric-description"
                                       class="materialize-textarea"
-                                      {% if review_is_in_progress %}disabled=""{% endif %}>
-                                {{ existing_rubric.description }}
-                            </textarea>
+                                      {% if review_is_in_progress %}disabled=""{% endif %}>{{ existing_rubric.description }}</textarea>
                         </div>
                     </div>
                 </div>
