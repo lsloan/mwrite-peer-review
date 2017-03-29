@@ -54,6 +54,7 @@ class RubricCreationFormView(LtiView, TemplateView):
             mode = 'edit'
         else:
             mode = 'create'
+        criterion_card_html = render_to_string('criterion.html', {'description': '', 'read_only': False, 'counter': 0})
         return {
             'course_id': course_id,
             'passback_assignment_id': passback_assignment_id,
@@ -67,6 +68,5 @@ class RubricCreationFormView(LtiView, TemplateView):
             'existing_rubric': existing_rubric,
             'existing_criteria': existing_criteria,
             'review_is_in_progress': review_is_in_progress,
-            'criterion_card_html': render_to_string('criterion.html',
-                                                    {'description': '', 'read_only': False, 'counter': 0})
+            'criterion_card_html': criterion_card_html.replace('\n', '')
         }
