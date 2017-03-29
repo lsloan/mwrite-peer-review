@@ -17,9 +17,7 @@ class UnauthorizedView(TemplateView):
     template_name = '403.html'
 
 
-# TODO need to correct:
-# TODO   1) peer review assignments show up in dropdowns
-# TODO   4) test for existing rubrics
+# TODO test for existing rubrics
 class RubricCreationFormView(LtiView, TemplateView):
     template_name = 'rubric_creation_form.html'
 
