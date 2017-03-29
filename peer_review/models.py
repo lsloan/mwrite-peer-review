@@ -7,7 +7,7 @@ class CanvasAssignment(models.Model):
         managed = False
         db_table = 'canvas_assignments'
 
-    id = models.AutoField(primary_key=True)
+    id = models.IntegerField(primary_key=True)
     title = models.TextField()
     course_id = models.IntegerField()
     due_date_utc = models.DateTimeField(blank=True, null=True)
@@ -52,6 +52,7 @@ class Rubric(models.Model):
         managed = False
         db_table = 'rubrics'
 
+    id = models.AutoField(primary_key=True)
     description = models.TextField()
     reviewed_assignment = models.OneToOneField(CanvasAssignment,
                                                models.DO_NOTHING,
@@ -79,6 +80,7 @@ class Criterion(models.Model):
         managed = False
         db_table = 'criteria'
 
+    id = models.AutoField(primary_key=True)
     description = models.TextField()
     rubric = models.ForeignKey(Rubric, models.DO_NOTHING)
 
@@ -91,6 +93,7 @@ class PeerReview(models.Model):
         db_table = 'peer_reviews'
         unique_together = (('student', 'submission'),)
 
+    id = models.AutoField(primary_key=True)
     student = models.ForeignKey(CanvasStudent, models.DO_NOTHING)
     submission = models.ForeignKey(CanvasSubmission, models.DO_NOTHING)
 
@@ -103,6 +106,7 @@ class PeerReviewComment(models.Model):
         db_table = 'peer_review_comments'
         unique_together = (('criterion', 'peer_review'),)
 
+    id = models.AutoField(primary_key=True)
     criterion = models.ForeignKey(Criterion, models.DO_NOTHING)
     peer_review = models.ForeignKey(PeerReview, models.DO_NOTHING)
     comment = models.TextField()
@@ -116,6 +120,7 @@ class PeerReviewDistribution(models.Model):
         managed = False
         db_table = 'peer_review_distributions'
 
+    id = models.AutoField(primary_key=True)
     rubric = models.ForeignKey(Rubric, models.DO_NOTHING)
     is_distribution_complete = models.BooleanField(default=False)
     distributed_at_utc = models.DateTimeField(blank=True, null=True)
