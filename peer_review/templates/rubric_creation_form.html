@@ -14,7 +14,7 @@
         <form data-rubric-form=""
               onsubmit="submitRubricCriteria(); return false;"
               action="/rubric/course/{{ course_id }}/assignment/{{ passback_assignment_id }}">
-            {% csrf_token %}
+            <input type="hidden" id="__anti-forgery-token" value="{{ csrf_token }}">
             <div id="rubric-data"
                  hidden=""
                  data-existing-prompt="{{ existing_prompt.id }}"

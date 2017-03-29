@@ -2,6 +2,7 @@ import json
 import logging
 from itertools import chain
 from django.db.models import Q
+from django.http import HttpResponse
 from django.template.loader import render_to_string
 from django.views.generic import TemplateView
 from toolz.functoolz import thread_last
@@ -78,3 +79,8 @@ class RubricCreationFormView(LtiView, TemplateView):
             'review_is_in_progress': review_is_in_progress,
             'criterion_card_html': criterion_card_html.replace('\n', '')
         }
+
+    def post(self, request, *args, **kwargs):
+        logger.info('Would have done something here')
+        return HttpResponse('Would have done something', status=202)
+
