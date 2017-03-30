@@ -24,13 +24,18 @@ class FixedHttpProxy(HttpProxy):
             response = urllib.request.urlopen(request)
             response_body = response.read()
             status = response.getcode()
-            content_type = response.headers['content-type']
+            content_type = response.headers['Content-Type']
+            content_disposition = response.headers.get('Content-Disposition')
         except urllib.error.HTTPError as e:
             response_body = e.read()
             status = e.code
             content_type = e.hdrs['content-type']
+            content_disposition = None
         logger.debug(self._msg % response_body)
-        return HttpResponse(response_body, status=status, content_type=content_type)
+        proxy_response = HttpResponse(response_body, status=status, content_type=content_type)
+        if content_disposition:
+            proxy_response['Content-Disposition'] = content_disposition
+        return proxy_response
 
 
 class LtiView(LoginRequiredMixin):
