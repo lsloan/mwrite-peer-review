@@ -1,0 +1,65 @@
+{% extends 'base.html' %}
+
+{% block header %}
+    <script defer="" src="/js/review.js"></script>
+    <link rel="stylesheet" href="/css/review.css">
+{% endblock %}
+
+{% block content %}
+    <div>
+        <div class="row">
+            <div class="col s12"><h4>{{ submission.assignment.title }}</h4></div>
+        </div>
+        <div class="row">
+            <div class="col s12">
+                <div class="card">
+                    <div class="card-content">
+                        <div>
+                            <div><span class="card-title">Download The Submission</span></div>
+                            <a class="btn waves-effect waves-light blue accent-3"
+                               href="/submissions/{{ submission.id }}/download">
+                                <div><i class="material-icons left">file_download</i>Download</div>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col s12">
+                <div class="card">
+                    <div class="card-content">
+                        <div>
+                            <div><span class="card-title">Submit Your Review</span></div>
+                            <form action="/review/submission/{{ submission.id }}"
+                                  onsubmit="submitReview({{ submission.assignment.id }}); return false;"
+                                  data-comment-form="">
+                                <input type="hidden" id="__anti-forgery-token" value="{{ csrf_token }}">
+                                <h5>Rubric Description</h5>
+                                <p class="rubric-description">{{ rubric.description }}</p>
+                                {% for criterion in criteria %}
+                                    <div class="card">
+                                        <div class="card-content">
+                                            <div>
+                                                <span></span>
+                                                <p>{{ criterion.description }}</p>
+                                                <textarea class="materialize-textarea"
+                                                          data-criterion-id="{{ criterion.id }}"
+                                                          placeholder="Your response here..."></textarea>
+                                            </div>
+                                        </div>
+                                    </div>
+                                {% endfor %}
+                                <div class="center-align">
+                                    <button class="btn waves-effect waves-light blue accent-3"
+                                            data-submit-button=""
+                                            type="submit">Submit</button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}

@@ -3,7 +3,7 @@ import logging
 from itertools import chain
 from django.db.models import Q
 from django.db import transaction
-from django.http import HttpResponse
+from django.http import HttpResponse, Http404
 from django.template.loader import render_to_string
 from django.views.generic import TemplateView
 from toolz.itertoolz import unique
@@ -12,7 +12,7 @@ from toolz.functoolz import thread_last
 from peer_review.util import to_snake_case
 from peer_review.views.special import LtiView
 from peer_review.etl import persist_assignments, AssignmentValidation
-from peer_review.models import Rubric, Criterion, CanvasAssignment, PeerReviewDistribution
+from peer_review.models import Rubric, Criterion, CanvasAssignment, PeerReviewDistribution, CanvasSubmission
 
 logger = logging.getLogger(__name__)
 
@@ -21,6 +21,7 @@ class UnauthorizedView(TemplateView):
     template_name = '403.html'
 
 
+# TODO need authz -- only teachers can access
 class RubricCreationFormView(LtiView, TemplateView):
     template_name = 'rubric_creation_form.html'
 
@@ -131,3 +132,19 @@ class RubricCreationFormView(LtiView, TemplateView):
         except RubricCreationFormView.ReviewsInProgressException:
             return HttpResponse('Rubric is read-only because reviews are in progress.', status=403)
 
+
+class PeerReviewView(LtiView, TemplateView):
+    template_name = 'review.html'
+
+    def get_context_data(self, **kwargs):
+        try:
+            submission = CanvasSubmission.objects.get(id=kwargs['submission_id'])
+        except CanvasSubmission.DoesNotExist:
+            raise Http404
+        rubric = Rubric.objects.get(reviewed_assignment=submission.assignment)
+        criteria = Criterion.objects.filter(rubric=rubric)
+        return {
+            'submission': submission,
+            'rubric': rubric,
+            'criteria': criteria
+        }
