@@ -133,9 +133,8 @@ class RubricCreationFormView(LtiView, TemplateView):
             return HttpResponse('Rubric is read-only because reviews are in progress.', status=403)
 
 
-# TODO need authz -- only students can access. refrained some implemented permissions check part until I research
-# TODO Django's authz system
 class PeerReviewView(LtiView, TemplateView):
+    template_name = 'review.html'
 
     def get_context_data(self, **kwargs):
         try:
