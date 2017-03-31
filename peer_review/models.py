@@ -84,6 +84,9 @@ class Criterion(models.Model):
     description = models.TextField()
     rubric = models.ForeignKey(Rubric, models.DO_NOTHING)
 
+    def __str__(self):
+        return self.description
+
 
 # noinspection PyClassHasNoInit
 class PeerReview(models.Model):

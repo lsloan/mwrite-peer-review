@@ -10,7 +10,7 @@ from django.views.generic import TemplateView
 from toolz.itertoolz import unique
 from toolz.functoolz import thread_last
 from peer_review.util import parse_json_body
-from peer_review.views.special import LtiView
+from peer_review.views.special import LoginRequiredNoRedirectMixin
 from peer_review.etl import persist_assignments, AssignmentValidation
 from peer_review.models import Rubric, Criterion, CanvasAssignment, PeerReviewDistribution, CanvasSubmission, \
                                PeerReview, PeerReviewComment
@@ -23,7 +23,7 @@ class UnauthorizedView(TemplateView):
 
 
 # TODO need authz -- only teachers can access
-class RubricCreationFormView(LtiView, TemplateView):
+class RubricCreationFormView(LoginRequiredNoRedirectMixin, TemplateView):
     template_name = 'rubric_creation_form.html'
 
     class ReviewsInProgressException(Exception):
@@ -135,7 +135,7 @@ class RubricCreationFormView(LtiView, TemplateView):
 
 
 # TODO needs validity checking and authz
-class PeerReviewView(LtiView, TemplateView):
+class PeerReviewView(LoginRequiredNoRedirectMixin, TemplateView):
     template_name = 'review.html'
 
     def get_context_data(self, **kwargs):
@@ -175,20 +175,19 @@ class PeerReviewView(LtiView, TemplateView):
             return HttpResponse('You were not assigned that submission.', status=403)
 
         rubric = Rubric.objects.get(reviewed_assignment=submission.assignment)
-        rubric_criteria = Criterion.objects.filter(rubric=rubric)
         user_comment_criteria_ids = [com['criterion_id'] for com in user_comments]
         user_comment_criteria = Criterion.objects.filter(id__in=user_comment_criteria_ids)
-        if user_comment_criteria.count() != rubric_criteria.count():
+        if user_comment_criteria.count() != rubric.criterion_set.count():
             return HttpResponse('Criterion IDs do not match.', 400)
 
-        rubric_criteria_ids = map(lambda cri: cri.id, rubric_criteria)
+        rubric_criteria_ids = map(lambda cri: cri.id, rubric.criterion_set.all())
         existing_comments = PeerReviewComment.objects.filter(peer_review=peer_review,
                                                              criterion_id__in=rubric_criteria_ids)
-        if rubric_criteria.count() == existing_comments.count():
+        if rubric.criterion_set.count() == existing_comments.count():
             return HttpResponse('This review has already been completed.', 400)
         elif existing_comments.count() > 0:
             logger.warning('Somehow %d has only %d out of %d comments for %d!!!',
-                           student_id, existing_comments.count(), rubric_criteria.count(), submission_id)
+                           student_id, existing_comments.count(), rubric.criterion_set.count(), submission_id)
 
         commented_at_utc = datetime.utcnow()
         comments = [PeerReviewComment(criterion=Criterion.objects.get(id=c['criterion_id']),

@@ -18,7 +18,7 @@ from django.conf.urls import url
 from django.http import Http404
 import djangolti.views
 from peer_review.views.special import FixedHttpProxy, LtiProxyView, DebugLtiParamsView
-from peer_review.views.core import UnauthorizedView, RubricCreationFormView, PeerReviewView
+from peer_review.views.core import RubricCreationFormView, PeerReviewView
 
 
 def not_found(request):
@@ -26,7 +26,6 @@ def not_found(request):
 
 urlpatterns = [
     url(r'^favicon.ico$', not_found),
-    url(r'^unauthorized', UnauthorizedView.as_view(), name='unauthorized'),
     url(r'^launch', djangolti.views.LaunchView.as_view(), name='launch'),
     url(r'^rubric/course/(?P<course_id>[0-9]+)/assignment/(?P<assignment_id>[0-9]+)', RubricCreationFormView.as_view()),
     url(r'^review/submission/(?P<submission_id>[0-9]+)', PeerReviewView.as_view()),

@@ -3,6 +3,7 @@ from toolz.dicttoolz import merge, valmap
 from toolz.functoolz import thread_last
 from httpproxy.views import HttpProxy
 from django import forms
+
 from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt
 from django.views.generic import TemplateView, FormView
@@ -38,14 +39,13 @@ class FixedHttpProxy(HttpProxy):
         return proxy_response
 
 
-class LtiView(LoginRequiredMixin):
-    login_url = '/unauthorized'
-    redirect_field_name = ''
+class LoginRequiredNoRedirectMixin(LoginRequiredMixin):
+    raise_exception = True
 
 
 # TODO need to rearrange required/optional LTI headers; not quite right (but good enough for now)
 @method_decorator(csrf_exempt, name='dispatch')
-class LtiProxyView(LtiView, FixedHttpProxy):
+class LtiProxyView(LoginRequiredNoRedirectMixin, FixedHttpProxy):
 
     @staticmethod
     def _get_required_headers(lti_launch_params):
@@ -81,10 +81,6 @@ class LtiProxyView(LtiView, FixedHttpProxy):
     def get_response(self, body=None, headers=None):
         headers = merge(headers if headers else {}, self.get_proxy_headers())
         return super(LtiProxyView, self).get_response(body, headers)
-
-
-class UnauthorizedView(TemplateView):
-    template_name = '403.html'
 
 
 # noinspection PyClassHasNoInit
