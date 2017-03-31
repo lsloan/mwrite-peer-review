@@ -1,18 +1,19 @@
 import json
 import logging
 from itertools import chain
+from datetime import  datetime
 from django.db.models import Q
 from django.db import transaction
 from django.http import HttpResponse, Http404
 from django.template.loader import render_to_string
 from django.views.generic import TemplateView
 from toolz.itertoolz import unique
-from toolz.dicttoolz import keymap
 from toolz.functoolz import thread_last
-from peer_review.util import to_snake_case
+from peer_review.util import parse_json_body
 from peer_review.views.special import LtiView
 from peer_review.etl import persist_assignments, AssignmentValidation
-from peer_review.models import Rubric, Criterion, CanvasAssignment, PeerReviewDistribution, CanvasSubmission
+from peer_review.models import Rubric, Criterion, CanvasAssignment, PeerReviewDistribution, CanvasSubmission, \
+                               PeerReview, PeerReviewComment
 
 logger = logging.getLogger(__name__)
 
@@ -89,7 +90,7 @@ class RubricCreationFormView(LtiView, TemplateView):
 
     # noinspection PyMethodMayBeStatic
     def post(self, request, *args, **kwargs):
-        params = keymap(to_snake_case, json.loads(request.body.decode('utf-8')))
+        params = parse_json_body(request.body)
         passback_assignment_id = int(kwargs['assignment_id'])
         if 'criteria' not in params or len(params['criteria']) < 1:
             return HttpResponse('Missing criteria.', status=400)
@@ -133,12 +134,19 @@ class RubricCreationFormView(LtiView, TemplateView):
             return HttpResponse('Rubric is read-only because reviews are in progress.', status=403)
 
 
+# TODO needs validity checking and authz
 class PeerReviewView(LtiView, TemplateView):
     template_name = 'review.html'
 
     def get_context_data(self, **kwargs):
+        student_id = self.request.session['lti_launch_params']['custom_canvas_user_id']
+        submission_id = kwargs['submission_id']
         try:
-            submission = CanvasSubmission.objects.get(id=kwargs['submission_id'])
+            PeerReview.objects.get(student_id=student_id, submission_id=submission_id)
+        except PeerReview.DoesNotExist:
+            return HttpResponse('You cannot review this submission because it was not assigned to you.', status=403)
+        try:
+            submission = CanvasSubmission.objects.get(id=submission_id)
         except CanvasSubmission.DoesNotExist:
             raise Http404
         rubric = Rubric.objects.get(reviewed_assignment=submission.assignment)
@@ -148,3 +156,50 @@ class PeerReviewView(LtiView, TemplateView):
             'rubric': rubric,
             'criteria': criteria
         }
+
+    # noinspection PyMethodMayBeStatic
+    def post(self, request, *args, **kwargs):
+
+        student_id = self.request.session['lti_launch_params']['custom_canvas_user_id']
+        submission_id = kwargs['submission_id']
+        user_comments = parse_json_body(request.body)
+
+        try:
+            submission = CanvasSubmission.objects.get(id=submission_id)
+        except CanvasSubmission.DoesNotExist:
+            return Http404
+
+        try:
+            peer_review = PeerReview.objects.get(student_id=student_id, submission_id=submission_id)
+        except PeerReview.DoesNotExist:
+            return HttpResponse('You were not assigned that submission.', status=403)
+
+        rubric = Rubric.objects.get(reviewed_assignment=submission.assignment)
+        rubric_criteria = Criterion.objects.filter(rubric=rubric)
+        user_comment_criteria_ids = [com['criterion_id'] for com in user_comments]
+        user_comment_criteria = Criterion.objects.filter(id__in=user_comment_criteria_ids)
+        if user_comment_criteria.count() != rubric_criteria.count():
+            return HttpResponse('Criterion IDs do not match.', 400)
+
+        rubric_criteria_ids = map(lambda cri: cri.id, rubric_criteria)
+        existing_comments = PeerReviewComment.objects.filter(peer_review=peer_review,
+                                                             criterion_id__in=rubric_criteria_ids)
+        if rubric_criteria.count() == existing_comments.count():
+            return HttpResponse('This review has already been completed.', 400)
+        elif existing_comments.count() > 0:
+            logger.warning('Somehow %d has only %d out of %d comments for %d!!!',
+                           student_id, existing_comments.count(), rubric_criteria.count(), submission_id)
+
+        commented_at_utc = datetime.utcnow()
+        comments = [PeerReviewComment(criterion=Criterion.objects.get(id=c['criterion_id']),
+                                      comment=c['comment'],
+                                      commented_at_utc=commented_at_utc,
+                                      peer_review=peer_review)
+                    for c in user_comments]
+
+        with transaction.atomic():
+            existing_comments.delete()
+            for comment in comments:
+                comment.save()
+
+        return HttpResponse(status=201)
