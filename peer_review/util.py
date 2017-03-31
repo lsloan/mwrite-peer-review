@@ -1,5 +1,7 @@
 import re
+import json
 import pytz
+from toolz.dicttoolz import keymap
 
 
 def utc_to_timezone(datetime_utc, timezone_name):
@@ -16,3 +18,13 @@ def to_camel_case(s):
 def to_snake_case(s):
     inter = re.sub('(.)([A-Z][a-z]+)', r'\1_\2', s)
     return re.sub('([a-z0-9])([A-Z])', r'\1_\2', inter).lower()
+
+
+# TODO what i really want here is something to recursively descend through the datastructure, snake-casing dict keys
+# TODO right now this only works for dicts or lists of dicts
+def parse_json_body(b):
+    b_obj = json.loads(b.decode('utf-8'))
+    if isinstance(b_obj, dict):
+        return keymap(to_snake_case, b_obj)
+    elif isinstance(b_obj, list):
+        return list(map(lambda d: keymap(to_snake_case, d), b_obj))
