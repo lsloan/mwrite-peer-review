@@ -1,6 +1,7 @@
-<!DOCTYPE html>
-<html>
-    <body>
-        <p>Sorry, no access.</p>
-    </body>
-</html>
+{% extends 'base_error.html' %}
+
+{% block header %}{% endblock %}
+
+{% block error_message %}
+    You do not have permission to visit that page.
+{% endblock %}
