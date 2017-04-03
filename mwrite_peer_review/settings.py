@@ -77,7 +77,8 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    'peer_review.middleware.FixedUserAgentMiddleware'
+    'peer_review.middleware.FixedUserAgentMiddleware',
+    'peer_review.middleware.safari_iframe_launch_middleware'
 ]
 
 AUTHENTICATION_BACKENDS = [
