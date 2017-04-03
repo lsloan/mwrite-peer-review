@@ -17,6 +17,8 @@ def safari_iframe_launch_middleware(get_response):
         logger.debug('(safari iframe) request.path = %s' % request.path)
         logger.debug('(safari iframe) request.user_agent.browser.family = %s' % request.user_agent.browser.family)
         logger.debug('(safari iframe) request.COOKIES = %s' % request.COOKIES)
+        logger.debug('(safari iframe) request.META = %s' % request.META)
+        logger.debug('(safari iframe) request.META[\'HTTP_REFERER\'] header = %s' % request.META['HTTP_REFERER'])
 
         safari_first_launch = request.path == '/launch' and \
                               request.user_agent.browser.family == 'Safari' and \
@@ -24,6 +26,8 @@ def safari_iframe_launch_middleware(get_response):
 
         if safari_first_launch:
             logger.debug('safari first launch')
+
+
 
         return get_response(request)
     return middleware
