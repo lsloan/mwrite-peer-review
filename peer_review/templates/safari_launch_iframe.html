@@ -1,0 +1,18 @@
+{% extends 'base.html' %}
+
+{% block header %}
+    <link rel="stylesheet" href="/css/safari_launch.css">
+    <script defer="" src="/js/safari.js"></script>
+{% endblock %}
+
+{% block content %}
+    <div>
+        <div class="row">
+            <div class="col s12 center">
+                <p>Welcome to MWrite Peer Review!  Please click the button below to launch the tool.</p>
+                <div class="btn waves-effect waves-light blue accent-3" style="text-transform: capitalize;"
+                     onclick="launchForSafari('{{ referer }}');">Launch Peer Review</div>
+            </div>
+        </div>
+    </div>
+{% endblock%}
