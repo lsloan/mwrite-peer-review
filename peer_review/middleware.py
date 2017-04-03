@@ -1,3 +1,4 @@
+from django.conf import settings
 from django.utils.deprecation import MiddlewareMixin
 from django_user_agents.middleware import UserAgentMiddleware
 
@@ -10,8 +11,12 @@ class FixedUserAgentMiddleware(MiddlewareMixin, UserAgentMiddleware):
 def safari_iframe_launch_middleware(get_response):
     def middleware(request):
 
-        if request.path == '/' and request.user_agent.browser.family == 'Safari' and not request.user.is_authenticated:
-            print('need to send the user to the safari landing page')
+        safari_first_launch = request.path == '/' and \
+                              request.user_agent.browser.family == 'Safari' and \
+                              settings.SESSION_COOKIE_NAME not in request.COOKIES
+
+        if safari_first_launch:
+            print('safari first launch')
 
         return get_response(request)
     return middleware
