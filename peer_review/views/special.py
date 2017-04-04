@@ -32,7 +32,6 @@ class FixedHttpProxy(HttpProxy):
             status = e.code
             content_type = e.hdrs['content-type']
             content_disposition = None
-        logger.debug(self._msg % response_body)
         proxy_response = HttpResponse(response_body, status=status, content_type=content_type)
         if content_disposition:
             proxy_response['Content-Disposition'] = content_disposition
