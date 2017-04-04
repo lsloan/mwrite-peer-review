@@ -5,3 +5,5 @@ django-http-proxy==0.4.3
 toolz==0.8.2
 requests==2.13.0
 pytz==2016.10
+user-agents==1.1.0
+django-user-agents==0.3.0

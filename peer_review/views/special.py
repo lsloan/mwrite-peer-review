@@ -3,7 +3,7 @@ from toolz.dicttoolz import merge, valmap
 from toolz.functoolz import thread_last
 from httpproxy.views import HttpProxy
 from django import forms
-
+from django.conf import settings
 from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt
 from django.views.generic import TemplateView, FormView
@@ -32,7 +32,6 @@ class FixedHttpProxy(HttpProxy):
             status = e.code
             content_type = e.hdrs['content-type']
             content_disposition = None
-        logger.debug(self._msg % response_body)
         proxy_response = HttpResponse(response_body, status=status, content_type=content_type)
         if content_disposition:
             proxy_response['Content-Disposition'] = content_disposition
@@ -109,3 +108,12 @@ class DebugLtiParamsView(LoginRequiredMixin, FormView):
         form.cleaned_data['roles'] = roles
         self.request.session['lti_launch_params'] = {**form.cleaned_data, **lti_launch_params}
         return super(DebugLtiParamsView, self).form_valid(form)
+
+
+class SafariLaunchPopup(TemplateView):
+    template_name = 'safari_launch_popup.html'
+
+    def get(self, request, *args, **kwargs):
+        response = super(SafariLaunchPopup, self).get(request, *args, **kwargs)
+        response.set_cookie(settings.SAFARI_LAUNCH_COOKIE, True, httponly=True, secure=True)
+        return response
