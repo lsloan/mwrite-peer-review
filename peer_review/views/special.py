@@ -109,3 +109,12 @@ class DebugLtiParamsView(LoginRequiredMixin, FormView):
         form.cleaned_data['roles'] = roles
         self.request.session['lti_launch_params'] = {**form.cleaned_data, **lti_launch_params}
         return super(DebugLtiParamsView, self).form_valid(form)
+
+
+class SafariLaunchPopup(TemplateView):
+    template_name = 'safari_launch_popup.html'
+
+    def get(self, request, *args, **kwargs):
+        response = super(SafariLaunchPopup, self).get(request, *args, **kwargs)
+        response.set_cookie('safari_cookie_fix', True, httponly=True, secure=True)
+        return response
