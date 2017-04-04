@@ -1,8 +1,9 @@
 {% extends 'base.html' %}
+{% load static %}
 
 {% block header %}
-    <script defer="" src="/js/assignment_validation.js"></script>
-    <script defer="" src="/js/rubric_creation.js"></script>
+    <script defer="" src="{% static 'js/assignment_validation.js' %}"></script>
+    <script defer="" src="{% static 'js/rubric_creation.js' %}"></script>
 {% endblock %}
 
 {% block content %}

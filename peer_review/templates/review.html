@@ -1,8 +1,9 @@
 {% extends 'base.html' %}
+{% load static %}
 
 {% block header %}
-    <script defer="" src="/js/review.js"></script>
-    <link rel="stylesheet" href="/css/review.css">
+    <script defer="" src="{% static 'js/review.js' %}"></script>
+    <link rel="stylesheet" href="{% static 'css/review.css' %}">
 {% endblock %}
 
 {% block content %}
