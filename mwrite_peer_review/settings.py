@@ -99,6 +99,7 @@ CSRF_COOKIE_HTTPONLY = True
 CSRF_COOKIE_SECURE = not DEBUG
 CSRF_COOKIE_NAME = 'fp'
 X_FRAME_OPTIONS = 'ALLOW-FROM %s' % os.environ['MWRITE_PEER_REVIEW_LMS_URL']
+SAFARI_LAUNCH_COOKIE = 'safari_launch'
 
 ROOT_URLCONF = 'mwrite_peer_review.urls'
 

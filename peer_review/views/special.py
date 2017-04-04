@@ -3,7 +3,7 @@ from toolz.dicttoolz import merge, valmap
 from toolz.functoolz import thread_last
 from httpproxy.views import HttpProxy
 from django import forms
-
+from django.conf import settings
 from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt
 from django.views.generic import TemplateView, FormView
@@ -116,5 +116,5 @@ class SafariLaunchPopup(TemplateView):
 
     def get(self, request, *args, **kwargs):
         response = super(SafariLaunchPopup, self).get(request, *args, **kwargs)
-        response.set_cookie('safari_cookie_fix', True, httponly=True, secure=True)
+        response.set_cookie(settings.SAFARI_LAUNCH_COOKIE, True, httponly=True, secure=True)
         return response

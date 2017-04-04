@@ -22,7 +22,7 @@ def safari_iframe_launch_middleware(get_response):
 
         if request.path == '/launch' and \
            request.user_agent.browser.family == 'Safari' and \
-           settings.SESSION_COOKIE_NAME not in request.COOKIES:
+           settings.SAFARI_LAUNCH_COOKIE not in request.COOKIES:
             logger.debug('safari first launch')
             return render_to_response('safari_launch_iframe.html', {'referer': request.META['HTTP_REFERER']})
         else:
