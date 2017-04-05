@@ -8,7 +8,7 @@
                           data-criterion-description=""
                           {% if read_only %}disabled=""{% endif %}>{{ description }}</textarea>
             </div>
-            {% if counter > 0 %}
+            {% if counter > 0 and not read_only %}
                 <div>
                     <a class="remove-button btn-floating waves-effect waves-light grey lighten-1"
                        onClick="removeRubricCriteria(this);">
