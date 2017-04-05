@@ -1,0 +1,43 @@
+.card {
+    display: inline-block;
+    margin-left: 5px;
+    margin-right: 5px;
+    width: 29%; /* TODO this is a quick fix. need something better */
+}
+
+a.btn {
+    width: 100%;
+}
+
+div[data-rubric-control-buttons-container] > a.btn:not(:first-child) {
+    margin-top: 3px;
+}
+
+.hide-but-keep-space {
+    visibility: hidden;
+}
+
+.card .card-content p.issue-caption {
+    margin-left: 9px;
+    font-size: 0.8em;
+}
+
+.warning-icon {
+    color: #d17302;
+}
+
+.error-icon {
+    color: #c40000;
+}
+
+.ok-icon {
+    color: #02d60c;
+}
+
+/* stupid evil hack */
+.card .card-content p.ok-caption {
+    min-height: 34px;
+    margin-top: 9px;
+    margin-bottom: -9px;
+}
+

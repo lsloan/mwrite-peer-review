@@ -1,8 +1,9 @@
 {% extends 'base.html' %}
+{% load static %}
 
 {% block header %}
-    <link rel="stylesheet" href="/css/safari_launch.css">
-    <script defer="" src="/js/safari.js"></script>
+    <link rel="stylesheet" href="{% static 'css/safari_launch.css' %}">
+    <script defer="" src="{% static 'js/safari.js' %}"></script>
 {% endblock %}
 
 {% block content %}
