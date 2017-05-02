@@ -12,7 +12,7 @@
         {% block header %}{% endblock %}
     </head>
     <body>
-        <div class="mdl-layout mdl-js-layout mdl-layout--fixed-header">
+        <div class="mdl-layout mdl-js-layout">
             <header class="mdl-layout__header">
                 <div class="mdl-layout-icon"></div>
                 <div class="mdl-layout__header-row">
@@ -33,9 +33,9 @@
                     <a class="mdl-navigation__link" href="#">Thing C</a>
                 </nav>
             </div>
+            <main class="mdl-layout__content">
+                {% block content %}{% endblock %}
+            </main>
         </div>
-        <main class="mdl-layout__content">
-            {% block content %}{% endblock %}
-        </main>
     </body>
 </html>
