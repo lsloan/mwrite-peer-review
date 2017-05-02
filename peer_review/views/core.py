@@ -206,3 +206,6 @@ class PeerReviewView(LoginRequiredNoRedirectMixin, TemplateView):
 
 class InstructorDashboardView(LoginRequiredNoRedirectMixin, TemplateView):
     template_name = 'instructor_dashboard.html'
+
+    def get_context_data(self, **kwargs):
+        return {'cards': range(10)}
