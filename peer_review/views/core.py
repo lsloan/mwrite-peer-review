@@ -202,3 +202,7 @@ class PeerReviewView(LoginRequiredNoRedirectMixin, TemplateView):
                 comment.save()
 
         return HttpResponse(status=201)
+
+
+class InstructorDashboardView(LoginRequiredNoRedirectMixin, TemplateView):
+    template_name = 'instructor_dashboard.html'
