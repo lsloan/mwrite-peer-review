@@ -1,7 +1,7 @@
 import json
 import logging
 from itertools import chain
-from datetime import  datetime
+from datetime import datetime
 from django.db.models import Q
 from django.db import transaction
 from django.http import HttpResponse, Http404
@@ -208,4 +208,12 @@ class InstructorDashboardView(LoginRequiredNoRedirectMixin, TemplateView):
     template_name = 'instructor_dashboard.html'
 
     def get_context_data(self, **kwargs):
-        return {'cards': range(10)}
+        course_id = self.request.session['lti_launch_params']['custom_canvas_course_id']
+        peer_review_assignments = CanvasAssignment.objects.filter(course_id=course_id, is_peer_review_assignment=True)
+        peer_review_assignment_ids = (a.id for a in peer_review_assignments)
+        fetched_assignments = persist_assignments(course_id)
+        return {
+            'course_id': course_id,
+            'course_title': self.request.session['lti_launch_params']['context_title'],
+            'assignments': filter(lambda a: a.id in peer_review_assignment_ids, fetched_assignments),
+        }
