@@ -209,8 +209,9 @@ class InstructorDashboardView(LoginRequiredNoRedirectMixin, TemplateView):
 
     def get_context_data(self, **kwargs):
         course_id = self.request.session['lti_launch_params']['custom_canvas_course_id']
-        peer_review_assignments = CanvasAssignment.objects.filter(course_id=course_id, is_peer_review_assignment=True)
-        peer_review_assignment_ids = (a.id for a in peer_review_assignments)
+        peer_review_assignment_ids = CanvasAssignment.objects \
+                                                     .filter(course_id=course_id, is_peer_review_assignment=True) \
+                                                     .values_list('id', flat=True)
         fetched_assignments = persist_assignments(course_id)
         return {
             'course_id': course_id,
