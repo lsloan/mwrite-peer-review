@@ -12,6 +12,14 @@
     color: #02d60c;
 }
 
+.warning-icon-color {
+    color: #d17302;
+}
+
+.error-icon-color {
+    color: #c40000;
+}
+
 .validation-container {
     display: flex;
     align-items: center;

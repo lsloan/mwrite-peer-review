@@ -210,16 +210,33 @@ class PeerReviewView(LoginRequiredNoRedirectMixin, TemplateView):
 class InstructorDashboardView(LoginRequiredNoRedirectMixin, TemplateView):
     template_name = 'instructor_dashboard.html'
 
+    @staticmethod
+    def get_rubric_for_review(assignment):
+        rubric = None
+        try:
+            rubric = assignment.rubric_for_review
+        except Rubric.DoesNotExist:
+            pass
+        return rubric
+
     def get_context_data(self, **kwargs):
         course_id = self.request.session['lti_launch_params']['custom_canvas_course_id']
-        fetched_assignments = {a.id: a
-                               for a in filter(lambda a: a.is_peer_review_assignment, persist_assignments(course_id))}
-        peer_review_assignments = []
-        for assignment in CanvasAssignment.objects.filter(id__in=fetched_assignments.keys()):
+        fetched_assignments = {a.id: a for a in persist_assignments(course_id)}
+        peer_review_assignments = CanvasAssignment.objects.filter(id__in=fetched_assignments.keys(),
+                                                                  is_peer_review_assignment=True)
+        rubric_assignments = thread_last(peer_review_assignments,
+                                         (map, InstructorDashboardView.get_rubric_for_review),
+                                         (filter, lambda mr: mr is not None),
+                                         (map, lambda r: (r.reviewed_assignment, r.revision_assignment)),
+                                         chain.from_iterable,
+                                         (filter, lambda ma: ma is not None),
+                                         list)
+        for assignment in rubric_assignments:
             assignment.validation = fetched_assignments[assignment.id].validation
-            peer_review_assignments += [assignment]
         return {
             'title': self.request.session['lti_launch_params']['context_title'],
             'course_id': course_id,
-            'assignments': peer_review_assignments
+            'assignments': peer_review_assignments,
+            'validation_info': json.dumps({a.id: a.validation for a in rubric_assignments},
+                                          default=AssignmentValidation.json_default)
         }
