@@ -223,7 +223,8 @@ class InstructorDashboardView(LoginRequiredNoRedirectMixin, TemplateView):
         course_id = self.request.session['lti_launch_params']['custom_canvas_course_id']
         fetched_assignments = {a.id: a for a in persist_assignments(course_id)}
         peer_review_assignments = CanvasAssignment.objects.filter(id__in=fetched_assignments.keys(),
-                                                                  is_peer_review_assignment=True)
+                                                                  is_peer_review_assignment=True) \
+                                                          .order_by('due_date_utc')
         rubric_assignments = thread_last(peer_review_assignments,
                                          (map, InstructorDashboardView.get_rubric_for_review),
                                          (filter, lambda mr: mr is not None),
