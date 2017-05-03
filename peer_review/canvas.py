@@ -5,7 +5,8 @@ from django.conf import settings
 
 _page_regex = re.compile('<(?P<page_url>.*)>.*rel="(?P<page_key>.*)"')
 _routes = {
-    'assignments': {'route': 'courses/%s/assignments'}
+    'assignments':          {'route': 'courses/%s/assignments'},
+    'assignment-overrides': {'route': 'courses/%s/assignments/%s/overrides'}
 }
 
 
@@ -36,7 +37,8 @@ def retrieve(resource, *params):
         response = requests.get(url, headers=headers)
         response.raise_for_status()
         resources += response.json()
-        url = _parse_links(response).get('next')
+        links = _parse_links(response)
+        url = links.get('next') if links else None
         if not url:
             break
     return resources
