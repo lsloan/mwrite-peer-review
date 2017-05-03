@@ -1,4 +1,22 @@
+.icon-24px {
+    width: 24px;
+    height: 24px;
+}
+
 .peer-review-assignment_card {
     width: 280px;
     height: 320px;
+}
+
+.ok-icon-color {
+    color: #02d60c;
+}
+
+.validation-container {
+    display: flex;
+    align-items: center;
+}
+
+.validation-caption {
+    margin-left: 10px;
 }
