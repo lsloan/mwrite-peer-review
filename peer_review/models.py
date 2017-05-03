@@ -124,6 +124,6 @@ class PeerReviewDistribution(models.Model):
         db_table = 'peer_review_distributions'
 
     id = models.AutoField(primary_key=True)
-    rubric = models.ForeignKey(Rubric, models.DO_NOTHING)
+    rubric = models.OneToOneField(Rubric, models.DO_NOTHING, related_name='peer_review_distribution')
     is_distribution_complete = models.BooleanField(default=False)
     distributed_at_utc = models.DateTimeField(blank=True, null=True)
