@@ -12,10 +12,12 @@
         <span>Due {% if assignment.due_date_utc %}{{ assignment.due_date_utc }}{% else %}anytime{% endif %}</span>
     </div>
     <div class="mdl-card__actions mdl-card--border">
-        <a class="mdl-button mdl-button--colored mdl-js-button mdl-js-ripple-effect">
+        <a class="mdl-button mdl-button--colored mdl-js-button mdl-js-ripple-effect"
+           href="/rubric/course/{{ course_id }}/assignment/{{ assignment.id }}">
             View Rubric
         </a>
-        <a class="mdl-button mdl-button--colored mdl-js-button mdl-js-ripple-effect">
+        <a class="mdl-button mdl-button--colored mdl-js-button mdl-js-ripple-effect"
+           href="/review/rubric/{{ assignment.rubric_for_review.id }}/all">
             View Reviews
         </a>
     </div>
