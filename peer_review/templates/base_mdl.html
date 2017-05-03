@@ -3,7 +3,7 @@
 <!DOCTYPE html>
 <html>
     <head>
-        <title>MWrite Peer Review</title>
+        <title>M-Write Peer Review</title>
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
         <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons" />
@@ -16,7 +16,9 @@
             <header class="mdl-layout__header">
                 <div class="mdl-layout-icon"></div>
                 <div class="mdl-layout__header-row">
-                    <span class="mdl-layout__title">This Is The Title</span>
+                    <span class="mdl-layout__title">
+                        {% if title %}{{ title }}{% else %}M-Write Peer Review{% endif %}
+                    </span>
                     <div class="mdl-layout-spacer"></div>
                     <nav class="mdl-navigation">
                         <a class="mdl-navigation__link" href="#">Thing A</a>
@@ -26,7 +28,9 @@
                 </div>
             </header>
             <div class="mdl-layout__drawer">
-                <span class="mdl-layout__title">This Is The Title</span>
+                <span class="mdl-layout__title">
+                    {% if title %}{{ title }}{% else %}M-Write Peer Review{% endif %}
+                </span>
                 <nav class="mdl-navigation">
                     <a class="mdl-navigation__link" href="#">Thing A</a>
                     <a class="mdl-navigation__link" href="#">Thing B</a>

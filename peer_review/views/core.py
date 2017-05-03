@@ -214,7 +214,6 @@ class InstructorDashboardView(LoginRequiredNoRedirectMixin, TemplateView):
                                                      .values_list('id', flat=True)
         fetched_assignments = persist_assignments(course_id)
         return {
-            'course_id': course_id,
-            'course_title': self.request.session['lti_launch_params']['context_title'],
+            'title': self.request.session['lti_launch_params']['context_title'],
             'assignments': filter(lambda a: a.id in peer_review_assignment_ids, fetched_assignments),
         }
