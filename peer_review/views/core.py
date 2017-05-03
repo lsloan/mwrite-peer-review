@@ -102,7 +102,7 @@ class RubricCreationFormView(LoginRequiredNoRedirectMixin, TemplateView):
             return HttpResponse('Missing prompt assignment.', status=400)
         if 'rubric_description' not in params or not params['rubric_description'].strip():
             return HttpResponse('Missing rubric description.', status=400)
-        if 'revision_assignment' in params and params['revision_assignment'].strip():
+        if 'revision_assignment' in params and params['revision_assignment'] and params['revision_assignment'].strip():
             revision_assignment_id = int(params['revision_assignment'])
         else:
             revision_assignment_id = None
@@ -112,7 +112,10 @@ class RubricCreationFormView(LoginRequiredNoRedirectMixin, TemplateView):
             with transaction.atomic():
                 prompt_assignment = CanvasAssignment.objects.get(id=prompt_assignment_id)
                 passback_assignment = CanvasAssignment.objects.get(id=passback_assignment_id)
-                revision_assignment = CanvasAssignment.objects.get(id=revision_assignment_id)
+                if revision_assignment_id:
+                    revision_assignment = CanvasAssignment.objects.get(id=revision_assignment_id)
+                else:
+                    revision_assignment = None
                 rubric, created = Rubric.objects.update_or_create(reviewed_assignment=prompt_assignment_id,
                                                                   defaults={'description': rubric_description,
                                                                             'reviewed_assignment': prompt_assignment,
