@@ -20,11 +20,14 @@
     color: #c40000;
 }
 
-.validation-container {
+.icon-container {
     display: flex;
     align-items: center;
 }
 
-.validation-caption {
+.icon-caption {
     margin-left: 10px;
+}
+
+.validation-container {
 }

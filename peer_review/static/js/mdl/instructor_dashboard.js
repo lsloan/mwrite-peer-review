@@ -87,8 +87,9 @@
         var revisionIssues = revisionId ? getValidationIssues(false, revisionValidations) : [];
         var allIssues = promptIssues.concat(revisionIssues);
 
-        var $validationIcon = $peerReviewCard.find('.material-icons');
-        var $validationCaption = $peerReviewCard.find('.validation-caption');
+        var $validationContainer = $peerReviewCard.find('.validation-container');
+        var $validationIcon = $validationContainer.find('.material-icons');
+        var $validationCaption = $validationContainer.find('.icon-caption');
 
         if (allIssues.length > 0) {
             var rubricHasFatalIssues = someIssuesAreFatal(allIssues);

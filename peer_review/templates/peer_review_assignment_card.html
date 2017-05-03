@@ -6,13 +6,16 @@
         <h2 class="mdl-card__title-text">{{ assignment.title }}</h2>
     </div>
     <div class="mdl-card__supporting-text">
-        <div class="validation-container">
+        <div class="icon-container validation-container">
             <i class="material-icons icon-24px ok-icon-color">done</i>
-            <span class="validation-caption">This rubric has no problems.</span>
+            <span class="icon-caption">This rubric has no problems.</span>
         </div>
     </div>
     <div class="mdl-card__supporting-text">
-        <span>Due {% if assignment.due_date_utc %}{{ assignment.due_date_utc }}{% else %}anytime{% endif %}</span>
+        <div class="icon-container">
+            <i class="material-icons icon-24px">query_builder</i>
+            <span class="icon-caption">Due {% if assignment.due_date_utc %}{{ assignment.due_date_utc | date:'F j g:i A' }}{% else %}anytime{% endif %}</span>
+        </div>
     </div>
     <div class="mdl-card__actions mdl-card--border">
         <a class="mdl-button mdl-button--colored mdl-js-button mdl-js-ripple-effect"
