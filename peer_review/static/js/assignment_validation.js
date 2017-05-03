@@ -1,5 +1,4 @@
-/* e
-xported getValidationIssues */
+/* exported getValidationIssues */
 function getValidationIssues(validationsAreForPrompt, validations) {
 
     var assignmentType = validationsAreForPrompt ? 'prompt' : 'revision';
