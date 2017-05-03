@@ -1,7 +1,7 @@
 import json
 import logging
 from itertools import chain
-from datetime import  datetime
+from datetime import datetime
 from django.db.models import Q
 from django.db import transaction
 from django.http import HttpResponse, Http404
@@ -102,7 +102,7 @@ class RubricCreationFormView(LoginRequiredNoRedirectMixin, TemplateView):
             return HttpResponse('Missing prompt assignment.', status=400)
         if 'rubric_description' not in params or not params['rubric_description'].strip():
             return HttpResponse('Missing rubric description.', status=400)
-        if 'revision_assignment' in params and params['revision_assignment'].strip():
+        if 'revision_assignment' in params and params['revision_assignment'] and params['revision_assignment'].strip():
             revision_assignment_id = int(params['revision_assignment'])
         else:
             revision_assignment_id = None
@@ -112,7 +112,10 @@ class RubricCreationFormView(LoginRequiredNoRedirectMixin, TemplateView):
             with transaction.atomic():
                 prompt_assignment = CanvasAssignment.objects.get(id=prompt_assignment_id)
                 passback_assignment = CanvasAssignment.objects.get(id=passback_assignment_id)
-                revision_assignment = CanvasAssignment.objects.get(id=revision_assignment_id)
+                if revision_assignment_id:
+                    revision_assignment = CanvasAssignment.objects.get(id=revision_assignment_id)
+                else:
+                    revision_assignment = None
                 rubric, created = Rubric.objects.update_or_create(reviewed_assignment=prompt_assignment_id,
                                                                   defaults={'description': rubric_description,
                                                                             'reviewed_assignment': prompt_assignment,
@@ -202,3 +205,39 @@ class PeerReviewView(LoginRequiredNoRedirectMixin, TemplateView):
                 comment.save()
 
         return HttpResponse(status=201)
+
+
+class InstructorDashboardView(LoginRequiredNoRedirectMixin, TemplateView):
+    template_name = 'instructor_dashboard.html'
+
+    @staticmethod
+    def get_rubric_for_review(assignment):
+        rubric = None
+        try:
+            rubric = assignment.rubric_for_review
+        except Rubric.DoesNotExist:
+            pass
+        return rubric
+
+    def get_context_data(self, **kwargs):
+        course_id = self.request.session['lti_launch_params']['custom_canvas_course_id']
+        fetched_assignments = {a.id: a for a in persist_assignments(course_id)}
+        peer_review_assignments = CanvasAssignment.objects.filter(id__in=fetched_assignments.keys(),
+                                                                  is_peer_review_assignment=True) \
+                                                          .order_by('due_date_utc')
+        rubric_assignments = thread_last(peer_review_assignments,
+                                         (map, InstructorDashboardView.get_rubric_for_review),
+                                         (filter, lambda mr: mr is not None),
+                                         (map, lambda r: (r.reviewed_assignment, r.revision_assignment)),
+                                         chain.from_iterable,
+                                         (filter, lambda ma: ma is not None),
+                                         list)
+        for assignment in rubric_assignments:
+            assignment.validation = fetched_assignments[assignment.id].validation
+        return {
+            'title': self.request.session['lti_launch_params']['context_title'],
+            'course_id': course_id,
+            'assignments': peer_review_assignments,
+            'validation_info': json.dumps({a.id: a.validation for a in rubric_assignments},
+                                          default=AssignmentValidation.json_default)
+        }

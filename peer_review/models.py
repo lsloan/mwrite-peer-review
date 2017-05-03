@@ -59,17 +59,17 @@ class Rubric(models.Model):
                                                unique=True,
                                                blank=True,
                                                null=True,
-                                               related_name='reviewed_assignment')
+                                               related_name='rubric_for_prompt')
     passback_assignment = models.OneToOneField(CanvasAssignment,
                                                models.DO_NOTHING,
                                                unique=True,
-                                               related_name='passback_assignment')
+                                               related_name='rubric_for_review')
     revision_assignment = models.OneToOneField(CanvasAssignment,
                                                models.DO_NOTHING,
                                                unique=True,
                                                blank=True,
                                                null=True,
-                                               related_name='revision_assignment')
+                                               related_name='rubric_for_revision')
     revision_fetch_complete = models.BooleanField(default=False)
 
 
@@ -124,6 +124,6 @@ class PeerReviewDistribution(models.Model):
         db_table = 'peer_review_distributions'
 
     id = models.AutoField(primary_key=True)
-    rubric = models.ForeignKey(Rubric, models.DO_NOTHING)
+    rubric = models.OneToOneField(Rubric, models.DO_NOTHING, related_name='peer_review_distribution')
     is_distribution_complete = models.BooleanField(default=False)
     distributed_at_utc = models.DateTimeField(blank=True, null=True)
