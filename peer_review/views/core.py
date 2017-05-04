@@ -241,3 +241,26 @@ class InstructorDashboardView(LoginRequiredNoRedirectMixin, TemplateView):
             'validation_info': json.dumps({a.id: a.validation for a in rubric_assignments},
                                           default=AssignmentValidation.json_default)
         }
+
+
+class ReviewsByStudentView(LoginRequiredNoRedirectMixin, TemplateView):
+    template_name = 'reviews_by_student.html'
+
+    def get_context_data(self, **kwargs):
+        rubric = Rubric.objects.get(id=kwargs['rubric_id'])
+        number_of_criteria = rubric.criteria.count()
+        authors = map(lambda s: s.author,
+                      rubric.reviewed_assignment.canvas_submission_set.order_by('author__sortable_name').all())
+        reviews = []
+        for author in authors:
+            peer_reviews = PeerReview.objects.filter(student=author, submission__assignment=rubric.reviewed_assignment)
+            completed_reviews = 0
+            for peer_review in peer_reviews:
+                if peer_review.comments.count() >= number_of_criteria:
+                    completed_reviews += 1
+            reviews.append({
+                'author_name': author.sortable_name,
+                'completed': completed_reviews,
+                'total': peer_reviews.count()
+            })
+        return {'reviews': reviews}
