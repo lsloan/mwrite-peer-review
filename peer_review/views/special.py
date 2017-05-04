@@ -1,13 +1,15 @@
 import logging
-from toolz.dicttoolz import merge, valmap
-from toolz.functoolz import thread_last
-from httpproxy.views import HttpProxy
+
 from django import forms
 from django.conf import settings
+from django.contrib.auth.mixins import LoginRequiredMixin
 from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt
 from django.views.generic import TemplateView, FormView
-from django.contrib.auth.mixins import LoginRequiredMixin
+from httpproxy.views import HttpProxy
+from rolepermissions.mixins import HasRoleMixin
+from toolz.dicttoolz import merge, valmap
+from toolz.functoolz import thread_last
 
 # TODO remove when django-http-proxy fixes https://github.com/yvandermeer/django-http-proxy/issues/25
 from django.http import HttpResponse
@@ -38,13 +40,10 @@ class FixedHttpProxy(HttpProxy):
         return proxy_response
 
 
-class LoginRequiredNoRedirectMixin(LoginRequiredMixin):
-    raise_exception = True
-
-
 # TODO need to rearrange required/optional LTI headers; not quite right (but good enough for now)
 @method_decorator(csrf_exempt, name='dispatch')
-class LtiProxyView(LoginRequiredNoRedirectMixin, FixedHttpProxy):
+class LtiProxyView(HasRoleMixin, FixedHttpProxy):
+    allowed_roles = ['student', 'instructor']
 
     @staticmethod
     def _get_required_headers(lti_launch_params):

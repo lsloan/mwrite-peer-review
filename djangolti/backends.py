@@ -7,6 +7,8 @@ from django.contrib.auth.backends import ModelBackend
 from django.contrib.auth import get_user_model
 from django.contrib.auth.models import AnonymousUser
 
+from rolepermissions.roles import assign_role
+
 from .models import NonceHistory
 from .utils import LtiRequestValidator
 
@@ -32,6 +34,10 @@ class LtiBackend(ModelBackend):
         )
 
         return username_string
+
+    @staticmethod
+    def _determine_role(lti_launch_request):
+        return 'instructor' if 'Instructor' in lti_launch_request.roles else 'student'
 
     def authenticate(self, request, lti_launch_request):
         validator = LtiRequestValidator()
@@ -61,6 +67,7 @@ class LtiBackend(ModelBackend):
                 UserModel.USERNAME_FIELD: username,
             })
             if created:
+                assign_role(user, LtiBackend._determine_role(lti_launch_request))
                 logger.info('LTI user created (%s)' % username)
         else:
             try:

@@ -65,6 +65,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'whitenoise.runserver_nostatic',
     'django.contrib.staticfiles',
+    'rolepermissions',
     'djangolti',
     'httpproxy',
     'peer_review'
@@ -89,6 +90,8 @@ AUTHENTICATION_BACKENDS = [
 if DEBUG:
     AUTHENTICATION_BACKENDS += ['django.contrib.auth.backends.ModelBackend']
     LOGIN_REDIRECT_URL = '/debug/lti'
+
+ROLEPERMISSIONS_MODULE = 'mwrite_peer_review.roles'
 
 SESSION_COOKIE_NAME = 'id'
 SESSION_COOKIE_AGE = 3600

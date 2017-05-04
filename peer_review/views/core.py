@@ -1,19 +1,23 @@
 import json
 import logging
-from itertools import chain
 from datetime import datetime
-from django.db.models import Q
+from itertools import chain
+
 from django.db import transaction
+from django.db.models import Q
 from django.http import HttpResponse, Http404
+from django.shortcuts import redirect
 from django.template.loader import render_to_string
-from django.views.generic import TemplateView
-from toolz.itertoolz import unique
+from django.views.generic import View, TemplateView
+from rolepermissions.checkers import has_role
+from rolepermissions.mixins import HasRoleMixin
 from toolz.functoolz import thread_last
-from peer_review.util import parse_json_body
-from peer_review.views.special import LoginRequiredNoRedirectMixin
+from toolz.itertoolz import unique
+
 from peer_review.etl import persist_assignments, AssignmentValidation
 from peer_review.models import Rubric, Criterion, CanvasAssignment, PeerReviewDistribution, CanvasSubmission, \
-                               PeerReview, PeerReviewComment
+    PeerReview, PeerReviewComment
+from peer_review.util import parse_json_body
 
 logger = logging.getLogger(__name__)
 
@@ -22,8 +26,24 @@ class UnauthorizedView(TemplateView):
     template_name = '403.html'
 
 
+# TODO needs to handle assignment level launches
+class IndexView(HasRoleMixin, View):
+    allowed_roles = ['instructor', 'student']
+
+    # noinspection PyMethodMayBeStatic
+    def get(self, request, *args, **kwargs):
+        if has_role(request.user, 'instructor'):
+            response = redirect('/dashboard/instructor')
+        elif has_role(request.user, 'student'):
+            response = redirect('/dashboard/student')
+        else:
+            raise RuntimeError('Unrecognized role for user %s' % request.user)
+        return response
+
+
 # TODO need authz -- only teachers can access
-class RubricCreationFormView(LoginRequiredNoRedirectMixin, TemplateView):
+class RubricCreationFormView(HasRoleMixin, TemplateView):
+    allowed_roles = 'instructor'
     template_name = 'rubric_creation_form.html'
 
     class ReviewsInProgressException(Exception):
@@ -138,7 +158,8 @@ class RubricCreationFormView(LoginRequiredNoRedirectMixin, TemplateView):
 
 
 # TODO needs validity checking and authz
-class PeerReviewView(LoginRequiredNoRedirectMixin, TemplateView):
+class PeerReviewView(HasRoleMixin, TemplateView):
+    allowed_roles = 'student'
     template_name = 'review.html'
 
     def get_context_data(self, **kwargs):
@@ -207,7 +228,8 @@ class PeerReviewView(LoginRequiredNoRedirectMixin, TemplateView):
         return HttpResponse(status=201)
 
 
-class InstructorDashboardView(LoginRequiredNoRedirectMixin, TemplateView):
+class InstructorDashboardView(HasRoleMixin, TemplateView):
+    allowed_roles = 'instructor'
     template_name = 'instructor_dashboard.html'
 
     @staticmethod
@@ -243,7 +265,8 @@ class InstructorDashboardView(LoginRequiredNoRedirectMixin, TemplateView):
         }
 
 
-class ReviewsByStudentView(LoginRequiredNoRedirectMixin, TemplateView):
+class ReviewsByStudentView(HasRoleMixin, TemplateView):
+    allowed_roles = 'instructor'
     template_name = 'reviews_by_student.html'
 
     def get_context_data(self, **kwargs):
