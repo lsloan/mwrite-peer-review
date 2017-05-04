@@ -16,15 +16,18 @@ Including another URLconf
 from django.conf import settings
 from django.conf.urls import url
 from django.http import Http404
+
 import djangolti.views
+from peer_review.views.core import RubricCreationFormView, PeerReviewView, InstructorDashboardView, \
+    ReviewsByStudentView, IndexView
 from peer_review.views.special import FixedHttpProxy, LtiProxyView, DebugLtiParamsView, SafariLaunchPopup
-from peer_review.views.core import RubricCreationFormView, PeerReviewView, InstructorDashboardView, ReviewsByStudentView
 
 
 def not_found(request):
     raise Http404
 
 urlpatterns = [
+    url(r'^$', IndexView.as_view()),
     url(r'^favicon.ico$', not_found),
     url(r'^launch', djangolti.views.LaunchView.as_view(), name='launch'),
     url(r'^dashboard/instructor', InstructorDashboardView.as_view()),
