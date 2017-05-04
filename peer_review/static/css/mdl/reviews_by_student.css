@@ -1,0 +1,11 @@
+.mdl-data-table {
+    min-width: 75%;
+    margin: 0 auto;
+    font-family: "Roboto","Helvetica","Arial",sans-serif;
+    font-size: 1.2em;
+    font-weight: 400;
+}
+
+.mdl-data-table th {
+    font-size: 0.8em;
+}

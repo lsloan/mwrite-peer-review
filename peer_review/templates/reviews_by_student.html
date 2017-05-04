@@ -1,0 +1,36 @@
+{% extends 'base_mdl.html' %}
+{% load static %}
+
+{% block header %}
+    <link rel="stylesheet" href="{% static 'css/mdl/reviews_by_student.css' %}"/>
+{% endblock %}
+
+{% block content %}
+    <div class="mdl-grid">
+        <div class="mdl-cell mdl-cell mdl-cell--12-col">
+            <table class="mdl-data-table mdl-js-data-table">
+                <thead>
+                    <tr>
+                        <th class="mdl-data-table__cell--non-numeric">Student</th>
+                        <th class="mdl-data-table__cell--non-numeric">Reviews Completed</th>
+                        <th class="mdl-data-table__cell--non-numeric"></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for review in reviews %}
+                        <tr>
+                            <td class="mdl-data-table__cell--non-numeric">{{ review.author.sortable_name }}</td>
+                            <td class="mdl-data-table__cell--non-numeric">{{ review.completed }} of {{ review.total }}</td>
+                            <td class="mdl-data-table__cell--non-numeric">
+                                <a class="mdl-button mdl-button--colored mdl-js-button mdl-js-ripple-effect"
+                                   href="/review/student/{{ review.author.id }}/rubric/{{ rubric.id }}">
+                                    View
+                                </a>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+{% endblock %}

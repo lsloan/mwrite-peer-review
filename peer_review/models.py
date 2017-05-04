@@ -41,7 +41,7 @@ class CanvasSubmission(models.Model):
 
     id = models.IntegerField(primary_key=True)
     author = models.ForeignKey(CanvasStudent, models.DO_NOTHING)
-    assignment = models.ForeignKey(CanvasAssignment, models.DO_NOTHING)
+    assignment = models.ForeignKey(CanvasAssignment, models.DO_NOTHING, related_name='canvas_submission_set')
     filename = models.CharField(unique=True, max_length=255)
 
 
@@ -82,7 +82,7 @@ class Criterion(models.Model):
 
     id = models.AutoField(primary_key=True)
     description = models.TextField()
-    rubric = models.ForeignKey(Rubric, models.DO_NOTHING)
+    rubric = models.ForeignKey(Rubric, models.DO_NOTHING, related_name='criteria')
 
     def __str__(self):
         return self.description
@@ -111,7 +111,7 @@ class PeerReviewComment(models.Model):
 
     id = models.AutoField(primary_key=True)
     criterion = models.ForeignKey(Criterion, models.DO_NOTHING)
-    peer_review = models.ForeignKey(PeerReview, models.DO_NOTHING)
+    peer_review = models.ForeignKey(PeerReview, models.DO_NOTHING, related_name='comments')
     comment = models.TextField()
     commented_at_utc = models.DateTimeField(blank=True, null=True)
 
