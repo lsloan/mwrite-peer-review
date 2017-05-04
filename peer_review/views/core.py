@@ -18,7 +18,6 @@ from peer_review.etl import persist_assignments, AssignmentValidation
 from peer_review.models import Rubric, Criterion, CanvasAssignment, PeerReviewDistribution, CanvasSubmission, \
     PeerReview, PeerReviewComment
 from peer_review.util import parse_json_body
-from peer_review.views.special import LoginRequiredNoRedirectMixin
 
 logger = logging.getLogger(__name__)
 
@@ -43,7 +42,8 @@ class IndexView(HasRoleMixin, View):
 
 
 # TODO need authz -- only teachers can access
-class RubricCreationFormView(LoginRequiredNoRedirectMixin, TemplateView):
+class RubricCreationFormView(HasRoleMixin, TemplateView):
+    allowed_roles = 'instructor'
     template_name = 'rubric_creation_form.html'
 
     class ReviewsInProgressException(Exception):
@@ -158,7 +158,8 @@ class RubricCreationFormView(LoginRequiredNoRedirectMixin, TemplateView):
 
 
 # TODO needs validity checking and authz
-class PeerReviewView(LoginRequiredNoRedirectMixin, TemplateView):
+class PeerReviewView(HasRoleMixin, TemplateView):
+    allowed_roles = 'student'
     template_name = 'review.html'
 
     def get_context_data(self, **kwargs):
@@ -227,7 +228,8 @@ class PeerReviewView(LoginRequiredNoRedirectMixin, TemplateView):
         return HttpResponse(status=201)
 
 
-class InstructorDashboardView(LoginRequiredNoRedirectMixin, TemplateView):
+class InstructorDashboardView(HasRoleMixin, TemplateView):
+    allowed_roles = 'instructor'
     template_name = 'instructor_dashboard.html'
 
     @staticmethod
@@ -263,7 +265,8 @@ class InstructorDashboardView(LoginRequiredNoRedirectMixin, TemplateView):
         }
 
 
-class ReviewsByStudentView(LoginRequiredNoRedirectMixin, TemplateView):
+class ReviewsByStudentView(HasRoleMixin, TemplateView):
+    allowed_roles = 'instructor'
     template_name = 'reviews_by_student.html'
 
     def get_context_data(self, **kwargs):
