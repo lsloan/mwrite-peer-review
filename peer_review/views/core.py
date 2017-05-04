@@ -10,6 +10,7 @@ from django.shortcuts import redirect
 from django.template.loader import render_to_string
 from django.views.generic import View, TemplateView
 from rolepermissions.checkers import has_role
+from rolepermissions.mixins import HasRoleMixin
 from toolz.functoolz import thread_last
 from toolz.itertoolz import unique
 
@@ -27,7 +28,9 @@ class UnauthorizedView(TemplateView):
 
 
 # TODO needs to handle assignment level launches
-class IndexView(View):
+class IndexView(HasRoleMixin, View):
+    allowed_roles = ['instructor', 'student']
+
     # noinspection PyMethodMayBeStatic
     def get(self, request, *args, **kwargs):
         if has_role(request.user, 'instructor'):
