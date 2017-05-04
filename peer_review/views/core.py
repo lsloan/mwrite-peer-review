@@ -259,8 +259,9 @@ class ReviewsByStudentView(LoginRequiredNoRedirectMixin, TemplateView):
                 if peer_review.comments.count() >= number_of_criteria:
                     completed_reviews += 1
             reviews.append({
-                'author_name': author.sortable_name,
+                'author': author,
                 'completed': completed_reviews,
                 'total': peer_reviews.count()
             })
-        return {'reviews': reviews}
+        return {'reviews': reviews,
+                'rubric': rubric}

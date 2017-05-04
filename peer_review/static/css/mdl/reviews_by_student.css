@@ -1,5 +1,6 @@
 .mdl-data-table {
-    width: 100%;
+    min-width: 75%;
+    margin: 0 auto;
     font-family: "Roboto","Helvetica","Arial",sans-serif;
     font-size: 1.2em;
     font-weight: 400;
