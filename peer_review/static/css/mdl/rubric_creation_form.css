@@ -1,0 +1,21 @@
+form {
+    width: 100%;
+    height: 100%;
+}
+
+textarea {
+    resize: none;
+}
+
+.mdl-textfield {
+    width: 100%;
+}
+
+#prompt-card.mdl-card, #revision-card.mdl-card {
+    overflow: visible;
+    z-index: auto;
+}
+
+#criteria-container-card .mdl-card {
+    margin-bottom: 16px;
+}

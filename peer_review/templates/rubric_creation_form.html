@@ -1,157 +1,96 @@
-{% extends 'base_materialize.html' %}
+{% extends 'base_mdl.html' %}
 {% load static %}
 
 {% block header %}
-    <script defer="" src="{% static 'js/assignment_validation.js' %}"></script>
-    <script defer="" src="{% static 'js/rubric_creation.js' %}"></script>
+    <link rel="stylesheet" href="{% static 'css/mdl/rubric_creation_form.css' %}"/>
+    <script defer src="{% static 'js/lib/autoresize/autosize.min.js' %}"></script>
+    <script defer src="{% static 'js/mdl/rubric_creation_form.js' %}"></script>
 {% endblock %}
 
 {% block content %}
-    <div>
-        <h4>{{ rubric.passback_assignment.title }}</h4>
-        {% if review_is_in_progress %}
-            <h5 class="read-only-warning">Peer reviews are in progress, so this rubric is now read-only.</h5>
-        {% endif %}
-        <form data-rubric-form=""
-              onsubmit="submitRubricCriteria(); return false;"
-              action="/rubric/course/{{ course_id }}/assignment/{{ passback_assignment_id }}">
-            <input type="hidden" id="__anti-forgery-token" value="{{ csrf_token }}">
-            <div id="rubric-data"
-                 hidden=""
-                 data-existing-prompt="{{ existing_prompt.id }}"
-                 data-existing-revision="{{ existing_revision.id }}"
-                 data-validations="{{ validations }}"
-                 data-potential-prompts-and-revisions="{{ potential_prompts_and_rubrics }}"></div>
-            <div class="card">
-                <div class="card-content">
-                    <div data-selector-parent="" id="prompt-selector-parent">
-                        <div>
-                            <span class="card-title">
-                                {% if not review_is_in_progress %}Select {% endif %}Writing Prompt
-                            </span>
-                        </div>
-                        <div>
-                            <div class="input-field"
-                                 data-assignment-selector-parent="">
-                                <select id="prompt-selector" {% if review_is_in_progress %}disabled=""{% endif %}>
-                                    {% if existing_prompt %}
-                                        <option value="{{ existing_prompt.id }}">{{ existing_prompt.title }}</option>
-                                    {% endif %}
-                                </select>
-                                <label for="prompt-selector">
-                                    The rubric will be applied to the following assignment:
-                                </label>
-                            </div>
-                        </div>
-                        <p class="hide" id="prompt-info"></p>
-                        <div class="hide" id="prompt-issues-container">
-                            <div class="card">
-                                <div class="card-content">
-                                    <div>
-                                        <div><span class="card-title">Issues</span></div>
-                                        <ul class="collection"></ul>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
+    <form onsubmit="return false;" action="/rubric/course/{{ course_id }}/assignment/{{ passback_assignment_id }}">
+        <div class="mdl-grid">
+            {# TODO csrf token goes here #}
+            <div class="mdl-cell mdl-cell--2-col"></div>
+            <div id="prompt-card" class="mdl-card mdl-shadow--2dp mdl-cell mdl-cell--8-col">
+                <div class="mdl-card__title">
+                    <h2 class="mdl-card__title-text">Writing Prompt</h2>
+                </div>
+                <div class="mdl-card__supporting-text">
+                    <label for="prompt-menu">The rubric will be applied to the following assignment:</label>
+                    <br/>
+                    <button id="prompt-menu" class="mdl-button mdl-js-button">
+                        <span>One</span>
+                    </button>
+                    <ul for="prompt-menu" class="mdl-menu mdl-js-menu">
+                        <li class="mdl-menu__item">One</li>
+                        <li class="mdl-menu__item">Two</li>
+                        <li class="mdl-menu__item">Three</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="mdl-cell mdl-cell--2-col"></div>
+        </div>
+        <div class="mdl-grid">
+            <div class="mdl-cell mdl-cell--2-col"></div>
+            <div id="revision-card" class="mdl-card mdl-shadow--2dp mdl-cell mdl-cell--8-col">
+                <div class="mdl-card__title">
+                    <h2 class="mdl-card__title-text">Will There Be A Revision Assignment?</h2>
+                </div>
+                <div class="mdl-card__supporting-text">
+                    <label for="revision-menu">
+                        If students will be completing a revision, please select the revision assignment here.
+                    </label>
+                    <br/>
+                    <button id="revision-menu" class="mdl-button mdl-js-button">
+                        <span>One</span>
+                    </button>
+                    <ul for="revision-menu" class="mdl-menu mdl-js-menu">
+                        <li class="mdl-menu__item">One</li>
+                        <li class="mdl-menu__item">Two</li>
+                        <li class="mdl-menu__item">Three</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="mdl-cell mdl-cell--2-col"></div>
+        </div>
+        <div class="mdl-grid">
+            <div class="mdl-cell mdl-cell--2-col"></div>
+            <div id="rubric-description-card" class="mdl-card mdl-shadow--2dp mdl-cell mdl-cell--8-col">
+                <div class="mdl-card__title">
+                    <h2 class="mdl-card__title-text">Rubric Description</h2>
+                </div>
+                <div class="mdl-card__supporting-text">
+                    <div class="mdl-textfield mdl-js-textfield">
+                        <textarea id="rubric-description-textfield" class="mdl-textfield__input" type="text" rows="1"></textarea>
+                        <label for="rubric-description-textfield" class="mdl-textfield__label">Rubric Description</label>
                     </div>
                 </div>
             </div>
-            {% if should_show_revision_info %}
-                <div class="card">
-                    <div class="card-content">
-                        <div data-selector-parent="" id="revision-selector-parent">
-                            <div>
-                                <span class="card-title">
-                                    {% if not review_is_in_progress %}Will There Be A {% endif %}
-                                    Revision Assignment{% if not review_is_in_progress%}?{% endif %}
-                                </span>
-                            </div>
-                            <div>
-                                <div class="input-field" data-assignment-selector-parent="">
-                                    <select id="revision-selector"
-                                            {% if review_is_in_progress %}disabled=""{% endif %}>
-                                        {% if existing_revision %}
-                                            <option value="{{ existing_revision.id }}">{{ existing_revision.title }}</option>
-                                        {% endif %}
-                                    </select>
-                                    <label for="revision-selector">
-                                        If students will be completing a revision, please select the revision assignment
-                                        here.
-                                    </label>
-                                </div>
-                            </div>
-                            <p class="hide" id="revision-info"></p>
-                            <div class="hide" id="revision-issues-container">
-                                <div class="card">
-                                    <div class="card-content">
-                                        <div>
-                                            <div><span class="card-title">Issues</span></div>
-                                            <ul class="collection"></ul>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
+            <div class="mdl-cell mdl-cell--2-col"></div>
+        </div>
+        <div class="mdl-grid">
+            <div class="mdl-cell mdl-cell--2-col"></div>
+            <div id="criteria-container-card" class="mdl-card mdl-shadow--2dp mdl-cell mdl-cell--8-col">
+                <div class="mdl-card__title">
+                    <h2 class="mdl-card__title-text">Rubric Criteria</h2>
                 </div>
-            {% endif %}
-            <div class="card">
-                <div class="card-content">
-                    <div class="row">
-                        <div><span class="card-title">Rubric Description</span></div>
-                        <div class="input-field col s12">
-                            <label>Rubric Description</label>
-                            <textarea id="rubric-description"
-                                      class="materialize-textarea"
-                                      {% if review_is_in_progress %}disabled=""{% endif %}>{{ existing_rubric.description }}</textarea>
-                        </div>
-                    </div>
+                <div class="mdl-card__supporting-text">
+                    {% include 'criterion_card.html' %}
                 </div>
             </div>
-            <div class="card">
-                <div class="card-content">
-                    <div>
-                        <div>
-                            <span class="card-title">
-                                {% if review_is_in_progress %}
-                                    View
-                                {% elif mode == 'edit' %}
-                                    Edit
-                                {% else %}
-                                    Create
-                                {% endif %}
-                                Criteria
-                            </span>
-                        </div>
-                        <div data-criteria-container="">
-                            {% if existing_criteria %}
-                                {% for criterion in existing_criteria %}
-                                    {% include 'criterion.html' with description=criterion.description read_only=review_is_in_progress counter=forloop.counter0 %}
-                                {% endfor %}
-                            {% else %}
-                                {% include 'criterion.html' with description="" counter=0 %}
-                            {% endif %}
-                        </div>
-                        {% if not review_is_in_progress %}
-                            <a class="btn-floating waves-effect waves-light grey lighten-1"
-                               onClick="addRubricCriteria('{{ criterion_card_html }}');">
-                                <i class="material-icons">add</i>
-                            </a>
-                        {% endif %}
-                    </div>
-                </div>
+            <div class="mdl-cell mdl-cell--2-col"></div>
+        </div>
+        <div class="mdl-grid">
+            <div class="mdl-cell mdl-cell--2-col"></div>
+            <div class="mdl-cell mdl-cell--8-col">
+                <button
+                        class="mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect mdl-button--accent"
+                        type="submit">
+                    Submit
+                </button>
             </div>
-            {% if not review_is_in_progress %}
-                <div class="row">
-                    <div class="col s12 center-align">
-                        <button class="btn waves-effect waves-light blue accent-3" data-submit-button="" type="submit">
-                            Submit
-                        </button>
-                    </div>
-                </div>
-            {% endif %}
-        </form>
-    </div>
-
+            <div class="mdl-cell mdl-cell--2-col"></div>
+        </div>
+    </form>
 {% endblock %}

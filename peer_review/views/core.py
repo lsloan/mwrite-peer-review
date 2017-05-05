@@ -91,7 +91,7 @@ class RubricCreationFormView(HasRoleMixin, TemplateView):
             mode = 'edit'
         else:
             mode = 'create'
-        criterion_card_html = render_to_string('criterion.html', {'description': '', 'read_only': False, 'counter': 1})
+        criterion_card_html = render_to_string('criterion_card.html', {'description': '', 'read_only': False, 'counter': 1})
         return {
             'course_id': course_id,
             'passback_assignment_id': passback_assignment_id,
