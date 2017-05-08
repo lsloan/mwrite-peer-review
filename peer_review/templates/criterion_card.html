@@ -1,17 +1,17 @@
-<div class="criterion-card mdl-card mdl-shadow--2dp">
-    {% if removable %}
-        <div class="criterion-delete-button-container">
-            <button type="button" class="mdl-chip__action" onclick="removeCriterionCard(this);" tabindex="-1">
-                <i class="material-icons">cancel</i>
-            </button>
-        </div>
-    {% endif %}
-    <div class="mdl-card__supporting-text">
-        <div class="mdl-textfield mdl-js-textfield">
-            <textarea id="criterion-1-textarea" class="mdl-textfield__input" type="text" rows="1"></textarea>
-            <label for="criterion-1-textarea" class="mdl-textfield__label">
-                Enter a description for this criterion here.
-            </label>
+{% spaceless %}
+    <div class="criterion-card mdl-card mdl-shadow--2dp">
+        {% if removable %}
+            <div class="criterion-delete-button-container">
+                <button type="button" class="mdl-chip__action" onclick="removeCriterionCard(this);" tabindex="-1">
+                    <i class="material-icons">cancel</i>
+                </button>
+            </div>
+        {% endif %}
+        <div class="mdl-card__supporting-text">
+            <div class="mdl-textfield mdl-js-textfield">
+                <textarea id="criterion-1-textarea" class="mdl-textfield__input" type="text" rows="1"></textarea>
+                <label for="criterion-1-textarea" class="mdl-textfield__label">Enter a description for this criterion here.</label>
+            </div>
         </div>
     </div>
-</div>
+{% endspaceless %}

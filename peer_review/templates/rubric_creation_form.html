@@ -73,17 +73,16 @@
         </div>
         <div class="mdl-grid">
             <div class="mdl-cell mdl-cell--3-col"></div>
-            <div id="criteria-container-card" class="mdl-card mdl-shadow--2dp mdl-cell mdl-cell--6-col">
+            <div id="criteria-card" class="mdl-card mdl-shadow--2dp mdl-cell mdl-cell--6-col">
                 <div class="mdl-card__title">
                     <h2 class="mdl-card__title-text">Criteria</h2>
                 </div>
-                <div class="mdl-card__supporting-text">
+                <div class="criteria-container mdl-card__supporting-text">
                     {% include 'criterion_card.html' with removable=False %}
-                    {% include 'criterion_card.html' with removable=True %}
-                    {% include 'criterion_card.html' with removable=True %}
                 </div>
                 <div class="mdl-card__actions">
-                    <button class="mdl-button mdl-js-button mdl-button--fab mdl-button--mini-fab mdl-button--colored">
+                    <button class="mdl-button mdl-js-button mdl-button--fab mdl-button--mini-fab mdl-button--colored"
+                            onclick="addCriterionCard('{{ criterion_card_html }}')">
                         <i class="material-icons">add</i>
                     </button>
                 </div>

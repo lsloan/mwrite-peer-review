@@ -16,11 +16,11 @@ textarea {
     z-index: auto;
 }
 
-#criteria-container-card .mdl-card {
+#criteria-card .mdl-card {
     margin-bottom: 16px;
 }
 
-#criteria-container-card .mdl-card {
+#criteria-card .mdl-card {
     width: 100%;
     min-height: auto;
 }
