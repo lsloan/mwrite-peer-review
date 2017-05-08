@@ -8,7 +8,8 @@
 {% endblock %}
 
 {% block content %}
-    <form onsubmit="return false;" action="/rubric/course/{{ course_id }}/assignment/{{ passback_assignment_id }}">
+    <form onsubmit="return false;" action="/rubric/course/{{ course_id }}/assignment/{{ passback_assignment_id }}"
+          data-assignments="{{ potential_prompts_and_rubrics }}">
         <div class="mdl-grid">
             {# TODO csrf token goes here #}
             <div class="mdl-cell mdl-cell--3-col"></div>
@@ -19,14 +20,12 @@
                 <div class="mdl-card__supporting-text">
                     <label for="prompt-menu">The rubric will be applied to the following assignment:</label>
                     <br/>
-                    <button id="prompt-menu" class="mdl-button mdl-js-button">
+                    <button id="prompt-menu"
+                            class="mdl-button mdl-js-button"
+                            data-selected-assignment-id={{ existing_prompt.id }}>
                         <span>One</span>
                     </button>
-                    <ul for="prompt-menu" class="mdl-menu mdl-js-menu">
-                        <li class="mdl-menu__item">One</li>
-                        <li class="mdl-menu__item">Two</li>
-                        <li class="mdl-menu__item">Three</li>
-                    </ul>
+                    <ul for="prompt-menu" class="mdl-menu mdl-js-menu"></ul>
                 </div>
             </div>
             <div class="mdl-cell mdl-cell--3-col"></div>
@@ -42,14 +41,12 @@
                         If students will be completing a revision, please select the revision assignment here.
                     </label>
                     <br/>
-                    <button id="revision-menu" class="mdl-button mdl-js-button">
+                    <button id="revision-menu"
+                            class="mdl-button mdl-js-button"
+                            data-selected-assignment-id="{{ existing_revision.id }}">
                         <span>One</span>
                     </button>
-                    <ul for="revision-menu" class="mdl-menu mdl-js-menu">
-                        <li class="mdl-menu__item">One</li>
-                        <li class="mdl-menu__item">Two</li>
-                        <li class="mdl-menu__item">Three</li>
-                    </ul>
+                    <ul for="revision-menu" class="mdl-menu mdl-js-menu"></ul>
                 </div>
             </div>
             <div class="mdl-cell mdl-cell--3-col"></div>

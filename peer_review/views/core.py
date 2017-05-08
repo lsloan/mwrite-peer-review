@@ -41,7 +41,6 @@ class IndexView(HasRoleMixin, View):
         return response
 
 
-# TODO need authz -- only teachers can access
 class RubricCreationFormView(HasRoleMixin, TemplateView):
     allowed_roles = 'instructor'
     template_name = 'rubric_creation_form.html'
