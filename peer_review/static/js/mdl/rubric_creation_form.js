@@ -1,7 +1,16 @@
 (function() {
     function refreshMenuItems(items, menuID, withoutItems) {
+        var $menu = $('#'+menuID);
         var $itemContainer = $('ul[for="' + menuID + '"]');
         $itemContainer.empty();
+        if(menuID === 'revision-menu' && $menu.attr('data-selected-assignment-id') !== '') {
+            var $noRevisionItem = $('<li></li>');
+            $noRevisionItem.addClass('mdl-menu__item');
+            $noRevisionItem.attr('data-assignment-id', '');
+            $noRevisionItem.text('No revision');
+            $noRevisionItem.click(selectAssignment);
+            $itemContainer.append($noRevisionItem);
+        }
         for(var id in items) {
             if(items.hasOwnProperty(id) && $.inArray(parseInt(id), withoutItems) === -1) {
                 var $item = $('<li></li>');
@@ -12,12 +21,12 @@
                 $itemContainer.append($item);
             }
         }
-        componentHandler.upgradeElement($('#'+menuID).get(0));
+        componentHandler.upgradeElement($menu.get(0));
     }
 
-    function selectMenu(selectedAssignmentID, $selectedMenu, assignmentNamesByID) {
-        $selectedMenu.find('span').text(assignmentNamesByID[selectedAssignmentID]);
-        $selectedMenu.attr('selected-assignment-id', selectedAssignmentID);
+    function selectMenu($selectedMenu, $item) {
+        $selectedMenu.find('span').text($item.text());
+        $selectedMenu.attr('data-selected-assignment-id', $item.data('assignment-id'));
     }
 
     // TODO compare with initializeMenus() and refactor
@@ -28,12 +37,13 @@
         var $selectedMenu = $('#'+selectedMenuID);
         var otherMenuID = selectedMenuID === 'prompt-menu' ? 'revision-menu' : 'prompt-menu';
 
-        var assignmentNamesByID = $('form').data('assignments');
-        var selectedAssignmentID = $item.data('assignment-id');
-        selectMenu(selectedAssignmentID, $selectedMenu, assignmentNamesByID);
+        selectMenu($selectedMenu, $item);
 
+        var selectedAssignmentID = $item.data('assignment-id');
         var otherSelectedAssignmentID = $('#' + otherMenuID).data('selected-assignment-id');
         var withoutItems = [selectedAssignmentID, otherSelectedAssignmentID];
+
+        var assignmentNamesByID = $('form').data('assignments');
         refreshMenuItems(assignmentNamesByID, selectedMenuID, withoutItems);
         refreshMenuItems(assignmentNamesByID, otherMenuID, withoutItems);
     }
