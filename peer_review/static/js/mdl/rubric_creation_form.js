@@ -67,12 +67,11 @@
     }
 
     function removeCriterionCard(event) {
-        $(event.target).closest('.criterion-card').remove();
+        $(event.currentTarget).closest('.criterion-card').remove();
     }
 
     function addCriterionCard(event) {
-        var $button = $(event.currentTarget);
-        var template = $button.attr('data-criterion-card-template');
+        var template = $(event.currentTarget).attr('data-criterion-card-template');
         var $newCard = $(template);
         $newCard.find('button.mdl-chip__action').click(removeCriterionCard);
         var textField = $newCard.find('.mdl-textfield').get(0);
