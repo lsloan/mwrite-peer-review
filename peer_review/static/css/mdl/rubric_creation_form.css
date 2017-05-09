@@ -61,3 +61,7 @@ button[type="submit"] {
     margin-top: 0;
     margin-bottom: 0;
 }
+
+.assignment-info {
+    margin-top: 25px;
+}

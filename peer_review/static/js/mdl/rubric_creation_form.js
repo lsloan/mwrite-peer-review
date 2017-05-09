@@ -22,6 +22,21 @@
         }
     }
 
+    function populateInfoParagraph($infoParagraph, validationsAreForPrompt, validations) {
+        if (typeof(validations) !== 'undefined') {
+            var sectionName = validations.sectionName || 'all students'; // TODO is this ok?
+            var localDueDate = validations.localDueDate;
+            if (sectionName !== null && localDueDate !== null) {
+                var assignmentType = validationsAreForPrompt ? 'prompt' : 'revision';
+                $infoParagraph.text('This ' + assignmentType + ' is assigned to ' + sectionName + ' and is due ' + localDueDate + '.');
+                $infoParagraph.removeClass('hidden');
+            }
+            else {
+                $infoParagraph.addClass('hidden');
+            }
+        }
+    }
+
     function refreshMenuItems(items, menuID, withoutItems) {
         var $menu = $('#' + menuID);
         var $itemContainer = $('ul[for="' + menuID + '"]');
@@ -54,8 +69,11 @@
         var validations = $('form').data('validation-info')[assignmentId];
         var validationsAreForPrompt = $selectedMenu.attr('id') === 'prompt-menu';
         var issues = getValidationIssues(validationsAreForPrompt, validations);
-        var $container = $selectedMenu.parents('.mdl-card').find('.validations-container');
-        populateIssuesList($container, issues);
+        var $assignmentCard = $selectedMenu.parents('.mdl-card');
+        var $issuesContainer = $assignmentCard.find('.validations-container');
+        var $infoParagraph = $assignmentCard.find('.assignment-info');
+        populateIssuesList($issuesContainer, issues);
+        populateInfoParagraph($infoParagraph, validationsAreForPrompt, validations);
     }
 
     // TODO compare with initializeMenus() and refactor
