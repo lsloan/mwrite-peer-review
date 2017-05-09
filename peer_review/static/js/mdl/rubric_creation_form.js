@@ -7,16 +7,13 @@
         }
         else {
             for (var i = 0; i < issues.length; ++i) {
-                //var issueClass = issues[i].fatal ? 'red lighten-1' : 'yellow lighten-1';v
-                var issueClass = '';
-
                 var issueIcon = issues[i].fatal ? 'warning' : 'error_outline';
                 var $element = $(
-                    '<li class="mdl-list__item ' + issueClass + '">' +
-                    '<span class="mdl-list__item-primary-content">' +
-                    '<i class="material-icons mdl-list__item-icon">' + issueIcon + '</i>' +
-                    issues[i].message +
-                    '</span>' +
+                    '<li class="mdl-list__item">' +
+                        '<span class="mdl-list__item-primary-content">' +
+                            '<i class="material-icons mdl-list__item-icon">' + issueIcon + '</i>' +
+                            issues[i].message +
+                        '</span>' +
                     '</li>'
                 );
                 $issuesList.append($element);
