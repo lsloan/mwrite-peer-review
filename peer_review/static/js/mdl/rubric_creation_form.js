@@ -1,6 +1,6 @@
 (function() {
     function refreshMenuItems(items, menuID, withoutItems) {
-        var $menu = $('#'+menuID);
+        var $menu = $('#' + menuID);
         var $itemContainer = $('ul[for="' + menuID + '"]');
         $itemContainer.empty();
         if(menuID === 'revision-menu' && $menu.attr('data-selected-assignment-id') !== '') {
@@ -24,9 +24,9 @@
         componentHandler.upgradeElement($menu.get(0));
     }
 
-    function selectMenu($selectedMenu, $item) {
-        $selectedMenu.find('span').text($item.text());
-        $selectedMenu.attr('data-selected-assignment-id', $item.data('assignment-id'));
+    function selectMenu($selectedMenu, caption, assignmentId) {
+        $selectedMenu.find('span').text(caption);
+        $selectedMenu.attr('data-selected-assignment-id', assignmentId);
     }
 
     // TODO compare with initializeMenus() and refactor
@@ -34,10 +34,10 @@
         var $item = $(event.target);
         var $itemContainer = $item.closest('ul');
         var selectedMenuID = $itemContainer.attr('for');
-        var $selectedMenu = $('#'+selectedMenuID);
+        var $selectedMenu = $('#' + selectedMenuID);
         var otherMenuID = selectedMenuID === 'prompt-menu' ? 'revision-menu' : 'prompt-menu';
 
-        selectMenu($selectedMenu, $item);
+        selectMenu($selectedMenu, $item.text(), $item.data('assignment-id'));
 
         var selectedAssignmentID = $item.data('assignment-id');
         var otherSelectedAssignmentID = $('#' + otherMenuID).data('selected-assignment-id');
@@ -58,7 +58,7 @@
             var existingSelectionID = $menu.data('selected-assignment-id');
             if(existingSelectionID) {
                 withoutItems.push(existingSelectionID);
-                selectMenu(existingSelectionID, $menu, assignmentNamesByID);
+                selectMenu($menu, assignmentNamesByID[existingSelectionID], existingSelectionID);
             }
         });
         $(menusSelector).each(function(i, menu) {
@@ -66,21 +66,23 @@
         });
     }
 
-    // TODO set this in $(document).ready(...) rather than as onclick attrs
-    window.removeCriterionCard = function(button) {
-        $(button).closest('.criterion-card').remove();
-    };
+    function removeCriterionCard(event) {
+        $(event.target).closest('.criterion-card').remove();
+    }
 
-    // TODO set this in $(document).ready(...) rather than as onclick attrs
-    window.addCriterionCard = function(template) {
+    function addCriterionCard(event) {
+        var $button = $(event.currentTarget);
+        var template = $button.attr('data-criterion-card-template');
         var $newCard = $(template);
+        $newCard.find('button.mdl-chip__action').click(removeCriterionCard);
         var textField = $newCard.find('.mdl-textfield').get(0);
         componentHandler.upgradeElement(textField);
         $('.criteria-container').append($newCard);
-    };
+    }
 
     $(document).ready(function () {
         autosize($('textarea'));
         initializeMenus();
+        $('#criteria-card').find('div.mdl-card__actions button').click(addCriterionCard);
     });
 })();
