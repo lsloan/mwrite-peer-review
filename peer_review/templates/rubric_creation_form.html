@@ -10,8 +10,8 @@
 {% block content %}
     <form onsubmit="return false;" action="/rubric/course/{{ course_id }}/assignment/{{ passback_assignment_id }}"
           data-assignments="{{ potential_prompts_and_rubrics }}">
+        {% csrf_token %}
         <div class="mdl-grid">
-            {# TODO csrf token goes here #}
             <div class="mdl-cell mdl-cell--3-col mdl-cell--1-col-tablet mdl-cell-1-col-phone"></div>
             <div id="prompt-card" class="mdl-card mdl-shadow--2dp mdl-cell mdl-cell--6-col mdl-cell--6-col-tablet mdl-cell-2-col-phone">
                 <div class="mdl-card__title">
