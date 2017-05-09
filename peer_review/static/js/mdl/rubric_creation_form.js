@@ -37,6 +37,18 @@
         }
     }
 
+    function updateValidationStatus($selectedMenu, assignmentId) {
+        var validations = $('form').data('validation-info')[assignmentId];
+        var validationsAreForPrompt = $selectedMenu.attr('id') === 'prompt-menu';
+        var issues = getValidationIssues(validationsAreForPrompt, validations);
+        var $assignmentCard = $selectedMenu.parents('.mdl-card');
+        var $issuesContainer = $assignmentCard.find('.validations-container');
+        var $infoParagraph = $assignmentCard.find('.assignment-info');
+        populateIssuesList($issuesContainer, issues);
+        populateInfoParagraph($infoParagraph, validationsAreForPrompt, validations);
+    }
+
+    // TODO refactor for style / brevity
     function refreshMenuItems(items, menuID, withoutItems) {
         var $menu = $('#' + menuID);
         var $itemContainer = $('ul[for="' + menuID + '"]');
@@ -65,15 +77,7 @@
     function selectMenu($selectedMenu, caption, assignmentId) {
         $selectedMenu.find('span').text(caption);
         $selectedMenu.attr('data-selected-assignment-id', assignmentId);
-
-        var validations = $('form').data('validation-info')[assignmentId];
-        var validationsAreForPrompt = $selectedMenu.attr('id') === 'prompt-menu';
-        var issues = getValidationIssues(validationsAreForPrompt, validations);
-        var $assignmentCard = $selectedMenu.parents('.mdl-card');
-        var $issuesContainer = $assignmentCard.find('.validations-container');
-        var $infoParagraph = $assignmentCard.find('.assignment-info');
-        populateIssuesList($issuesContainer, issues);
-        populateInfoParagraph($infoParagraph, validationsAreForPrompt, validations);
+        updateValidationStatus($selectedMenu, assignmentId);
     }
 
     // TODO compare with initializeMenus() and refactor
