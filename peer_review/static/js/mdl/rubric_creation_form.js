@@ -1,4 +1,30 @@
 (function() {
+    function populateIssuesList($container, issues) {
+        var $issuesList = $container.find('ul.mdl-list');
+        $issuesList.empty();
+        if (issues.length === 0) {
+            $container.addClass('hidden');
+        }
+        else {
+            for (var i = 0; i < issues.length; ++i) {
+                //var issueClass = issues[i].fatal ? 'red lighten-1' : 'yellow lighten-1';v
+                var issueClass = '';
+
+                var issueIcon = issues[i].fatal ? 'warning' : 'error_outline';
+                var $element = $(
+                    '<li class="mdl-list__item ' + issueClass + '">' +
+                    '<span class="mdl-list__item-primary-content">' +
+                    '<i class="material-icons mdl-list__item-icon">' + issueIcon + '</i>' +
+                    issues[i].message +
+                    '</span>' +
+                    '</li>'
+                );
+                $issuesList.append($element);
+            }
+            $container.removeClass('hidden');
+        }
+    }
+
     function refreshMenuItems(items, menuID, withoutItems) {
         var $menu = $('#' + menuID);
         var $itemContainer = $('ul[for="' + menuID + '"]');
@@ -27,6 +53,12 @@
     function selectMenu($selectedMenu, caption, assignmentId) {
         $selectedMenu.find('span').text(caption);
         $selectedMenu.attr('data-selected-assignment-id', assignmentId);
+
+        var validations = $('form').data('validation-info')[assignmentId];
+        var validationsAreForPrompt = $selectedMenu.attr('id') === 'prompt-menu';
+        var issues = getValidationIssues(validationsAreForPrompt, validations);
+        var $container = $selectedMenu.parents('.mdl-card').find('.validations-container');
+        populateIssuesList($container, issues);
     }
 
     // TODO compare with initializeMenus() and refactor

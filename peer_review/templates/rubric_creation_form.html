@@ -4,12 +4,14 @@
 {% block header %}
     <link rel="stylesheet" href="{% static 'css/mdl/rubric_creation_form.css' %}"/>
     <script defer src="{% static 'js/lib/autoresize/autosize.min.js' %}"></script>
+    <script defer src="{% static 'js/mdl/validation.js' %}"></script>
     <script defer src="{% static 'js/mdl/rubric_creation_form.js' %}"></script>
 {% endblock %}
 
 {% block content %}
     <form onsubmit="return false;" action="/rubric/course/{{ course_id }}/assignment/{{ passback_assignment_id }}"
-          data-assignments="{{ potential_prompts_and_rubrics }}">
+          data-assignments="{{ potential_prompts_and_rubrics }}"
+          data-validation-info="{{ validations }}">
         {% csrf_token %}
         <div class="mdl-grid">
             <div class="mdl-cell mdl-cell--3-col mdl-cell--1-col-tablet mdl-cell-1-col-phone"></div>
@@ -26,6 +28,9 @@
                         <span>Select an assignment...</span>
                     </button>
                     <ul for="prompt-menu" class="mdl-menu mdl-js-menu"></ul>
+                </div>
+                <div class="mdl-card__supporting-text validations-container hidden">
+                    <ul class="mdl-list"></ul>
                 </div>
             </div>
             <div class="mdl-cell mdl-cell--3-col mdl-cell--1-col-tablet mdl-cell-1-col-phone"></div>
@@ -47,6 +52,9 @@
                         <span>No revision</span>
                     </button>
                     <ul for="revision-menu" class="mdl-menu mdl-js-menu"></ul>
+                </div>
+                <div class="mdl-card__supporting-text validations-container hidden">
+                    <ul class="mdl-list"></ul>
                 </div>
             </div>
             <div class="mdl-cell mdl-cell--3-col mdl-cell--1-col-tablet mdl-cell-1-col-phone"></div>

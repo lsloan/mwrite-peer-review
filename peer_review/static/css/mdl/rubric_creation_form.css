@@ -3,6 +3,10 @@ form {
     height: 100%;
 }
 
+.hidden {
+    display: none !important;
+}
+
 textarea {
     resize: none;
 }
@@ -42,4 +46,18 @@ button[type="submit"] {
     border-bottom: 1px solid darkgray;
     margin-top: 20px;
     text-transform: none;
+}
+
+.validations-container {
+    padding-top: 0;
+    padding-bottom: 0;
+}
+
+.validations-container span {
+    font-size: 14px;
+}
+
+.validations-container > ul {
+    margin-top: 0;
+    margin-bottom: 0;
 }
