@@ -178,7 +178,7 @@
                 data,
                 function() {
                     showToast('The rubric was successfully created.  You will be returned to the dashboard.');
-                    setTimeout(function() { window.location.href = '/dashboard'; }, 4000);
+                    setTimeout(function() { window.location.href = '/'; }, 4000);
                 },
                 function() {
                     showToast('An error occurred.  Please try again later.');

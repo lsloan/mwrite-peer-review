@@ -111,22 +111,24 @@ class RubricCreationFormView(HasRoleMixin, TemplateView):
     def post(self, request, *args, **kwargs):
         params = parse_json_body(request.body)
         passback_assignment_id = int(kwargs['assignment_id'])
+
+        if not params.get('prompt_id'):
+            return HttpResponse('Missing prompt assignment.', status=400)
+        else:
+            prompt_assignment_id = params['prompt_id']
+
+        revision_assignment_id = params['revision_id']
+
+        if 'description' not in params or not params['description'].strip():
+            return HttpResponse('Missing rubric description.', status=400)
+        else:
+            rubric_description = params['description'].strip()
+
         if 'criteria' not in params or len(params['criteria']) < 1:
             return HttpResponse('Missing criteria.', status=400)
-        try:
-            prompt_assignment_id = int(params['prompt_assignment'])
-        except ValueError:
-            return HttpResponse('Prompt assignment was not an integer.', status=400)
-        if 'prompt_assignment' not in params or not params['prompt_assignment'].strip():
-            return HttpResponse('Missing prompt assignment.', status=400)
-        if 'rubric_description' not in params or not params['rubric_description'].strip():
-            return HttpResponse('Missing rubric description.', status=400)
-        if 'revision_assignment' in params and params['revision_assignment'] and params['revision_assignment'].strip():
-            revision_assignment_id = int(params['revision_assignment'])
         else:
-            revision_assignment_id = None
-        rubric_description = params['rubric_description'].strip()
-        criteria = [Criterion(description=c['description']) for c in params['criteria']]
+            criteria = [Criterion(description=criterion) for criterion in params['criteria']]
+
         try:
             with transaction.atomic():
                 prompt_assignment = CanvasAssignment.objects.get(id=prompt_assignment_id)
