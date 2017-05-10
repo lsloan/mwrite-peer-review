@@ -176,8 +176,13 @@
             postToEndpoint(
                 $('form').attr('action'),
                 data,
-                function() { showToast('The rubric was successfully created.'); },
-                function() { showToast('An error occurred.  Please try again later.'); }
+                function() {
+                    showToast('The rubric was successfully created.  You will be returned to the dashboard.');
+                    setTimeout(function() { window.location.href = '/dashboard'; }, 4000);
+                },
+                function() {
+                    showToast('An error occurred.  Please try again later.');
+                }
             );
         }
         event.preventDefault();
