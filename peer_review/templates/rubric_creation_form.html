@@ -50,33 +50,35 @@
             </div>
             <div class="mdl-cell mdl-cell--3-col mdl-cell--1-col-tablet mdl-cell-1-col-phone"></div>
         </div>
-        <div class="mdl-grid">
-            <div class="mdl-cell mdl-cell--3-col mdl-cell--1-col-tablet mdl-cell-1-col-phone"></div>
-            <div id="revision-card" class="mdl-card mdl-shadow--2dp mdl-cell mdl-cell--6-col mdl-cell--6-col-tablet mdl-cell-2-col-phone">
-                <div class="mdl-card__title">
-                    <h2 class="mdl-card__title-text">Revision</h2>
+        {% if should_show_revision_info %}
+            <div class="mdl-grid">
+                <div class="mdl-cell mdl-cell--3-col mdl-cell--1-col-tablet mdl-cell-1-col-phone"></div>
+                <div id="revision-card" class="mdl-card mdl-shadow--2dp mdl-cell mdl-cell--6-col mdl-cell--6-col-tablet mdl-cell-2-col-phone">
+                    <div class="mdl-card__title">
+                        <h2 class="mdl-card__title-text">Revision</h2>
+                    </div>
+                    <div class="mdl-card__supporting-text">
+                        <label for="revision-menu">
+                            If students will be completing a revision, please select the revision assignment here.
+                        </label>
+                        <br/>
+                        <button id="revision-menu"
+                                type="button"
+                                class="mdl-button mdl-js-button"
+                                data-selected-assignment-id="{{ existing_revision.id }}"
+                                {% if review_is_in_progress %}disabled{% endif %}>
+                            <span>No revision</span>
+                        </button>
+                        <ul for="revision-menu" class="mdl-menu mdl-js-menu"></ul>
+                        <p class="assignment-info"></p>
+                    </div>
+                    <div class="mdl-card__supporting-text validations-container hidden" data-has-fatal-issues="false">
+                        <ul class="mdl-list"></ul>
+                    </div>
                 </div>
-                <div class="mdl-card__supporting-text">
-                    <label for="revision-menu">
-                        If students will be completing a revision, please select the revision assignment here.
-                    </label>
-                    <br/>
-                    <button id="revision-menu"
-                            type="button"
-                            class="mdl-button mdl-js-button"
-                            data-selected-assignment-id="{{ existing_revision.id }}"
-                            {% if review_is_in_progress %}disabled{% endif %}>
-                        <span>No revision</span>
-                    </button>
-                    <ul for="revision-menu" class="mdl-menu mdl-js-menu"></ul>
-                    <p class="assignment-info"></p>
-                </div>
-                <div class="mdl-card__supporting-text validations-container hidden" data-has-fatal-issues="false">
-                    <ul class="mdl-list"></ul>
-                </div>
+                <div class="mdl-cell mdl-cell--3-col mdl-cell--1-col-tablet mdl-cell-1-col-phone"></div>
             </div>
-            <div class="mdl-cell mdl-cell--3-col mdl-cell--1-col-tablet mdl-cell-1-col-phone"></div>
-        </div>
+        {% endif %}
         <div class="mdl-grid">
             <div class="mdl-cell mdl-cell--3-col mdl-cell--1-col-tablet mdl-cell-1-col-phone"></div>
             <div id="rubric-description-card" class="mdl-card mdl-shadow--2dp mdl-cell mdl-cell--6-col mdl-cell--6-col-tablet mdl-cell-2-col-phone">
