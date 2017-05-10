@@ -83,7 +83,7 @@
                 <div class="mdl-card__supporting-text">
                     <div class="mdl-textfield mdl-js-textfield">
                         <textarea id="rubric-description-textfield" class="mdl-textfield__input" type="text" rows="1"
-                                  {% if review_is_in_progress %}disabled{% endif %}></textarea>
+                                  {% if review_is_in_progress %}disabled{% endif %}>{{ existing_rubric.description }}</textarea>
                         <label for="rubric-description-textfield" class="mdl-textfield__label">
                             Enter a description for this rubric here.
                         </label>
@@ -99,7 +99,10 @@
                     <h2 class="mdl-card__title-text">Criteria</h2>
                 </div>
                 <div class="criteria-container mdl-card__supporting-text">
-                    {% include 'criterion_card.html' with removable=False read_only=review_is_in_progress %}
+                    {% include 'criterion_card.html' with removable=False read_only=review_is_in_progress criterion=existing_rubric.criteria.all.0.description %}
+                    {% for criterion in existing_rubric.criteria.all|slice:"1:" %}
+                        {% include 'criterion_card.html' with removable=True read_only=review_is_in_progress criterion=criterion.description %}
+                    {% endfor %}
                 </div>
                 {% if not review_is_in_progress %}
                     <div class="mdl-card__actions">
