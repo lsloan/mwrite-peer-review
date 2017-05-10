@@ -134,18 +134,55 @@
         $(event.currentTarget).closest('.criterion-card').remove();
     }
 
+    // TODO need to set up id for new textarea / label
     function addCriterionCard(event) {
         var template = $(event.currentTarget).attr('data-criterion-card-template');
         var $newCard = $(template);
         $newCard.find('button.mdl-chip__action').click(removeCriterionCard);
         var textField = $newCard.find('.mdl-textfield').get(0);
+        autosize($(textField).find('textarea').get(0));
         componentHandler.upgradeElement(textField);
         $('.criteria-container').append($newCard);
+    }
+
+    function validateData(data) {
+        if(!data.promptId) {
+            showToast('You must select a prompt assignment.');
+            return false;
+        }
+        if(!data.description) {
+            showToast('You must provide a rubric description.');
+            return false;
+        }
+        if(!data.criteria || data.criteria.length === 0) {
+            showToast('You must enter at least one criterion.');
+            return false;
+        }
+        return true;
+    }
+
+    function submitRubricForm(event) {
+        var data = {
+            promptId: parseInt($('#prompt-menu').attr('data-selected-assignment-id')) || null,
+            revisionId: parseInt($('#revision-menu').attr('data-selected-assignment-id')) || null,
+            description: $.trim($('#rubric-description-textfield').val()) || null,
+            criteria: $.map($('.criterion-card textarea'), function(c) { return $.trim($(c).val()) || null; })
+        };
+        if(validateData(data)) {
+            postToEndpoint(
+                $('form').attr('action'),
+                data,
+                function() { showToast('The rubric was successfully created.'); },
+                function() { showToast('An error occurred.  Please try again later.'); }
+            );
+        }
+        event.preventDefault();
     }
 
     $(document).ready(function () {
         autosize($('textarea'));
         initializeMenus();
         $('#criteria-card').find('div.mdl-card__actions button').click(addCriterionCard);
+        $('form').submit(submitRubricForm);
     });
 })();
