@@ -134,15 +134,19 @@
         $(event.currentTarget).closest('.criterion-card').remove();
     }
 
-    // TODO need to set up id for new textarea / label
     function addCriterionCard(event) {
         var template = $(event.currentTarget).attr('data-criterion-card-template');
+        var $criteriaContainer = $('.criteria-container');
+        var newIdNumber = parseInt($criteriaContainer.find('.criterion-card textarea').last().attr('id').split('-')[1]) + 1;
+        var newId = 'criterion-' + newIdNumber + '-textarea';
         var $newCard = $(template);
+        $newCard.find('textarea').attr('id', newId);
+        $newCard.find('label').attr('for', newId);
         $newCard.find('button.mdl-chip__action').click(removeCriterionCard);
         var textField = $newCard.find('.mdl-textfield').get(0);
         autosize($(textField).find('textarea').get(0));
         componentHandler.upgradeElement(textField);
-        $('.criteria-container').append($newCard);
+        $criteriaContainer.append($newCard);
     }
 
     function validateData(data) {
