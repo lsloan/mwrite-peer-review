@@ -4,6 +4,7 @@
         $issuesList.empty();
         if (issues.length === 0) {
             $container.addClass('hidden');
+            $container.attr('data-has-fatal-issues', false);
         }
         else {
             for (var i = 0; i < issues.length; ++i) {
@@ -19,6 +20,7 @@
                 $issuesList.append($element);
             }
             $container.removeClass('hidden');
+            $container.attr('data-has-fatal-issues', someIssuesAreFatal(issues));
         }
     }
 
@@ -37,6 +39,16 @@
         }
     }
 
+    function updateButtonState() {
+        var fatalIssuesExist = $.map($('.validations-container'), function (e) {
+                return $(e).attr('data-has-fatal-issues') === 'true';
+            })
+            .some(function (b) {
+                return b;
+            });
+        $('button[type="submit"]').prop('disabled', fatalIssuesExist);
+    }
+
     function updateValidationStatus($selectedMenu, assignmentId) {
         var validations = $('form').data('validation-info')[assignmentId];
         var validationsAreForPrompt = $selectedMenu.attr('id') === 'prompt-menu';
@@ -46,6 +58,7 @@
         var $infoParagraph = $assignmentCard.find('.assignment-info');
         populateIssuesList($issuesContainer, issues);
         populateInfoParagraph($infoParagraph, validationsAreForPrompt, validations);
+        updateButtonState();
     }
 
     // TODO refactor for style / brevity
@@ -62,7 +75,7 @@
             $itemContainer.append($noRevisionItem);
         }
         for(var id in items) {
-            if(items.hasOwnProperty(id) && $.inArray(parseInt(id), withoutItems) === -1) {
+            if(items.hasOwnProperty(id) && $.inArray(id, withoutItems) === -1) {
                 var $item = $('<li></li>');
                 $item.addClass('mdl-menu__item');
                 $item.attr('data-assignment-id', id);
@@ -88,10 +101,10 @@
         var $selectedMenu = $('#' + selectedMenuID);
         var otherMenuID = selectedMenuID === 'prompt-menu' ? 'revision-menu' : 'prompt-menu';
 
-        selectMenu($selectedMenu, $item.text(), $item.data('assignment-id'));
+        selectMenu($selectedMenu, $item.text(), $item.attr('data-assignment-id'));
 
-        var selectedAssignmentID = $item.data('assignment-id');
-        var otherSelectedAssignmentID = $('#' + otherMenuID).data('selected-assignment-id');
+        var selectedAssignmentID = $item.attr('data-assignment-id');
+        var otherSelectedAssignmentID = $('#' + otherMenuID).attr('data-selected-assignment-id');
         var withoutItems = [selectedAssignmentID, otherSelectedAssignmentID];
 
         var assignmentNamesByID = $('form').data('assignments');
@@ -106,7 +119,7 @@
         var assignmentNamesByID = $('form').data('assignments');
         $(menusSelector).each(function(i, menu) {
             var $menu = $(menu);
-            var existingSelectionID = $menu.data('selected-assignment-id');
+            var existingSelectionID = $menu.attr('data-selected-assignment-id');
             if(existingSelectionID) {
                 withoutItems.push(existingSelectionID);
                 selectMenu($menu, assignmentNamesByID[existingSelectionID], existingSelectionID);
