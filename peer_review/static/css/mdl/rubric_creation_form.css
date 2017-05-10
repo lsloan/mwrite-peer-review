@@ -65,3 +65,12 @@ button[type="submit"] {
 .assignment-info {
     margin-top: 25px;
 }
+
+.read-only-rubric-card {
+    min-height: auto;
+}
+
+.read-only-rubric-card h4 {
+    margin-top: 16px;
+    margin-bottom: 16px;
+}

@@ -13,6 +13,17 @@
           data-assignments="{{ potential_prompts_and_rubrics }}"
           data-validation-info="{{ validations }}">
         {% csrf_token %}
+        {% if review_is_in_progress %}
+            <div class="mdl-grid">
+                <div class="mdl-cell mdl-cell--3-col mdl-cell--1-col-tablet mdl-cell-1-col-phone"></div>
+                <div class="mdl-card read-only-rubric-card mdl-shadow--2dp mdl-cell mdl-cell--6-col mdl-cell--6-col-tablet mdl-cell-2-col-phone">
+                    <div class="mdl-card__supporting-text">
+                        <h4>Reviews are in progress, so this rubric is now read-only.</h4>
+                    </div>
+                </div>
+                <div class="mdl-cell mdl-cell--3-col mdl-cell--1-col-tablet mdl-cell-1-col-phone"></div>
+            </div>
+        {% endif %}
         <div class="mdl-grid">
             <div class="mdl-cell mdl-cell--3-col mdl-cell--1-col-tablet mdl-cell-1-col-phone"></div>
             <div id="prompt-card" class="mdl-card mdl-shadow--2dp mdl-cell mdl-cell--6-col mdl-cell--6-col-tablet mdl-cell-2-col-phone">
@@ -24,7 +35,8 @@
                     <br/>
                     <button id="prompt-menu"
                             class="mdl-button mdl-js-button"
-                            data-selected-assignment-id={{ existing_prompt.id }}>
+                            data-selected-assignment-id={{ existing_prompt.id }}
+                            {% if review_is_in_progress %}disabled{% endif %}>
                         <span>Select an assignment...</span>
                     </button>
                     <ul for="prompt-menu" class="mdl-menu mdl-js-menu"></ul>
@@ -49,7 +61,8 @@
                     <br/>
                     <button id="revision-menu"
                             class="mdl-button mdl-js-button"
-                            data-selected-assignment-id="{{ existing_revision.id }}">
+                            data-selected-assignment-id="{{ existing_revision.id }}"
+                            {% if review_is_in_progress %}disabled{% endif %}>
                         <span>No revision</span>
                     </button>
                     <ul for="revision-menu" class="mdl-menu mdl-js-menu"></ul>
@@ -69,7 +82,8 @@
                 </div>
                 <div class="mdl-card__supporting-text">
                     <div class="mdl-textfield mdl-js-textfield">
-                        <textarea id="rubric-description-textfield" class="mdl-textfield__input" type="text" rows="1"></textarea>
+                        <textarea id="rubric-description-textfield" class="mdl-textfield__input" type="text" rows="1"
+                                  {% if review_is_in_progress %}disabled{% endif %}></textarea>
                         <label for="rubric-description-textfield" class="mdl-textfield__label">
                             Enter a description for this rubric here.
                         </label>
@@ -85,28 +99,32 @@
                     <h2 class="mdl-card__title-text">Criteria</h2>
                 </div>
                 <div class="criteria-container mdl-card__supporting-text">
-                    {% include 'criterion_card.html' with removable=False %}
+                    {% include 'criterion_card.html' with removable=False read_only=review_is_in_progress %}
                 </div>
-                <div class="mdl-card__actions">
-                    <button class="mdl-button mdl-js-button mdl-button--fab mdl-button--mini-fab mdl-button--colored"
-                            data-criterion-card-template="{{ criterion_card_html }}">
-                        <i class="material-icons">add</i>
+                {% if not review_is_in_progress %}
+                    <div class="mdl-card__actions">
+                        <button class="mdl-button mdl-js-button mdl-button--fab mdl-button--mini-fab mdl-button--colored"
+                                data-criterion-card-template="{{ criterion_card_html }}">
+                            <i class="material-icons">add</i>
+                        </button>
+                    </div>
+                {% endif %}
+            </div>
+            <div class="mdl-cell mdl-cell--3-col mdl-cell--1-col-tablet mdl-cell-1-col-phone"></div>
+        </div>
+        {% if not review_is_in_progress %}
+            <div class="mdl-grid">
+                <div class="mdl-cell mdl-cell--3-col mdl-cell--1-col-tablet mdl-cell-1-col-phone"></div>
+                <div class="mdl-cell mdl-cell--6-col mdl-cell--6-col-tablet mdl-cell-2-col-phone">
+                    <button
+                            class="mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect mdl-button--accent"
+                            type="submit"
+                            disabled>
+                        Submit
                     </button>
                 </div>
+                <div class="mdl-cell mdl-cell--3-col mdl-cell--1-col-tablet mdl-cell-1-col-phone"></div>
             </div>
-            <div class="mdl-cell mdl-cell--3-col mdl-cell--1-col-tablet mdl-cell-1-col-phone"></div>
-        </div>
-        <div class="mdl-grid">
-            <div class="mdl-cell mdl-cell--3-col mdl-cell--1-col-tablet mdl-cell-1-col-phone"></div>
-            <div class="mdl-cell mdl-cell--6-col mdl-cell--6-col-tablet mdl-cell-2-col-phone">
-                <button
-                        class="mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect mdl-button--accent"
-                        type="submit"
-                        disabled>
-                    Submit
-                </button>
-            </div>
-            <div class="mdl-cell mdl-cell--3-col mdl-cell--1-col-tablet mdl-cell-1-col-phone"></div>
-        </div>
+        {% endif %}
     </form>
 {% endblock %}
