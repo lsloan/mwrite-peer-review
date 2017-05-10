@@ -41,7 +41,6 @@ class IndexView(HasRoleMixin, View):
         return response
 
 
-# TODO need authz -- only teachers can access
 class RubricCreationFormView(HasRoleMixin, TemplateView):
     allowed_roles = 'instructor'
     template_name = 'rubric_creation_form.html'
@@ -76,7 +75,6 @@ class RubricCreationFormView(HasRoleMixin, TemplateView):
                 review_is_in_progress = False
         else:
             review_is_in_progress = False
-        existing_criteria = Criterion.objects.filter(rubric=existing_rubric) if existing_rubric else None
         existing_prompt = existing_rubric.reviewed_assignment if existing_rubric else None
         existing_revision = existing_rubric.revision_assignment if existing_rubric else None
         fetched_assignments = persist_assignments(course_id)
@@ -85,13 +83,7 @@ class RubricCreationFormView(HasRoleMixin, TemplateView):
             assignments.insert(0, existing_prompt)
         if existing_revision:
             assignments.insert(0, existing_revision)
-        if review_is_in_progress:
-            mode = 'view'
-        elif existing_rubric:
-            mode = 'edit'
-        else:
-            mode = 'create'
-        criterion_card_html = render_to_string('criterion.html', {'description': '', 'read_only': False, 'counter': 1})
+        criterion_card_html = render_to_string('criterion_card.html', {'removable': True})
         return {
             'course_id': course_id,
             'passback_assignment_id': passback_assignment_id,
@@ -99,11 +91,9 @@ class RubricCreationFormView(HasRoleMixin, TemplateView):
             'validations': json.dumps({assignment.id: assignment.validation for assignment in fetched_assignments},
                                       default=AssignmentValidation.json_default),
             'should_show_revision_info': not (review_is_in_progress and not existing_revision),
-            'mode': mode,
             'existing_prompt': existing_prompt,
             'existing_revision': existing_revision,
             'existing_rubric': existing_rubric,
-            'existing_criteria': existing_criteria,
             'review_is_in_progress': review_is_in_progress,
             'criterion_card_html': criterion_card_html.replace('\n', '')
         }
@@ -112,22 +102,24 @@ class RubricCreationFormView(HasRoleMixin, TemplateView):
     def post(self, request, *args, **kwargs):
         params = parse_json_body(request.body)
         passback_assignment_id = int(kwargs['assignment_id'])
+
+        if not params.get('prompt_id'):
+            return HttpResponse('Missing prompt assignment.', status=400)
+        else:
+            prompt_assignment_id = params['prompt_id']
+
+        revision_assignment_id = params['revision_id']
+
+        if 'description' not in params or not params['description'].strip():
+            return HttpResponse('Missing rubric description.', status=400)
+        else:
+            rubric_description = params['description'].strip()
+
         if 'criteria' not in params or len(params['criteria']) < 1:
             return HttpResponse('Missing criteria.', status=400)
-        try:
-            prompt_assignment_id = int(params['prompt_assignment'])
-        except ValueError:
-            return HttpResponse('Prompt assignment was not an integer.', status=400)
-        if 'prompt_assignment' not in params or not params['prompt_assignment'].strip():
-            return HttpResponse('Missing prompt assignment.', status=400)
-        if 'rubric_description' not in params or not params['rubric_description'].strip():
-            return HttpResponse('Missing rubric description.', status=400)
-        if 'revision_assignment' in params and params['revision_assignment'] and params['revision_assignment'].strip():
-            revision_assignment_id = int(params['revision_assignment'])
         else:
-            revision_assignment_id = None
-        rubric_description = params['rubric_description'].strip()
-        criteria = [Criterion(description=c['description']) for c in params['criteria']]
+            criteria = [Criterion(description=criterion) for criterion in params['criteria']]
+
         try:
             with transaction.atomic():
                 prompt_assignment = CanvasAssignment.objects.get(id=prompt_assignment_id)

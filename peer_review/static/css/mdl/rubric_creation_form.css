@@ -1,0 +1,76 @@
+form {
+    width: 100%;
+    height: 100%;
+}
+
+.hidden {
+    display: none !important;
+}
+
+textarea {
+    resize: none;
+}
+
+.mdl-textfield {
+    width: 100%;
+}
+
+#prompt-card.mdl-card, #revision-card.mdl-card {
+    overflow: visible;
+    z-index: auto;
+}
+
+#criteria-card .mdl-card {
+    margin-bottom: 16px;
+}
+
+#criteria-card .mdl-card {
+    width: 100%;
+    min-height: auto;
+}
+
+.criterion-delete-button-container {
+    height: 0px;
+}
+
+.criterion-delete-button-container > button.mdl-chip__action {
+    float: right;
+}
+
+button[type="submit"] {
+    display: block;
+    margin: 0 auto;
+}
+
+#prompt-menu, #revision-menu {
+    border-bottom: 1px solid darkgray;
+    margin-top: 20px;
+    text-transform: none;
+}
+
+.validations-container {
+    padding-top: 0;
+    padding-bottom: 0;
+}
+
+.validations-container span {
+    font-size: 14px;
+}
+
+.validations-container > ul {
+    margin-top: 0;
+    margin-bottom: 0;
+}
+
+.assignment-info {
+    margin-top: 25px;
+}
+
+.read-only-rubric-card {
+    min-height: auto;
+}
+
+.read-only-rubric-card h4 {
+    margin-top: 16px;
+    margin-bottom: 16px;
+}
