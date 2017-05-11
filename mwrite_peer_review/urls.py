@@ -18,8 +18,7 @@ from django.conf.urls import url
 from django.http import Http404
 
 import djangolti.views
-from peer_review.views.core import RubricCreationFormView, PeerReviewView, InstructorDashboardView, \
-    StudentDashboardView, ReviewsByStudentView, IndexView
+from peer_review.views.core import *
 from peer_review.views.special import FixedHttpProxy, LtiProxyView, DebugLtiParamsView, SafariLaunchPopup
 
 
@@ -29,13 +28,14 @@ def not_found(request):
 urlpatterns = [
     url(r'^$', IndexView.as_view()),
     url(r'^favicon.ico$', not_found),
-    url(r'^launch', djangolti.views.LaunchView.as_view(), name='launch'),
-    url(r'^dashboard/instructor', InstructorDashboardView.as_view()),
-    url(r'^dashboard/student', StudentDashboardView.as_view()),
-    url(r'^review/rubric/(?P<rubric_id>[0-9]+)/all', ReviewsByStudentView.as_view()),
-    url(r'^rubric/course/(?P<course_id>[0-9]+)/assignment/(?P<assignment_id>[0-9]+)', RubricCreationFormView.as_view()),
-    url(r'^review/submission/(?P<submission_id>[0-9]+)', PeerReviewView.as_view()),
-    url(r'^safari', SafariLaunchPopup.as_view()),
+    url(r'^launch$', djangolti.views.LaunchView.as_view(), name='launch'),
+    url(r'^dashboard/instructor$', InstructorDashboardView.as_view()),
+    url(r'^dashboard/student$', StudentDashboardView.as_view()),
+    url(r'^review/rubric/(?P<rubric_id>[0-9]+)/all$', ReviewsByStudentView.as_view()),
+    url(r'^rubric/course/(?P<course_id>[0-9]+)/assignment/(?P<assignment_id>[0-9]+)$', RubricCreationFormView.as_view()),
+    url(r'^review/submission/(?P<submission_id>[0-9]+)$', PeerReviewView.as_view()),
+    url(r'^review/submission/(?P<submission_id>[0-9]+)/completed$', ReviewsForAStudentSubmissionView.as_view()),
+    url(r'^safari$', SafariLaunchPopup.as_view()),
     url(r'^(?P<url>health)$', FixedHttpProxy.as_view(base_url=settings.MWRITE_PEER_REVIEW_LEGACY_URL)),
     url(r'^(?P<url>.*)$', LtiProxyView.as_view(base_url=settings.MWRITE_PEER_REVIEW_LEGACY_URL))
 ]
