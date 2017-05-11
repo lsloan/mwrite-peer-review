@@ -265,26 +265,26 @@ class StudentDashboardView(HasRoleMixin, TemplateView):
         course_id = self.request.session['lti_launch_params']['custom_canvas_course_id']
         student_id = self.request.session['lti_launch_params']['custom_canvas_user_id']
         rubrics = Rubric.objects.filter(reviewed_assignment__course_id=course_id,
-                                        peer_review_distribution__is_distribution_complete=True)
-        # TODO ensure this is still ordered
-        reviews = {rubric.reviewed_assignment.title:
-                   {'due_date': rubric.passback_assignment.due_date_utc,
-                    'submissions': rubric.reviewed_assignment.canvas_submission_set
-                                                             .filter(peerreview__student_id=student_id)
-                                                             .annotate(Count('peerreview__comments'))
-                                                             .annotate(peer_review_complete=Case(
-                                                                 When(peerreview__comments__count__gte=
-                                                                      rubric.criteria.count(),
-                                                                      then=Value(True)),
-                                                                 default=Value(False),
-                                                                 output_field=BooleanField()))}
-                   for rubric in rubrics}
-        # TODO ensure this is still ordered
-        received_reviews = {rubric.reviewed_assignment.title: rubric.reviewed_assignment.canvas_submission_set
-                            .filter(peerreview__submission__author_id=student_id)
-                            .annotate(Count('peerreview__comments'))
-                            .filter(peerreview__comments__count__gte=rubric.criteria.count())
-                            for rubric in rubrics}
+                                        peer_review_distribution__is_distribution_complete=True)\
+                                .order_by('reviewed_assignment__due_date_utc')
+        reviews = [(rubric.reviewed_assignment.title,
+                    {'due_date': rubric.passback_assignment.due_date_utc,
+                     'submissions': rubric.reviewed_assignment.canvas_submission_set
+                                                              .filter(peerreview__student_id=student_id)
+                                                              .annotate(Count('peerreview__comments'))
+                                                              .annotate(peer_review_complete=Case(
+                                                                  When(peerreview__comments__count__gte=
+                                                                       rubric.criteria.count(),
+                                                                       then=Value(True)),
+                                                                  default=Value(False),
+                                                                  output_field=BooleanField()))})
+                   for rubric in rubrics]
+        received_reviews = [(rubric.reviewed_assignment.title,
+                             rubric.reviewed_assignment.canvas_submission_set
+                                                       .filter(peerreview__submission__author_id=student_id)
+                                                       .annotate(Count('peerreview__comments'))
+                                                       .filter(peerreview__comments__count__gte=rubric.criteria.count()))
+                            for rubric in rubrics]
         return {'reviews_to_complete': reviews,
                 'reviews_received': received_reviews}
 

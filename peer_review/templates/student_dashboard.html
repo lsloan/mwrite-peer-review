@@ -14,7 +14,7 @@
                 <h1 class="mdl-card__title-text">Reviews To Complete</h1>
             </div>
             <div class="mdl-card__supporting-text">
-                {% for title, details in reviews_to_complete.items %}
+                {% for title, details in reviews_to_complete %}
                     <div class="mdl-card mdl-shadow--2dp peer-review-card">
                         <div class="mdl-card__title">
                             <div class="title-line-container">
@@ -67,7 +67,7 @@
             </div>
             <div class="mdl-card__supporting-text">
                 <div class="mdl-list">
-                    {% for title, review in reviews_received.items %}
+                    {% for title, review in reviews_received %}
                         <div class="mdl-list__item">
                             <span class="mdl-list__item-primary-content">
                                 <span>{{ title }}</span>
