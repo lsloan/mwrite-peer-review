@@ -2,7 +2,6 @@ import json
 import logging
 from collections import OrderedDict
 from datetime import datetime
-from functools import reduce
 from itertools import chain
 
 from django.db import transaction
