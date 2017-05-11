@@ -1,10 +1,12 @@
 import json
 import logging
+from collections import OrderedDict
 from datetime import datetime
+from functools import reduce
 from itertools import chain
 
 from django.db import transaction
-from django.db.models import Q
+from django.db.models import Q, F, Count, Case, When, Value, BooleanField
 from django.http import HttpResponse, Http404
 from django.shortcuts import redirect
 from django.template.loader import render_to_string
@@ -255,6 +257,53 @@ class InstructorDashboardView(HasRoleMixin, TemplateView):
             'validation_info': json.dumps({a.id: a.validation for a in rubric_assignments},
                                           default=AssignmentValidation.json_default)
         }
+
+
+class StudentDashboardView(HasRoleMixin, TemplateView):
+    allowed_roles = 'student'
+    template_name = 'student_dashboard.html'
+
+    def get_context_data(self, **kwargs):
+        course_id = self.request.session['lti_launch_params']['custom_canvas_course_id']
+        student_id = self.request.session['lti_launch_params']['custom_canvas_user_id']
+        rubrics = Rubric.objects.filter(reviewed_assignment__course_id=course_id,
+                                        peer_review_distribution__is_distribution_complete=True)\
+                                .order_by('reviewed_assignment__due_date_utc')
+        reviews = [(rubric.reviewed_assignment.title,
+                    {'due_date': rubric.passback_assignment.due_date_utc,
+                     'submissions': rubric.reviewed_assignment.canvas_submission_set
+                                                              .filter(peerreview__student_id=student_id)
+                                                              .annotate(Count('peerreview__comments'))
+                                                              .annotate(peer_review_complete=Case(
+                                                                  When(peerreview__comments__count__gte=
+                                                                       rubric.criteria.count(),
+                                                                       then=Value(True)),
+                                                                  default=Value(False),
+                                                                  output_field=BooleanField()))})
+                   for rubric in rubrics]
+        submissions_reviewed = \
+            PeerReview.objects.filter(submission__author_id=student_id,
+                                      submission__assignment__course_id=course_id,
+                                      submission__assignment__is_peer_review_assignment=False) \
+                              .order_by('submission__assignment__due_date_utc') \
+                              .annotate(Count('comments', distinct=True)) \
+                              .annotate(Count('submission__assignment__rubric_for_prompt__criteria', distinct=True)) \
+                              .filter(comments__count__gte=
+                                      F('submission__assignment__rubric_for_prompt__criteria__count')) \
+                              .values_list('submission')
+
+        # see https://code.djangoproject.com/ticket/10060
+        review_submission_counts = OrderedDict()
+        for submission_id, in submissions_reviewed:
+            if submission_id in review_submission_counts:
+                review_submission_counts[submission_id] += 1
+            else:
+                review_submission_counts[submission_id] = 1
+        reviews_received = [(CanvasSubmission.objects.get(id=submission_id), number_of_reviews)
+                            for submission_id, number_of_reviews in review_submission_counts.items()]
+
+        return {'reviews_to_complete': reviews,
+                'reviews_received': reviews_received}
 
 
 class ReviewsByStudentView(HasRoleMixin, TemplateView):
