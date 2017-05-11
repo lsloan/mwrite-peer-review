@@ -1,0 +1,17 @@
+.peer-review-card {
+    width: 100%;
+}
+
+.peer-review-submissions-container {
+    margin: 0 auto;
+}
+
+.peer-review-submission-card {
+    display: inline-block;
+    width: auto;
+    min-height: 0;
+}
+
+.icon-container {
+    padding: 6px;
+}

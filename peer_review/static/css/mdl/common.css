@@ -1,0 +1,13 @@
+.icon-24px {
+    width: 24px;
+    height: 24px;
+}
+
+.icon-container {
+    display: flex;
+    align-items: center;
+}
+
+.icon-caption {
+    margin-left: 10px;
+}

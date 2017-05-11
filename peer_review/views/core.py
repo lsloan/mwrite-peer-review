@@ -4,7 +4,7 @@ from datetime import datetime
 from itertools import chain
 
 from django.db import transaction
-from django.db.models import Q
+from django.db.models import Q, Count, Case, When, Value, BooleanField
 from django.http import HttpResponse, Http404
 from django.shortcuts import redirect
 from django.template.loader import render_to_string
@@ -255,6 +255,30 @@ class InstructorDashboardView(HasRoleMixin, TemplateView):
             'validation_info': json.dumps({a.id: a.validation for a in rubric_assignments},
                                           default=AssignmentValidation.json_default)
         }
+
+
+class StudentDashboardView(HasRoleMixin, TemplateView):
+    allowed_roles = 'student'
+    template_name = 'student_dashboard.html'
+
+    def get_context_data(self, **kwargs):
+        course_id = self.request.session['lti_launch_params']['custom_canvas_course_id']
+        student_id = self.request.session['lti_launch_params']['custom_canvas_user_id']
+        rubrics = Rubric.objects.filter(reviewed_assignment__course_id=course_id,
+                                        peer_review_distribution__is_distribution_complete=True)
+        reviews = {rubric.reviewed_assignment.title:
+                   {'due_date': 'foobar',
+                    'submissions': rubric.reviewed_assignment.canvas_submission_set
+                                                             .filter(peerreview__student_id=student_id)
+                                                             .annotate(Count('peerreview__comments'))
+                                                             .annotate(peer_review_complete=Case(
+                                                                 When(peerreview__comments__count__gte=
+                                                                      rubric.criteria.count(),
+                                                                      then=Value(True)),
+                                                                 default=Value(False),
+                                                                 output_field=BooleanField()))}
+                   for rubric in rubrics}
+        return {'reviews': reviews}
 
 
 class ReviewsByStudentView(HasRoleMixin, TemplateView):
