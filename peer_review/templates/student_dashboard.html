@@ -67,14 +67,14 @@
             </div>
             <div class="mdl-card__supporting-text">
                 <div class="mdl-list">
-                    {% for title, review in reviews_received %}
+                    {% for submission, number_of_reviews in reviews_received %}
                         <div class="mdl-list__item">
                             <span class="mdl-list__item-primary-content">
-                                <span>{{ title }}</span>
+                                <span>{{ submission.assignment.title }}</span>
                             </span>
                             <a class="mdl-list__item-secondary-action mdl-button mdl-button--colored mdl-js-button mdl-js-ripple-effect"
-                               href="/review/submission/{{ review.0.id }}/completed">
-                                View {{ review.count }} Review{% if review.count > 1 %}s{% endif %}
+                               href="/review/submission/{{ submission.id }}/completed">
+                                View {{ number_of_reviews }} Review{% if number_of_reviews > 1 %}s{% endif %}
                             </a>
                         </div>
                     {% endfor %}
