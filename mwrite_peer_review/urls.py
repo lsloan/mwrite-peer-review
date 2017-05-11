@@ -34,7 +34,7 @@ urlpatterns = [
     url(r'^dashboard/student', StudentDashboardView.as_view()),
     url(r'^review/rubric/(?P<rubric_id>[0-9]+)/all', ReviewsByStudentView.as_view()),
     url(r'^rubric/course/(?P<course_id>[0-9]+)/assignment/(?P<assignment_id>[0-9]+)', RubricCreationFormView.as_view()),
-    url(r'^review/submission/(?P<submission_id>[0-9]+)', PeerReviewView.as_view()),
+    url(r'^review/submission/(?P<submission_id>[0-9]+)$', PeerReviewView.as_view()),
     url(r'^safari', SafariLaunchPopup.as_view()),
     url(r'^(?P<url>health)$', FixedHttpProxy.as_view(base_url=settings.MWRITE_PEER_REVIEW_LEGACY_URL)),
     url(r'^(?P<url>.*)$', LtiProxyView.as_view(base_url=settings.MWRITE_PEER_REVIEW_LEGACY_URL))
