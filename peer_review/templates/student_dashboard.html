@@ -14,7 +14,7 @@
                 <h1 class="mdl-card__title-text">Reviews To Complete</h1>
             </div>
             <div class="mdl-card__supporting-text">
-                {% for title, details in reviews.items %}
+                {% for title, details in reviews_to_complete.items %}
                     <div class="mdl-card mdl-shadow--2dp peer-review-card">
                         <div class="mdl-card__title">
                             <div class="title-line-container">
@@ -57,6 +57,29 @@
                 {% endfor %}
             </div>
         </div>
+        <div class="mdl-cell mdl-cell--2-col mdl-cell--2-col-tablet mdl-cell-1-col-phone"></div>
+    </div>
+    <div class="mdl-grid">
+        <div class="mdl-cell mdl-cell--2-col mdl-cell--2-col-tablet mdl-cell-1-col-phone"></div>
+        <div class="mdl-card mdl-shadow--2dp mdl-cell mdl-cell--8-col mdl-cell--6-col-tablet mdl-cell-2-col-phone">
+            <div class="mdl-card__title">
+                <h1 class="mdl-card__title-text">Reviews Of My Work</h1>
+            </div>
+            <div class="mdl-card__supporting-text">
+                <div class="mdl-list">
+                    {% for title, review in reviews_received.items %}
+                        <div class="mdl-list__item">
+                            <span class="mdl-list__item-primary-content">
+                                <span>{{ title }}</span>
+                            </span>
+                            <a class="mdl-list__item-secondary-action mdl-button mdl-button--colored mdl-js-button mdl-js-ripple-effect"
+                               href="/review/submission/{{ review.0.id }}/completed">
+                                View {{ review.count }} Review{% if review.count > 1 %}s{% endif %}
+                            </a>
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
         <div class="mdl-cell mdl-cell--2-col mdl-cell--2-col-tablet mdl-cell-1-col-phone"></div>
     </div>
 {% endblock %}

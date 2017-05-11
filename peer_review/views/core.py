@@ -279,7 +279,14 @@ class StudentDashboardView(HasRoleMixin, TemplateView):
                                                                  default=Value(False),
                                                                  output_field=BooleanField()))}
                    for rubric in rubrics}
-        return {'reviews': reviews}
+        # TODO ensure this is still ordered
+        received_reviews = {rubric.reviewed_assignment.title: rubric.reviewed_assignment.canvas_submission_set
+                            .filter(peerreview__submission__author_id=student_id)
+                            .annotate(Count('peerreview__comments'))
+                            .filter(peerreview__comments__count__gte=rubric.criteria.count())
+                            for rubric in rubrics}
+        return {'reviews_to_complete': reviews,
+                'reviews_received': received_reviews}
 
 
 class ReviewsByStudentView(HasRoleMixin, TemplateView):

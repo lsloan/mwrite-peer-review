@@ -38,3 +38,8 @@
 h2.mdl-card__title-text {
     padding: 6px;
 }
+
+.mdl-list__item {
+    border: 1px solid black;
+    background-color: gainsboro;
+}
