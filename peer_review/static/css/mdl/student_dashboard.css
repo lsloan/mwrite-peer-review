@@ -24,6 +24,7 @@
     display: inline-block;
 }
 
+/* TODO write a media query to unfloat at the phone-width break */
 .right-side-container {
     float: right;
 }
