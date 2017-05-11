@@ -10,6 +10,7 @@ from django.http import HttpResponse, Http404
 from django.shortcuts import redirect
 from django.template.loader import render_to_string
 from django.views.generic import View, TemplateView
+from django.core.exceptions import PermissionDenied
 from rolepermissions.checkers import has_role
 from rolepermissions.mixins import HasRoleMixin
 from toolz.functoolz import thread_last
@@ -336,13 +337,13 @@ class ReviewsForAStudentSubmissionView(HasRoleMixin, TemplateView):
 
     def get_context_data(self, **kwargs):
 
-        # TODO check for authz
-        student_id = self.request.session['lti_launch_params']['custom_canvas_user_id']
-
+        student_id = int(self.request.session['lti_launch_params']['custom_canvas_user_id'])
         submission = CanvasSubmission.objects.get(id=kwargs['submission_id'])
-        rubric = submission.assignment.rubric_for_prompt
+        if student_id != submission.author_id:
+            raise PermissionDenied
 
         peer_review_ids = PeerReview.objects.filter(submission=submission).values_list('id')
+        rubric = submission.assignment.rubric_for_prompt
         details = [(criterion,
                     PeerReviewComment.objects.filter(criterion=criterion, peer_review_id__in=peer_review_ids)
                                              .order_by('peer_review__submission__author_id'))
