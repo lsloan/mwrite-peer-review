@@ -333,3 +333,19 @@ class ReviewsByStudentView(HasRoleMixin, TemplateView):
 class ReviewsForAStudentSubmissionView(HasRoleMixin, TemplateView):
     allowed_roles = 'student'
     template_name = 'reviews_of_my_work.html'
+
+    def get_context_data(self, **kwargs):
+
+        # TODO check for authz
+        student_id = self.request.session['lti_launch_params']['custom_canvas_user_id']
+
+        submission = CanvasSubmission.objects.get(id=kwargs['submission_id'])
+        rubric = submission.assignment.rubric_for_prompt
+
+        peer_review_ids = PeerReview.objects.filter(submission=submission).values_list('id')
+        details = [(criterion,
+                    PeerReviewComment.objects.filter(criterion=criterion, peer_review_id__in=peer_review_ids)
+                                             .order_by('peer_review__submission__author_id'))
+                   for criterion in rubric.criteria.all()]
+        return {'title': submission.assignment.title,
+                'review': details}
