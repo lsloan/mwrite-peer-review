@@ -16,6 +16,18 @@
     padding: 6px 16px;
 }
 
+.title-line-container {
+    width: 100%;
+}
+
+.side-by-side-container {
+    display: inline-block;
+}
+
+.right-side-container {
+    float: right;
+}
+
 .mdl-card__title .icon-caption {
     height: 24px;
     line-height: 24px;
