@@ -350,3 +350,8 @@ class ReviewsOfMyWorkView(HasRoleMixin, TemplateView):
                    for criterion in rubric.criteria.all()]
         return {'title': submission.assignment.title,
                 'review': details}
+
+
+class ReviewsForAStudentView(HasRoleMixin, TemplateView):
+    allowed_roles = 'instructor'
+    template_name = 'reviews_for_a_student.html'
