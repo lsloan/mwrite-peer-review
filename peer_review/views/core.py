@@ -156,6 +156,7 @@ class PeerReviewView(HasRoleMixin, TemplateView):
     allowed_roles = 'student'
     template_name = 'review.html'
 
+    # TODO use error template for error responses
     def get_context_data(self, **kwargs):
         student_id = self.request.session['lti_launch_params']['custom_canvas_user_id']
         submission_id = kwargs['submission_id']
