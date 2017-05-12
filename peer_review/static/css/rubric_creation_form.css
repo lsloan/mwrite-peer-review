@@ -30,7 +30,7 @@ textarea {
 }
 
 .criterion-delete-button-container {
-    height: 0px;
+    height: 0;
 }
 
 .criterion-delete-button-container > button.mdl-chip__action {
