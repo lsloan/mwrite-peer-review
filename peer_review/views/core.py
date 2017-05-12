@@ -196,17 +196,17 @@ class PeerReviewView(HasRoleMixin, TemplateView):
         rubric = Rubric.objects.get(reviewed_assignment=submission.assignment)
         user_comment_criteria_ids = [com['criterion_id'] for com in user_comments]
         user_comment_criteria = Criterion.objects.filter(id__in=user_comment_criteria_ids)
-        if user_comment_criteria.count() != rubric.criterion_set.count():
+        if user_comment_criteria.count() != rubric.criteria.count():
             return HttpResponse('Criterion IDs do not match.', 400)
 
-        rubric_criteria_ids = map(lambda cri: cri.id, rubric.criterion_set.all())
+        rubric_criteria_ids = map(lambda cri: cri.id, rubric.criteria.all())
         existing_comments = PeerReviewComment.objects.filter(peer_review=peer_review,
                                                              criterion_id__in=rubric_criteria_ids)
-        if rubric.criterion_set.count() == existing_comments.count():
+        if rubric.criteria.count() == existing_comments.count():
             return HttpResponse('This review has already been completed.', 400)
         elif existing_comments.count() > 0:
             logger.warning('Somehow %d has only %d out of %d comments for %d!!!',
-                           student_id, existing_comments.count(), rubric.criterion_set.count(), submission_id)
+                           student_id, existing_comments.count(), rubric.criteria.count(), submission_id)
 
         commented_at_utc = datetime.utcnow()
         comments = [PeerReviewComment(criterion=Criterion.objects.get(id=c['criterion_id']),

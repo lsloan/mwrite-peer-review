@@ -2,8 +2,10 @@
 {% load static %}
 
 {% block header %}
-{#    <script defer="" src="{% static 'js/review.js' %}"></script>#}
     <link rel="stylesheet" href="{% static 'css/mdl/review.css' %}">
+    <script defer src="{% static 'js/lib/autoresize/autosize.min.js' %}"></script>
+    <script defer src="{% static 'js/mdl/util.js' %}"></script>
+    <script defer src="{% static 'js/mdl/review.js' %}"></script>
 {% endblock %}
 
 {% block content %}
@@ -28,7 +30,8 @@
     <div class="mdl-grid">
         <div class="mdl-cell mdl-cell--2-col mdl-cell--2-col-tablet mdl-cell-1-col-phone"></div>
         <div class="mdl-card mdl-shadow--2dp mdl-cell mdl-cell--8-col mdl-cell--6-col-tablet mdl-cell-2-col-phone">
-            <form action="/review/submission/{{ submission.id }}">
+            <form action="/review/submission/{{ submission.id }}" data-prompt-id="{{ submission.assignment.id }}">
+                {% csrf_token %}
                 <div class="mdl-card__title">
                     <h1 class="mdl-card__title-text">Submit Your Review</h1>
                 </div>
@@ -44,7 +47,8 @@
                                     <textarea id="criterion-{{ forloop.counter }}-textarea"
                                               class="mdl-textfield__input"
                                               type="text"
-                                              rows="2"></textarea>
+                                              rows="2"
+                                              data-criterion-id="{{ criterion.id }}"></textarea>
                                     <label for="criterion-{{ forloop.counter }}-textarea" class="mdl-textfield__label">Your response here...</label>
                                 </div>
                             </div>
@@ -60,5 +64,15 @@
             </form>
         </div>
         <div class="mdl-cell mdl-cell--2-col mdl-cell--2-col-tablet mdl-cell-1-col-phone"></div>
+    </div>
+    <div class="mdl-grid">
+        <div class="mdl-cell mdl-cell--3-col mdl-cell--1-col-tablet mdl-cell-1-col-phone"></div>
+        <div class="mdl-cell mdl-cell--6-col mdl-cell--6-col-tablet mdl-cell-2-col-phone">
+            <div id="snackbar" class="mdl-snackbar mdl-js-snackbar">
+                <div class="mdl-snackbar__text"></div>
+                <button type="button" class="mdl-snackbar__action"></button>
+            </div>
+        </div>
+        <div class="mdl-cell mdl-cell--3-col mdl-cell--1-col-tablet mdl-cell-1-col-phone"></div>
     </div>
 {% endblock %}
