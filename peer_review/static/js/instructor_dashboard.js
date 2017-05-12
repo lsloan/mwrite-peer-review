@@ -1,33 +1,36 @@
-function updateValidationIcon(validationsInfo, container) {
-    var promptId = container.data('prompt-id');
-    var revisionId = container.data('revision-id');
-    var promptValidations = validationsInfo[promptId];
-    var revisionValidations = validationsInfo[revisionId];
-    var promptIssues = promptId ? getValidationIssues(true, promptValidations) : [];
-    var revisionIssues = revisionId ? getValidationIssues(false, revisionValidations) : [];
-    var validationIcon = container.find('i.material-icons');
-    var validationCaption = container.find('p');
-    var allIssues = promptIssues.concat(revisionIssues);
-    if(allIssues.length > 0) {
-        var rubricHasFatalIssues = someIssuesAreFatal(allIssues);
-        var icon = rubricHasFatalIssues ? 'warning' : 'error_outline';
-        var action = container.data('reviews-in-progress') ? 'view' : 'edit';
-        var caption = rubricHasFatalIssues ?
-            'Error: ' + action + ' the rubric to see problems' :
-            'Warning: ' + action + ' the rubric to view our suggested changes';
-        validationIcon.text(icon);
-        validationIcon.removeClass('ok-icon');
-        validationIcon.addClass(rubricHasFatalIssues ? 'error-icon' : 'warning-icon');
-        validationCaption.removeClass('ok-caption');
-        validationCaption.text(caption);
+(function () {
+    function updateValidationText(validationsInfo, $peerReviewCard) {
+        var promptId = $peerReviewCard.data('prompt-id');
+        var revisionId = $peerReviewCard.data('revision-id');
+        var promptValidations = validationsInfo[promptId];
+        var revisionValidations = validationsInfo[revisionId];
+        var promptIssues = promptId ? getValidationIssues(true, promptValidations) : [];
+        var revisionIssues = revisionId ? getValidationIssues(false, revisionValidations) : [];
+        var allIssues = promptIssues.concat(revisionIssues);
+
+        var $validationContainer = $peerReviewCard.find('.validation-container');
+        var $validationIcon = $validationContainer.find('.material-icons');
+        var $validationCaption = $validationContainer.find('.icon-caption');
+
+        if (allIssues.length > 0) {
+            var rubricHasFatalIssues = someIssuesAreFatal(allIssues);
+            var action = $peerReviewCard.data('reviews-in-progress') ? 'view' : 'edit';
+            $validationIcon.text(rubricHasFatalIssues ? 'warning' : 'error_outline');
+            $validationIcon.removeClass('ok-icon-color');
+            $validationIcon.addClass(rubricHasFatalIssues ? 'error-icon-color' : 'warning-icon-color');
+            $validationCaption.text(
+                rubricHasFatalIssues ?
+                    'Error: ' + action + ' the rubric to see problems.' :
+                    'Warning: ' + action + ' the rubric to view our suggested changes.'
+            );
+        }
     }
-    container.find('.hide-but-keep-space').removeClass('hide-but-keep-space');
-}
 
-$('document').ready(function () {
-    var validationsInfo = $('[data-peer-review-assignments-parent]').data('peer-review-assignments-parent');
-    $('[data-rubric-card]').each(function(i, element) {
-        updateValidationIcon(validationsInfo, $(element));
+    $('document').ready(function () {
+        var validationsInfo = $('[data-validations-info]').data('validations-info');
+        $('.peer-review-assignment-card').each(function (i, element) {
+            var $peerReviewCard = $(element);
+            updateValidationText(validationsInfo, $peerReviewCard);
+        });
     });
-});
-
+})();

@@ -1,39 +1,47 @@
-/* eslint-env jquery */
-/* global Materialize */
-/* global postToEndpoint */
-/* global showGenericErrorMessage */
+(function() {
+    function getReviewComments() {
+        return $('[data-criterion-id]').map(function(index, element) {
+            return {
+                criterionID: $(element).attr('data-criterion-id'),
+                comment: $(element).val()
+            };
+        }).get();
+    }
 
-function getReviewComments() {
-    return $('[data-criterion-id]').map(function(index, element) {
-        return {criterionID: $(element).attr('data-criterion-id'),
-                comment: $(element).val()};
-    }).get();
-}
-
-function areCommentsValid(comments) {
-    for(var i = 0; i < comments.length; ++i) {
-        if(!comments[i].comment.trim()) {
-            return false;
+    function areCommentsValid(comments) {
+        for(var i = 0; i < comments.length; ++i) {
+            if(!comments[i].comment.trim()) {
+                return false;
+            }
         }
+        return true;
     }
-    return true;
-}
 
-/* exported submitReview */
-function submitReview(promptId) {
-    var comments = getReviewComments();
-    if(!areCommentsValid(comments)) {
-        Materialize.toast('Please comment on each criterion.', 5000);
-        return;
+    function submitReview(event) {
+        var comments = getReviewComments();
+        if(areCommentsValid(comments)) {
+            var $form = $('form');
+            var endpoint = $form.attr('action');
+            var promptId = $form.attr('data-prompt-id');
+            postToEndpoint(
+                endpoint,
+                comments,
+                function () {
+                    window.location.replace('/dashboard/student?finished=' + promptId);
+                },
+                function () {
+                    showToast('An error occurred.  Please try again later.');
+                }
+            );
+        }
+        else {
+            showToast('Please comment on each criterion.');
+        }
+        event.preventDefault();
     }
-    var endpoint = $('[data-comment-form]').attr('action');
-    var submitButton = $('[data-submit-button]');
-    postToEndpoint(endpoint,
-                   submitButton,
-                   function() {
-                       window.location.replace('/dashboard/student?finished=' + promptId);
-                   },
-                   showGenericErrorMessage,
-                   comments);
-}
 
+    $(document).ready(function () {
+        autosize($('textarea'));
+        $('form').submit(submitReview);
+    });
+})();
