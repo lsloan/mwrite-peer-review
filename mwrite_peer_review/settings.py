@@ -189,7 +189,7 @@ LOGGING = {
             'format': '%(levelname)s %(name)s %(message)s'
         },
         'access_logs': {
-            'format': ('%(message)s'),
+            'format': '%(message)s',
         },
 
     },

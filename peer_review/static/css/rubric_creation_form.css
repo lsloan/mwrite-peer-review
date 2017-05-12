@@ -26,11 +26,11 @@ textarea {
 
 #criteria-card .mdl-card {
     width: 100%;
-    min-height: auto;
+    min-height: 0;
 }
 
 .criterion-delete-button-container {
-    height: 0px;
+    height: 0;
 }
 
 .criterion-delete-button-container > button.mdl-chip__action {
@@ -67,7 +67,7 @@ button[type="submit"] {
 }
 
 .read-only-rubric-card {
-    min-height: auto;
+    min-height: 0;
 }
 
 .read-only-rubric-card h4 {

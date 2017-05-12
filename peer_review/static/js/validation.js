@@ -14,7 +14,7 @@
             if (validations.submissionUploadType.includes('none')) {
                 errors.push({
                     message: 'This ' + assignmentType + ' does not allow submissions.',
-                    fatal: true,
+                    fatal: true
                 });
             }
             else {
