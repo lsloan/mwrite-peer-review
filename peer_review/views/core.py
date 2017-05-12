@@ -19,7 +19,7 @@ from toolz.itertoolz import unique
 from peer_review.etl import persist_assignments, AssignmentValidation
 from peer_review.models import Rubric, Criterion, CanvasAssignment, PeerReviewDistribution, CanvasSubmission, \
     PeerReview, PeerReviewComment, CanvasStudent
-from peer_review.util import parse_json_body
+from peer_review.util import parse_json_body, some
 
 logger = logging.getLogger(__name__)
 
@@ -265,23 +265,36 @@ class StudentDashboardView(HasRoleMixin, TemplateView):
     template_name = 'student_dashboard.html'
 
     def get_context_data(self, **kwargs):
+
         course_id = self.request.session['lti_launch_params']['custom_canvas_course_id']
         student_id = self.request.session['lti_launch_params']['custom_canvas_user_id']
         rubrics = Rubric.objects.filter(reviewed_assignment__course_id=course_id,
                                         peer_review_distribution__is_distribution_complete=True)\
                                 .order_by('reviewed_assignment__due_date_utc')
-        reviews = [(rubric.reviewed_assignment.title,
-                    {'due_date': rubric.passback_assignment.due_date_utc,
-                     'submissions': rubric.reviewed_assignment.canvas_submission_set
-                                                              .filter(peerreview__student_id=student_id)
-                                                              .annotate(Count('peerreview__comments'))
-                                                              .annotate(peer_review_complete=Case(
-                                                                  When(peerreview__comments__count__gte=
-                                                                       rubric.criteria.count(),
-                                                                       then=Value(True)),
-                                                                  default=Value(False),
-                                                                  output_field=BooleanField()))})
-                   for rubric in rubrics]
+        reviews = OrderedDict()
+        for rubric in rubrics:
+            details = {
+                'title': rubric.reviewed_assignment.title,
+                'due_date': rubric.passback_assignment.due_date_utc,
+                'submissions': rubric.reviewed_assignment.canvas_submission_set
+                    .filter(peerreview__student_id=student_id)
+                    .annotate(Count('peerreview__comments'))
+                    .annotate(peer_review_complete=Case(
+                        When(peerreview__comments__count__gte=rubric.criteria.count(), then=Value(True)),
+                        default=Value(False),
+                        output_field=BooleanField()
+                    )
+                )
+            }
+            if some(lambda s: not s.peer_review_complete, details['submissions']):
+                reviews[rubric.reviewed_assignment_id] = details
+
+        finished_prompt_id = self.request.GET.get('finished')
+        if finished_prompt_id and finished_prompt_id not in reviews:
+            finished_prompt = CanvasAssignment.objects.get(id=int(finished_prompt_id))
+        else:
+            finished_prompt = None
+
         submissions_reviewed = \
             PeerReview.objects.filter(submission__author_id=student_id,
                                       submission__assignment__course_id=course_id,
@@ -303,8 +316,9 @@ class StudentDashboardView(HasRoleMixin, TemplateView):
         reviews_received = [(CanvasSubmission.objects.get(id=submission_id), number_of_reviews)
                             for submission_id, number_of_reviews in review_submission_counts.items()]
 
-        return {'reviews_to_complete': reviews,
-                'reviews_received': reviews_received}
+        return {'reviews_to_complete': reviews.values(),
+                'reviews_received': reviews_received,
+                'finished_prompt': finished_prompt}
 
 
 class ReviewsByStudentView(HasRoleMixin, TemplateView):
