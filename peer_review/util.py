@@ -28,3 +28,7 @@ def parse_json_body(b):
         return keymap(to_snake_case, b_obj)
     elif isinstance(b_obj, list):
         return list(map(lambda d: keymap(to_snake_case, d), b_obj))
+
+
+def some(predicate, collection):
+    return any(map(predicate, collection))

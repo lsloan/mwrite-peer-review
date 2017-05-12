@@ -1,5 +1,11 @@
 .peer-review-card {
     width: 100%;
+    margin-bottom: 10px;
+    min-height: 0;
+}
+
+.section-card {
+    min-height: 0;
 }
 
 .peer-review-submissions-container {

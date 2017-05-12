@@ -1,66 +1,78 @@
-{% extends 'base_materialize.html' %}
+{% extends 'base_mdl.html' %}
 {% load static %}
 
 {% block header %}
-    <script defer="" src="{% static 'js/review.js' %}"></script>
-    <link rel="stylesheet" href="{% static 'css/review.css' %}">
+    <link rel="stylesheet" href="{% static 'css/mdl/review.css' %}">
+    <script defer src="{% static 'js/lib/autoresize/autosize.min.js' %}"></script>
+    <script defer src="{% static 'js/mdl/util.js' %}"></script>
+    <script defer src="{% static 'js/mdl/review.js' %}"></script>
 {% endblock %}
 
 {% block content %}
-    <div>
-        <div class="row">
-            <div class="col s12"><h4>{{ submission.assignment.title }}</h4></div>
-        </div>
-        <div class="row">
-            <div class="col s12">
-                <div class="card">
-                    <div class="card-content">
-                        <div>
-                            <div><span class="card-title">Download The Submission</span></div>
-                            <a class="btn waves-effect waves-light blue accent-3"
-                               href="/submissions/{{ submission.id }}/download">
-                                <div><i class="material-icons left">file_download</i>Download</div>
-                            </a>
-                        </div>
+    <div class="mdl-grid">
+        <div class="mdl-cell mdl-cell--2-col mdl-cell--2-col-tablet mdl-cell-1-col-phone"></div>
+        <div class="mdl-card mdl-shadow--2dp mdl-cell mdl-cell--8-col mdl-cell--6-col-tablet mdl-cell-2-col-phone">
+            <div class="mdl-card__title">
+                <h1 class="mdl-card__title-text">Download The Submission</h1>
+            </div>
+            <div class="mdl-card__actions mdl-card--border">
+                <a class="mdl-button mdl-button--colored mdl-js-button mdl-js-ripple-effect"
+                   href="/submissions/{{ submission.id }}/download">
+                    <div class="icon-container">
+                        <i class="material-icons icon-24px">file_download</i>
+                        <span class="icon-caption">Download</span>
                     </div>
-                </div>
+                </a>
             </div>
         </div>
-        <div class="row">
-            <div class="col s12">
-                <div class="card">
-                    <div class="card-content">
-                        <div>
-                            <div><span class="card-title">Submit Your Review</span></div>
-                            <form action="/review/submission/{{ submission.id }}"
-                                  onsubmit="submitReview({{ submission.assignment.id }}); return false;"
-                                  data-comment-form="">
-                                <input type="hidden" id="__anti-forgery-token" value="{{ csrf_token }}">
-                                <h5>Rubric Description</h5>
-                                <p class="rubric-description">{{ rubric.description }}</p>
-                                {% for criterion in criteria %}
-                                    <div class="card">
-                                        <div class="card-content">
-                                            <div>
-                                                <span></span>
-                                                <p>{{ criterion.description }}</p>
-                                                <textarea class="materialize-textarea"
-                                                          data-criterion-id="{{ criterion.id }}"
-                                                          placeholder="Your response here..."></textarea>
-                                            </div>
-                                        </div>
-                                    </div>
-                                {% endfor %}
-                                <div class="center-align">
-                                    <button class="btn waves-effect waves-light blue accent-3"
-                                            data-submit-button=""
-                                            type="submit">Submit</button>
+        <div class="mdl-cell mdl-cell--2-col mdl-cell--2-col-tablet mdl-cell-1-col-phone"></div>
+    </div>
+    <div class="mdl-grid">
+        <div class="mdl-cell mdl-cell--2-col mdl-cell--2-col-tablet mdl-cell-1-col-phone"></div>
+        <div class="mdl-card mdl-shadow--2dp mdl-cell mdl-cell--8-col mdl-cell--6-col-tablet mdl-cell-2-col-phone">
+            <form action="/review/submission/{{ submission.id }}" data-prompt-id="{{ submission.assignment.id }}">
+                {% csrf_token %}
+                <div class="mdl-card__title">
+                    <h1 class="mdl-card__title-text">Submit Your Review</h1>
+                </div>
+                <div class="mdl-card__supporting-text">
+                    <p>{{ rubric.description }}</p>
+                    {% for criterion in criteria %}
+                        <div class="mdl-card mdl-shadow--2dp response-card">
+                            <div class="mdl-card__title">
+                                <h3 class="mdl-card__title-text">{{ criterion.description }}</h3>
+                            </div>
+                            <div class="mdl-card__supporting-text">
+                                <div class="mdl-textfield mdl-js-textfield">
+                                    <textarea id="criterion-{{ forloop.counter }}-textarea"
+                                              class="mdl-textfield__input"
+                                              type="text"
+                                              rows="2"
+                                              data-criterion-id="{{ criterion.id }}"></textarea>
+                                    <label for="criterion-{{ forloop.counter }}-textarea" class="mdl-textfield__label">Your response here...</label>
                                 </div>
-                            </form>
+                            </div>
                         </div>
-                    </div>
+                    {% endfor %}
                 </div>
+                <div class="mdl-card__actions mdl-card--border">
+                    <button type="submit"
+                            class="mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect mdl-button--accent">
+                        Submit
+                    </button>
+                </div>
+            </form>
+        </div>
+        <div class="mdl-cell mdl-cell--2-col mdl-cell--2-col-tablet mdl-cell-1-col-phone"></div>
+    </div>
+    <div class="mdl-grid">
+        <div class="mdl-cell mdl-cell--3-col mdl-cell--1-col-tablet mdl-cell-1-col-phone"></div>
+        <div class="mdl-cell mdl-cell--6-col mdl-cell--6-col-tablet mdl-cell-2-col-phone">
+            <div id="snackbar" class="mdl-snackbar mdl-js-snackbar">
+                <div class="mdl-snackbar__text"></div>
+                <button type="button" class="mdl-snackbar__action"></button>
             </div>
         </div>
+        <div class="mdl-cell mdl-cell--3-col mdl-cell--1-col-tablet mdl-cell-1-col-phone"></div>
     </div>
 {% endblock %}
