@@ -331,7 +331,7 @@ class ReviewsByStudentView(HasRoleMixin, TemplateView):
                 'rubric': rubric}
 
 
-class ReviewsForAStudentSubmissionView(HasRoleMixin, TemplateView):
+class ReviewsOfMyWorkView(HasRoleMixin, TemplateView):
     allowed_roles = 'student'
     template_name = 'reviews_of_my_work.html'
 
