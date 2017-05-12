@@ -1,19 +1,24 @@
-{% extends 'base_materialize.html' %}
+{% extends 'base_mdl.html' %}
 {% load static %}
 
 {% block header %}
-    <link rel="stylesheet" href="{% static 'css/safari_launch.css' %}">
     <script defer="" src="{% static 'js/safari.js' %}"></script>
 {% endblock %}
 
 {% block content %}
     <div>
-        <div class="row">
-            <div class="col s12 center">
+        <div class="mdl-grid">
+            <div class="mdl-cell mdl-cell--2-col mdl-cell--1-col-tablet mdl-cell-1-col-phone"></div>
+            <div class="mdl-cell mdl-cell--8-col mdl-cell--6-col-tablet mdl-cell-2-col-phone">
                 <p>Welcome to MWrite Peer Review!  Please click the button below to launch the tool.</p>
-                <div class="btn waves-effect waves-light blue accent-3" style="text-transform: capitalize;"
-                     onclick="launchForSafari('{{ referer }}');">Launch Peer Review</div>
+                <button id="launch-button"
+                        data-referer="{{ referer }}"
+                        type="button"
+                        class="mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect mdl-button--accent">
+                    Launch M-Write Peer Review
+                </button>
             </div>
+            <div class="mdl-cell mdl-cell--2-col mdl-cell--1-col-tablet mdl-cell-1-col-phone"></div>
         </div>
     </div>
 {% endblock%}
