@@ -310,6 +310,7 @@ class ReviewsByStudentView(HasRoleMixin, TemplateView):
     allowed_roles = 'instructor'
     template_name = 'reviews_by_student.html'
 
+    # TODO see how much of this can be accomplished with aggregation via the ORM
     def get_context_data(self, **kwargs):
         rubric = Rubric.objects.get(id=kwargs['rubric_id'])
         number_of_criteria = rubric.criteria.count()
@@ -361,7 +362,7 @@ class ReviewsForAStudentView(HasRoleMixin, TemplateView):
         rubric = Rubric.objects.get(id=kwargs['rubric_id'])
         student = CanvasStudent.objects.get(id=kwargs['student_id'])
 
-        peer_review_ids = PeerReview.objects.filter(submission__assignment=rubric.reviewed_assignment,student=student) \
+        peer_review_ids = PeerReview.objects.filter(submission__assignment=rubric.reviewed_assignment, student=student)\
                                             .values_list('id')
         details = [(criterion,
                     PeerReviewComment.objects.filter(criterion=criterion, peer_review_id__in=peer_review_ids)
