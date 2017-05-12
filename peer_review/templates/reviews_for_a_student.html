@@ -2,7 +2,7 @@
 {% load static %}
 
 {% block header %}
-    <link rel="stylesheet" href="{% static 'css/mdl/reviews_of_my_work.css' %}" />
+    <link rel="stylesheet" href="{% static 'css/mdl/reviews_for_a_student.css' %}" />
 {% endblock %}
 
 {% block content %}
@@ -10,7 +10,7 @@
         <div class="mdl-cell mdl-cell--2-col mdl-cell--2-col-tablet mdl-cell-1-col-phone"></div>
         <div class="mdl-card mdl-shadow--2dp mdl-cell mdl-cell--8-col mdl-cell--6-col-tablet mdl-cell-2-col-phone">
             <div class="mdl-card__title">
-                <h1 class="mdl-card__title-text">Comments For {{ prompt_title }}</h1>
+                <h1 class="mdl-card__title-text">Comments For {{ prompt_title }} by {{ student.sortable_name }}</h1>
             </div>
             <div class="mdl-card__supporting-text">
                 {% for criterion, comments in review %}
@@ -21,7 +21,13 @@
                                 {% for comment in comments %}
                                     <div class="mdl-list__item">
                                         <span class="mdl-list__item-primary-content">
-                                            <span><b>Anonymous {{ forloop.counter }} said</b> "{{ comment.comment }}"</span>
+                                            <span>
+                                                <b>{{ student.sortable_name }} said concerning
+                                                    <a href="/submissions/{{ comment.peer_review.submission.id }}">
+                                                        {{ comment.peer_review.submission.author.sortable_name }}'s submission
+                                                    </a>
+                                                </b> "{{ comment.comment }}"
+                                            </span>
                                         </span>
                                     </div>
                                 {% endfor %}

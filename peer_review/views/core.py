@@ -18,7 +18,7 @@ from toolz.itertoolz import unique
 
 from peer_review.etl import persist_assignments, AssignmentValidation
 from peer_review.models import Rubric, Criterion, CanvasAssignment, PeerReviewDistribution, CanvasSubmission, \
-    PeerReview, PeerReviewComment
+    PeerReview, PeerReviewComment, CanvasStudent
 from peer_review.util import parse_json_body
 
 logger = logging.getLogger(__name__)
@@ -348,10 +348,25 @@ class ReviewsOfMyWorkView(HasRoleMixin, TemplateView):
                     PeerReviewComment.objects.filter(criterion=criterion, peer_review_id__in=peer_review_ids)
                                              .order_by('peer_review__submission__author_id'))
                    for criterion in rubric.criteria.all()]
-        return {'title': submission.assignment.title,
+        return {'prompt_title': submission.assignment.title,
                 'review': details}
 
 
 class ReviewsForAStudentView(HasRoleMixin, TemplateView):
     allowed_roles = 'instructor'
     template_name = 'reviews_for_a_student.html'
+
+    def get_context_data(self, **kwargs):
+
+        rubric = Rubric.objects.get(id=kwargs['rubric_id'])
+        student = CanvasStudent.objects.get(id=kwargs['student_id'])
+
+        peer_review_ids = PeerReview.objects.filter(submission__assignment=rubric.reviewed_assignment,student=student) \
+                                            .values_list('id')
+        details = [(criterion,
+                    PeerReviewComment.objects.filter(criterion=criterion, peer_review_id__in=peer_review_ids)
+                                             .order_by('peer_review__submission__author_id'))
+                   for criterion in rubric.criteria.all()]
+        return {'prompt_title': rubric.reviewed_assignment.title,
+                'student': student,
+                'review': details}
