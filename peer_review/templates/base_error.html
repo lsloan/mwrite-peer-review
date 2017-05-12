@@ -1,12 +1,23 @@
-{% extends 'base_materialize.html' %}
+{% extends 'base_mdl.html' %}
 
 {% block content %}
-    <div>
-        <p>
-            {% block error_message %}{% endblock %}
-        </p>
-        <p>
-            If you need help, please <a href="mailto:mwrite.support@umich.edu">reach out to us</a> to report the problem. Thank you!
-        </p>
+    <div class="mdl-grid">
+        <div class="mdl-cell mdl-cell--3-col mdl-cell--2-col-tablet mdl-cell-1-col-phone"></div>
+        <div class="mdl-card mdl-shadow--2dp mdl-cell mdl-cell--6-col mdl-cell--4-col-tablet mdl-cell-2-col-phone">
+            <div class="mdl-card__title">
+                <h1 class="mdl-card__title-text">We're Sorry</h1>
+            </div>
+            <div class="mdl-card__supporting-text">
+                <p>{% block error_message %}{% endblock %}</p>
+                <p>If you need help, please <a href="mailto:mwrite.support@umich.edu">reach out to us</a> to report the problem. Thank you!</p>
+            </div>
+            <div class="mdl-card__actions mdl-card--border">
+                <a class="mdl-button mdl-button--colored mdl-js-button mdl-js-ripple-effect"
+                   href="mailto:mwrite.support@umich.edu">
+                    Get Help
+                </a>
+            </div>
+        </div>
+        <div class="mdl-cell mdl-cell--3-col mdl-cell--2-col-tablet mdl-cell-1-col-phone"></div>
     </div>
 {% endblock %}
