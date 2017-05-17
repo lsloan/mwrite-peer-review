@@ -37,7 +37,12 @@ class LtiBackend(ModelBackend):
 
     @staticmethod
     def _determine_role(lti_launch_request):
-        return 'instructor' if 'Instructor' in lti_launch_request.roles else 'student'
+        roles = lti_launch_request.roles
+        if 'Instructor' in roles or 'urn:lti:role:ims/lis/TeachingAssistant' in roles or 'ContentDeveloper' in roles:
+            role = 'instructor'
+        else:
+            role = 'student'
+        return role
 
     def authenticate(self, request, lti_launch_request):
         validator = LtiRequestValidator()
