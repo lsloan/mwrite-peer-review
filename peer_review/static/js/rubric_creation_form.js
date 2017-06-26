@@ -188,10 +188,33 @@
         event.preventDefault();
     }
 
-    $(document).ready(function () {
-        autosize($('textarea'));
-        initializeMenus();
-        $('#criteria-card').find('div.mdl-card__actions button').click(addCriterionCard);
-        $('form').submit(submitRubricForm);
+    //$(document).ready(function () {
+    //    autosize($('textarea'));
+    //    initializeMenus();
+    //    $('#criteria-card').find('div.mdl-card__actions button').click(addCriterionCard);
+    //    $('form').submit(submitRubricForm);
+    //});
+
+    // TODO remove everything above
+
+    new Vue({
+        el: '#vue-root',
+        components: VueMdl.components,
+        directives: VueMdl.directives,
+        data: {
+            assignments: null,
+            validations: null,
+            existingPromptId: null,
+            existingRevisionId: null,
+            reviewIsInProgress: null
+        },
+        mounted: function() {
+            var $form = $('#rubric-form');
+            this.assignments = $form.data('assignments');
+            this.validations = $form.data('validation-info');
+            this.existingPromptId = $form.data('selected-assignment-id');
+            this.existingRevisionId = $form.data('selected-assignment-id');
+            this.reviewIsInProgress = $form.data('review-is-in-progress');
+        }
     });
 })();

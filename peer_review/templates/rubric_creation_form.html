@@ -3,6 +3,10 @@
 
 {% block header %}
     <link rel="stylesheet" href="{% static 'css/rubric_creation_form.css' %}"/>
+
+    <script defer src="https://unpkg.com/vue"></script>
+    <script defer src="{% static 'js/lib/vue-mdl.js' %}"></script>
+
     <script defer src="{% static 'js/lib/autoresize/autosize.min.js' %}"></script>
     <script defer src="{% static 'js/util.js' %}"></script>
     <script defer src="{% static 'js/validation.js' %}"></script>
@@ -10,140 +14,161 @@
 {% endblock %}
 
 {% block content %}
-    <form action="/rubric/course/{{ course_id }}/assignment/{{ passback_assignment_id }}"
+    <form id="rubric-form"
+          action="/rubric/course/{{ course_id }}/assignment/{{ passback_assignment_id }}"
           data-assignments="{{ potential_prompts_and_rubrics }}"
-          data-validation-info="{{ validations }}">
+          data-validation-info="{{ validations }}"
+          data-existing-prompt-id{% if existing_prompt %}="{{ existing_prompt }}"{% endif %}
+          data-existing-revision-id{% if existing_revision %}="{{ existing_revision }}"{% endif %}
+          data-review-is-in-progress={% if review_is_in_progress %}true{% else %}false{% endif %}>
+
         {% csrf_token %}
-        {% if review_is_in_progress %}
+
+        {% verbatim %}
+        <div id="vue-root">
+
+            <template v-if="reviewIsInProgress">
+                <div class="mdl-grid">
+                    <div class="mdl-cell mdl-cell--3-col mdl-cell--1-col-tablet mdl-cell-1-col-phone"></div>
+                    <mdl-card
+                            class="read-only-rubric-card mdl-shadow--2dp mdl-cell mdl-cell--6-col mdl-cell--6-col-tablet mdl-cell-2-col-phone"
+                            supporting-text="Reviews are in progress, so this rubric is now read-only."></mdl-card>
+                    <div class="mdl-cell mdl-cell--3-col mdl-cell--1-col-tablet mdl-cell-1-col-phone"></div>
+                </div>
+            </template>
+
             <div class="mdl-grid">
                 <div class="mdl-cell mdl-cell--3-col mdl-cell--1-col-tablet mdl-cell-1-col-phone"></div>
-                <div class="mdl-card read-only-rubric-card mdl-shadow--2dp mdl-cell mdl-cell--6-col mdl-cell--6-col-tablet mdl-cell-2-col-phone">
-                    <div class="mdl-card__supporting-text">
-                        <h4>Reviews are in progress, so this rubric is now read-only.</h4>
+
+                <!-- TODO pull this out into its own component -->
+                <!-- TODO double check markup vs the below -->
+                <mdl-card
+                        class="mdl-shadow--2dp mdl-cell mdl-cell--6-col mdl-cell--6-col-tablet mdl-cell-2-col-phone"
+                        title="Writing Prompt"
+                        supporting-text="slot">
+                    <div slot="supporting-text">
+                        <div class="mdl-card__supporting-text">
+                            <label for="prompt-menu">The rubric will be applied to the following assignment:</label>
+                            <br/>
+                            <button id="prompt-menu" type="button" class="mdl-button mdl-js-button">
+                                <span>Select an assignment...</span>
+                            </button>
+                            <ul for="prompt-menu" class="mdl-menu mdl-js-menu"></ul>
+                            <p class="assignment-info"></p>
+                        </div>
+                        <div class="mdl-card__supporting-text">list will go here</div>
                     </div>
-                </div>
+                </mdl-card>
+
                 <div class="mdl-cell mdl-cell--3-col mdl-cell--1-col-tablet mdl-cell-1-col-phone"></div>
             </div>
-        {% endif %}
-        <div class="mdl-grid">
-            <div class="mdl-cell mdl-cell--3-col mdl-cell--1-col-tablet mdl-cell-1-col-phone"></div>
-            <div id="prompt-card" class="mdl-card mdl-shadow--2dp mdl-cell mdl-cell--6-col mdl-cell--6-col-tablet mdl-cell-2-col-phone">
-                <div class="mdl-card__title">
-                    <h2 class="mdl-card__title-text">Writing Prompt</h2>
+
+            <template v-if="!(reviewIsInProgress && !existingRevisionId)">
+                <div class="mdl-grid">
+                    <div class="mdl-cell mdl-cell--3-col mdl-cell--1-col-tablet mdl-cell-1-col-phone"></div>
+
+                    <!-- TODO pull this out into its own component -->
+                    <!-- TODO double check markup vs the above -->
+                    <mdl-card
+                            class="mdl-card mdl-shadow--2dp mdl-cell mdl-cell--6-col mdl-cell--6-col-tablet mdl-cell-2-col-phone"
+                            title="Revision"
+                            supporting-text="slot">
+                        <div slot="supporting-text">
+                            <div class="mdl-card__supporting-text">
+                                <label for="revision-menu">
+                                    If students will be completing a revision, please select the revision assignment here.
+                                </label>
+                                <br/>
+                                <button id="revision-menu"
+                                        type="button"
+                                        class="mdl-button mdl-js-button">
+                                    <span>No revision</span>
+                                </button>
+                                <ul for="revision-menu" class="mdl-menu mdl-js-menu"></ul>
+                                <p class="assignment-info"></p>
+                            </div>
+                            <div class="mdl-card__supporting-text validations-container hidden" data-has-fatal-issues="false">
+                                <ul class="mdl-list"></ul>
+                            </div>
+                        </div>
+                    </mdl-card>
+
+                    <div class="mdl-cell mdl-cell--3-col mdl-cell--1-col-tablet mdl-cell-1-col-phone"></div>
                 </div>
-                <div class="mdl-card__supporting-text">
-                    <label for="prompt-menu">The rubric will be applied to the following assignment:</label>
-                    <br/>
-                    <button id="prompt-menu"
-                            type="button"
-                            class="mdl-button mdl-js-button"
-                            data-selected-assignment-id={{ existing_prompt.id }}
-                            {% if review_is_in_progress %}disabled{% endif %}>
-                        <span>Select an assignment...</span>
-                    </button>
-                    <ul for="prompt-menu" class="mdl-menu mdl-js-menu"></ul>
-                    <p class="assignment-info"></p>
-                </div>
-                <div class="mdl-card__supporting-text validations-container hidden" data-has-fatal-issues="false">
-                    <ul class="mdl-list"></ul>
-                </div>
-            </div>
-            <div class="mdl-cell mdl-cell--3-col mdl-cell--1-col-tablet mdl-cell-1-col-phone"></div>
-        </div>
-        {% if should_show_revision_info %}
+            </template>
+
             <div class="mdl-grid">
                 <div class="mdl-cell mdl-cell--3-col mdl-cell--1-col-tablet mdl-cell-1-col-phone"></div>
-                <div id="revision-card" class="mdl-card mdl-shadow--2dp mdl-cell mdl-cell--6-col mdl-cell--6-col-tablet mdl-cell-2-col-phone">
-                    <div class="mdl-card__title">
-                        <h2 class="mdl-card__title-text">Revision</h2>
+
+                <mdl-card
+                        class="mdl-card mdl-shadow--2dp mdl-cell mdl-cell--6-col mdl-cell--6-col-tablet mdl-cell-2-col-phone"
+                        title="Description"
+                        supporting-text="slot">
+                    <div slot="supporting-text" class="mdl-card__supporting-text">
+                        <div class="mdl-textfield mdl-js-textfield">
+                            <textarea
+                                    class="mdl-textfield__input"
+                                    type="text"
+                                    rows="1">TODO existing rubric description goes here</textarea>
+                            <label for="rubric-description-textfield" class="mdl-textfield__label">
+                                Enter a description for this rubric here.
+                            </label>
+                        </div>
                     </div>
-                    <div class="mdl-card__supporting-text">
-                        <label for="revision-menu">
-                            If students will be completing a revision, please select the revision assignment here.
-                        </label>
-                        <br/>
-                        <button id="revision-menu"
-                                type="button"
-                                class="mdl-button mdl-js-button"
-                                data-selected-assignment-id="{{ existing_revision.id }}"
-                                {% if review_is_in_progress %}disabled{% endif %}>
-                            <span>No revision</span>
-                        </button>
-                        <ul for="revision-menu" class="mdl-menu mdl-js-menu"></ul>
-                        <p class="assignment-info"></p>
-                    </div>
-                    <div class="mdl-card__supporting-text validations-container hidden" data-has-fatal-issues="false">
-                        <ul class="mdl-list"></ul>
-                    </div>
-                </div>
+                </mdl-card>
+
                 <div class="mdl-cell mdl-cell--3-col mdl-cell--1-col-tablet mdl-cell-1-col-phone"></div>
             </div>
-        {% endif %}
-        <div class="mdl-grid">
-            <div class="mdl-cell mdl-cell--3-col mdl-cell--1-col-tablet mdl-cell-1-col-phone"></div>
-            <div id="rubric-description-card" class="mdl-card mdl-shadow--2dp mdl-cell mdl-cell--6-col mdl-cell--6-col-tablet mdl-cell-2-col-phone">
-                <div class="mdl-card__title">
-                    <h2 class="mdl-card__title-text">Description</h2>
-                </div>
-                <div class="mdl-card__supporting-text">
-                    <div class="mdl-textfield mdl-js-textfield">
-                        <textarea id="rubric-description-textfield" class="mdl-textfield__input" type="text" rows="1"
-                                  {% if review_is_in_progress %}disabled{% endif %}>{{ existing_rubric.description }}</textarea>
-                        <label for="rubric-description-textfield" class="mdl-textfield__label">
-                            Enter a description for this rubric here.
-                        </label>
+
+            <div class="mdl-grid">
+                <div class="mdl-cell mdl-cell--3-col mdl-cell--1-col-tablet mdl-cell-1-col-phone"></div>
+
+                <mdl-card
+                        class="mdl-card mdl-shadow--2dp mdl-cell mdl-cell--6-col mdl-cell--6-col-tablet mdl-cell-2-col-phone"
+                        title="Criteria"
+                        supporting-text="slot"
+                        :actions="!reviewIsInProgress ? 'slot' : ''">
+                    <div slot="supporting-text" class="criteria-container mdl-card__supporting-text">
+                        <p>TODO criterion inputs go here</p>
                     </div>
-                </div>
-            </div>
-            <div class="mdl-cell mdl-cell--3-col mdl-cell--1-col-tablet mdl-cell-1-col-phone"></div>
-        </div>
-        <div class="mdl-grid">
-            <div class="mdl-cell mdl-cell--3-col mdl-cell--1-col-tablet mdl-cell-1-col-phone"></div>
-            <div id="criteria-card" class="mdl-card mdl-shadow--2dp mdl-cell mdl-cell--6-col mdl-cell--6-col-tablet mdl-cell-2-col-phone">
-                <div class="mdl-card__title">
-                    <h2 class="mdl-card__title-text">Criteria</h2>
-                </div>
-                <div class="criteria-container mdl-card__supporting-text">
-                    {% include 'criterion_card.html' with removable=False read_only=review_is_in_progress criterion=existing_rubric.criteria.all.0.description i=0%}
-                    {% for criterion in existing_rubric.criteria.all|slice:"1:" %}
-                        {% include 'criterion_card.html' with removable=True read_only=review_is_in_progress criterion=criterion.description i=forloop.counter0 %}
-                    {% endfor %}
-                </div>
-                {% if not review_is_in_progress %}
-                    <div class="mdl-card__actions">
+                    <div slot="actions" class="mdl-card__actions">
                         <button type="button"
-                                class="mdl-button mdl-js-button mdl-button--fab mdl-button--mini-fab mdl-button--colored"
-                                data-criterion-card-template="{{ criterion_card_html }}">
+                                class="mdl-button mdl-js-button mdl-button--fab mdl-button--mini-fab mdl-button--colored">
                             <i class="material-icons">add</i>
                         </button>
                     </div>
-                {% endif %}
-            </div>
-            <div class="mdl-cell mdl-cell--3-col mdl-cell--1-col-tablet mdl-cell-1-col-phone"></div>
-        </div>
-        {% if not review_is_in_progress %}
-            <div class="mdl-grid">
-                <div class="mdl-cell mdl-cell--3-col mdl-cell--1-col-tablet mdl-cell-1-col-phone"></div>
-                <div class="mdl-cell mdl-cell--6-col mdl-cell--6-col-tablet mdl-cell-2-col-phone">
-                    <button
-                            class="mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect mdl-button--accent"
-                            type="submit"
-                            disabled>
-                        Submit
-                    </button>
-                </div>
+                </mdl-card>
+
                 <div class="mdl-cell mdl-cell--3-col mdl-cell--1-col-tablet mdl-cell-1-col-phone"></div>
             </div>
-            <div class="mdl-grid">
-                <div class="mdl-cell mdl-cell--3-col mdl-cell--1-col-tablet mdl-cell-1-col-phone"></div>
-                <div class="mdl-cell mdl-cell--6-col mdl-cell--6-col-tablet mdl-cell-2-col-phone">
-                    <div id="snackbar" class="mdl-snackbar mdl-js-snackbar">
-                        <div class="mdl-snackbar__text"></div>
-                        <button type="button" class="mdl-snackbar__action"></button>
+
+            <template v-if="!reviewIsInProgress">
+
+                <div class="mdl-grid">
+                    <div class="mdl-cell mdl-cell--3-col mdl-cell--1-col-tablet mdl-cell-1-col-phone"></div>
+                    <div class="mdl-cell mdl-cell--6-col mdl-cell--6-col-tablet mdl-cell-2-col-phone">
+                        <button
+                                class="mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect mdl-button--accent"
+                                type="submit"
+                                disabled>
+                            Submit
+                        </button>
                     </div>
+                    <div class="mdl-cell mdl-cell--3-col mdl-cell--1-col-tablet mdl-cell-1-col-phone"></div>
                 </div>
-                <div class="mdl-cell mdl-cell--3-col mdl-cell--1-col-tablet mdl-cell-1-col-phone"></div>
-            </div>
-        {% endif %}
+
+                <div class="mdl-grid">
+                    <div class="mdl-cell mdl-cell--3-col mdl-cell--1-col-tablet mdl-cell-1-col-phone"></div>
+                    <div class="mdl-cell mdl-cell--6-col mdl-cell--6-col-tablet mdl-cell-2-col-phone">
+                        <mdl-snackbar display-on="rubricUpdated"></mdl-snackbar>
+                    </div>
+                    <div class="mdl-cell mdl-cell--3-col mdl-cell--1-col-tablet mdl-cell-1-col-phone"></div>
+                </div>
+
+            </template>
+
+        </div>
+        {% endverbatim %}
+
     </form>
 {% endblock %}
