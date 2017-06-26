@@ -15,7 +15,7 @@ textarea {
     width: 100%;
 }
 
-#prompt-card.mdl-card, #revision-card.mdl-card {
+.mdl-card, .mdl-card .mdl-card__supporting-text {
     overflow: visible;
     z-index: auto;
 }

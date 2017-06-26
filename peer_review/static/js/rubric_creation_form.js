@@ -197,24 +197,43 @@
 
     // TODO remove everything above
 
+    // TODO should this just be changed in the Django view?
+    function assignmentsToOptions(assignments) {
+        return _.map(assignments, function(val, key) {
+            return {value: parseInt(key), name: val};
+        });
+    }
+
     new Vue({
         el: '#vue-root',
         components: VueMdl.components,
         directives: VueMdl.directives,
-        data: {
-            assignments: null,
-            validations: null,
-            existingPromptId: null,
-            existingRevisionId: null,
-            reviewIsInProgress: null
-        },
         mounted: function() {
             var $form = $('#rubric-form');
-            this.assignments = $form.data('assignments');
+            this.assignments = assignmentsToOptions($form.data('assignments'));
             this.validations = $form.data('validation-info');
             this.existingPromptId = $form.data('selected-assignment-id');
             this.existingRevisionId = $form.data('selected-assignment-id');
             this.reviewIsInProgress = $form.data('review-is-in-progress');
+        },
+        data: {
+            assignments: null,
+            validations: null,
+            reviewIsInProgress: null,
+            selectedPromptId: null,
+            selectedRevisionId: null,
+
+            existingPromptId: null,
+            existingRevisionId: null
+        },
+        computed: {
+            promptChoices: function() {
+                return this.assignments;
+            },
+            revisionChoices: function() {
+                var noRevisionOption = {value: null, name: 'No revision'};
+                return [noRevisionOption].concat(this.assignments);
+            }
         }
     });
 })();

@@ -4,8 +4,9 @@
 {% block header %}
     <link rel="stylesheet" href="{% static 'css/rubric_creation_form.css' %}"/>
 
+    <script defer src="{% static 'js/lib/underscore/underscore.js' %}"></script>
     <script defer src="https://unpkg.com/vue"></script>
-    <script defer src="{% static 'js/lib/vue-mdl.js' %}"></script>
+    <script defer src="{% static 'js/lib/vue-mdl/vue-mdl.js' %}"></script>
 
     <script defer src="{% static 'js/lib/autoresize/autosize.min.js' %}"></script>
     <script defer src="{% static 'js/util.js' %}"></script>
@@ -43,17 +44,20 @@
                 <!-- TODO pull this out into its own component -->
                 <!-- TODO double check markup vs the below -->
                 <mdl-card
+                        id="prompt-card"
                         class="mdl-shadow--2dp mdl-cell mdl-cell--6-col mdl-cell--6-col-tablet mdl-cell-2-col-phone"
                         title="Writing Prompt"
                         supporting-text="slot">
                     <div slot="supporting-text">
                         <div class="mdl-card__supporting-text">
-                            <label for="prompt-menu">The rubric will be applied to the following assignment:</label>
-                            <br/>
-                            <button id="prompt-menu" type="button" class="mdl-button mdl-js-button">
-                                <span>Select an assignment...</span>
-                            </button>
-                            <ul for="prompt-menu" class="mdl-menu mdl-js-menu"></ul>
+                            <mdl-select
+                                    id="prompt-select"
+                                    label="The rubric will be applied to the following assignment:"
+                                    v-model="selectedPromptId"
+                                    :options="promptChoices">
+                            </mdl-select>
+
+                            <!-- TODO bind validation info -->
                             <p class="assignment-info"></p>
                         </div>
                         <div class="mdl-card__supporting-text">list will go here</div>
@@ -75,16 +79,13 @@
                             supporting-text="slot">
                         <div slot="supporting-text">
                             <div class="mdl-card__supporting-text">
-                                <label for="revision-menu">
-                                    If students will be completing a revision, please select the revision assignment here.
-                                </label>
-                                <br/>
-                                <button id="revision-menu"
-                                        type="button"
-                                        class="mdl-button mdl-js-button">
-                                    <span>No revision</span>
-                                </button>
-                                <ul for="revision-menu" class="mdl-menu mdl-js-menu"></ul>
+                                <mdl-select
+                                    id="revision-select"
+                                    label="If students will be completing a revision, please select the revision assignment here."
+                                    v-model="selectedRevisionId"
+                                    :options="revisionChoices">
+                                </mdl-select>
+
                                 <p class="assignment-info"></p>
                             </div>
                             <div class="mdl-card__supporting-text validations-container hidden" data-has-fatal-issues="false">
