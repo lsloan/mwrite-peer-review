@@ -256,19 +256,23 @@
                         return option.value === null || (option.value !== self.selectedPromptId && option.value !== self.selectedRevisionId);
                     }
                 });
+            },
+            promptIssues: function() {
+                return this.selectedPromptId !== null ? getValidationIssues(true, this.validations[this.selectedPromptId]) : [];
+            },
+            revisionIssues: function() {
+                return this.selectedRevisionId !== null ? getValidationIssues(false, this.validations[this.selectedRevisionId]) : [];
             }
         },
         methods: {
             addCriterion: function() {
                 this.criteria.push({id: this.nextCriterionId, description: ''});
-                console.log('created criterion', this.nextCriterionId);
                 this.nextCriterionId++;
             },
             removeCriterion: function(id) {
                 this.criteria = this.criteria.filter(function(criterion) {
                     return criterion.id !== id;
                 });
-                console.log('removed criterion', id);
             }
         }
     });

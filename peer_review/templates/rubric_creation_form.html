@@ -65,7 +65,20 @@
                                 <!-- TODO bind validation info -->
                                 <p class="assignment-info"></p>
                             </div>
-                            <div class="mdl-card__supporting-text">list will go here</div>
+
+                            <!-- TODO this could be abstracted into its own component -->
+                            <div v-if="promptIssues.length > 0" class="mdl-card__supporting-text validations-container">
+                                <ul class="mdl-list">
+                                    <li v-for="issue in promptIssues" class="mdl-list__item">
+                                        <span class="mdl-list__item-primary-content">
+                                            <i v-if="issue.fatal" class="material-icons mdl-list__item-icon">warning</i>
+                                            <i v-else class="material-icons mdl-list__item-icon">error_outline</i>
+                                            {{ issue.message }}
+                                        </span>
+                                    </li>
+                                </ul>
+                            </div>
+
                         </div>
                     </mdl-card>
 
@@ -93,9 +106,20 @@
 
                                     <p class="assignment-info"></p>
                                 </div>
-                                <div class="mdl-card__supporting-text validations-container hidden" data-has-fatal-issues="false">
-                                    <ul class="mdl-list"></ul>
+
+                                <!-- TODO this could be abstracted into its own component -->
+                                <div v-if="revisionIssues.length > 0" class="mdl-card__supporting-text validations-container">
+                                    <ul class="mdl-list">
+                                        <li v-for="issue in revisionIssues" class="mdl-list__item">
+                                            <span class="mdl-list__item-primary-content">
+                                                <i v-if="issue.fatal" class="material-icons mdl-list__item-icon">warning</i>
+                                                <i v-else class="material-icons mdl-list__item-icon">error_outline</i>
+                                                {{ issue.message }}
+                                            </span>
+                                        </li>
+                                    </ul>
                                 </div>
+
                             </div>
                         </mdl-card>
 
