@@ -216,6 +216,8 @@
             this.existingPromptId = $form.data('selected-assignment-id');
             this.existingRevisionId = $form.data('selected-assignment-id');
             this.reviewIsInProgress = $form.data('review-is-in-progress');
+            this.rubricDescription = $form.data('existing-rubric-description');
+            // TODO grab existing criteria
         },
         data: {
             assignments: null,
@@ -223,7 +225,9 @@
             reviewIsInProgress: null,
             selectedPromptId: null,
             selectedRevisionId: null,
-            rubricDescription: '',
+            rubricDescription: null,
+            criteria: [{id: 0, description: ''}],
+            nextCriterionId: 1,
 
             existingPromptId: null,
             existingRevisionId: null
@@ -252,6 +256,19 @@
                         return option.value === null || (option.value !== self.selectedPromptId && option.value !== self.selectedRevisionId);
                     }
                 });
+            }
+        },
+        methods: {
+            addCriterion: function() {
+                this.criteria.push({id: this.nextCriterionId, description: ''});
+                console.log('created criterion', this.nextCriterionId);
+                this.nextCriterionId++;
+            },
+            removeCriterion: function(id) {
+                this.criteria = this.criteria.filter(function(criterion) {
+                    return criterion.id !== id;
+                });
+                console.log('removed criterion', id);
             }
         }
     });

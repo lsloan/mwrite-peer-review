@@ -23,6 +23,7 @@
               action="/rubric/course/{{ course_id }}/assignment/{{ passback_assignment_id }}"
               data-assignments="{{ potential_prompts_and_rubrics }}"
               data-validation-info="{{ validations }}"
+              data-existing-rubric-description="{{ existing_rubric.description }}"
               data-existing-prompt-id{% if existing_prompt %}="{{ existing_prompt }}"{% endif %}
               data-existing-revision-id{% if existing_revision %}="{{ existing_revision }}"{% endif %}
               data-review-is-in-progress={% if review_is_in_progress %}true{% else %}false{% endif %}>
@@ -126,11 +127,25 @@
                             supporting-text="slot"
                             :actions="!reviewIsInProgress ? 'slot' : ''">
                         <div slot="supporting-text" class="criteria-container mdl-card__supporting-text">
-                            <p>TODO criterion inputs go here</p>
+
+                            <mdl-card v-for="(criterion, index) in criteria" :key="criterion.id" class="criterion-card mdl-shadow--2dp" supporting-text="slot">
+                                <div slot="supporting-text">
+                                    <div v-if="!reviewIsInProgress && index > 0" class="criterion-delete-button-container">
+                                        <button type="button" class="mdl-chip__action" tabindex="-1" @click="removeCriterion(criterion.id)">
+                                            <i class="material-icons">cancel</i>
+                                        </button>
+                                    </div>
+                                    <div class="mdl-card__supporting-text">
+                                        <autosize-textarea v-model="criterion.description" label="Enter a description for this criterion here."></autosize-textarea>
+                                    </div>
+                                </div>
+                            </mdl-card>
+
                         </div>
                         <div slot="actions" class="mdl-card__actions">
                             <button type="button"
-                                    class="mdl-button mdl-js-button mdl-button--fab mdl-button--mini-fab mdl-button--colored">
+                                    class="mdl-button mdl-js-button mdl-button--fab mdl-button--mini-fab mdl-button--colored"
+                                    @click="addCriterion">
                                 <i class="material-icons">add</i>
                             </button>
                         </div>
