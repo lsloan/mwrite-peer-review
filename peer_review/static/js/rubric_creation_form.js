@@ -209,12 +209,14 @@
         components: VueMdl.components,
         directives: VueMdl.directives,
         mounted: function() {
+            console.log('mounted: start');
             var $form = $('#rubric-form');
             this.assignments = assignmentsToOptions($form.data('assignments'));
             this.validations = $form.data('validation-info');
             this.existingPromptId = $form.data('selected-assignment-id');
             this.existingRevisionId = $form.data('selected-assignment-id');
             this.reviewIsInProgress = $form.data('review-is-in-progress');
+            console.log('mounted: end');
         },
         data: {
             assignments: null,
@@ -228,11 +230,28 @@
         },
         computed: {
             promptChoices: function() {
-                return this.assignments;
+                if(this.assignments === null) {
+                    return null;
+                }
+
+                var self = this;
+                return _.filter(this.assignments, function(option) {
+                    return option.value !== self.selectedRevisionId && option.value !== self.selectedPromptId;
+                });
             },
             revisionChoices: function() {
+                if(this.assignments === null) {
+                    return null;
+                }
+
+                var self = this;
                 var noRevisionOption = {value: null, name: 'No revision'};
-                return [noRevisionOption].concat(this.assignments);
+                var revisionOptions = [noRevisionOption].concat(this.assignments);
+                return _.filter(revisionOptions, function(option) {
+                    if(typeof(option) !== 'undefined') {
+                        return option.value === null || (option.value !== self.selectedPromptId && option.value !== self.selectedRevisionId);
+                    }
+                });
             }
         }
     });
