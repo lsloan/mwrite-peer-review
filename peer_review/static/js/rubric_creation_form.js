@@ -206,17 +206,16 @@
 
     new Vue({
         el: '#vue-root',
-        components: VueMdl.components,
+        components: _.defaults(VueMdl.components,
+                               {'autosize-textarea': AutosizeTextarea}),
         directives: VueMdl.directives,
         mounted: function() {
-            console.log('mounted: start');
             var $form = $('#rubric-form');
             this.assignments = assignmentsToOptions($form.data('assignments'));
             this.validations = $form.data('validation-info');
             this.existingPromptId = $form.data('selected-assignment-id');
             this.existingRevisionId = $form.data('selected-assignment-id');
             this.reviewIsInProgress = $form.data('review-is-in-progress');
-            console.log('mounted: end');
         },
         data: {
             assignments: null,
@@ -224,6 +223,7 @@
             reviewIsInProgress: null,
             selectedPromptId: null,
             selectedRevisionId: null,
+            rubricDescription: '',
 
             existingPromptId: null,
             existingRevisionId: null

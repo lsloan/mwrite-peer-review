@@ -8,9 +8,12 @@
     <script defer src="https://unpkg.com/vue"></script>
     <script defer src="{% static 'js/lib/vue-mdl/vue-mdl.js' %}"></script>
 
+    <script defer src="{% static 'js/components/autosize_textarea.js' %}"></script>
+
     <script defer src="{% static 'js/lib/autoresize/autosize.min.js' %}"></script>
     <script defer src="{% static 'js/util.js' %}"></script>
     <script defer src="{% static 'js/validation.js' %}"></script>
+
     <script defer src="{% static 'js/rubric_creation_form.js' %}"></script>
 {% endblock %}
 
@@ -108,15 +111,7 @@
                             title="Description"
                             supporting-text="slot">
                         <div slot="supporting-text" class="mdl-card__supporting-text">
-                            <div class="mdl-textfield mdl-js-textfield">
-                                <textarea
-                                        class="mdl-textfield__input"
-                                        type="text"
-                                        rows="1">TODO existing rubric description goes here</textarea>
-                                <label for="rubric-description-textfield" class="mdl-textfield__label">
-                                    Enter a description for this rubric here.
-                                </label>
-                            </div>
+                            <autosize-textarea v-model="rubricDescription" label="Enter a description for this rubric here."></autosize-textarea>
                         </div>
                     </mdl-card>
 
