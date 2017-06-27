@@ -20,11 +20,8 @@ textarea {
     z-index: auto;
 }
 
-#criteria-card .mdl-card {
+.criterion-card {
     margin-bottom: 16px;
-}
-
-#criteria-card .mdl-card {
     width: 100%;
     min-height: 0;
 }
@@ -42,6 +39,7 @@ button[type="submit"] {
     margin: 0 auto;
 }
 
+/* TODO still needed? */
 #prompt-menu, #revision-menu {
     border-bottom: 1px solid darkgray;
     margin-top: 20px;
@@ -66,10 +64,12 @@ button[type="submit"] {
     margin-top: 25px;
 }
 
+/* TODO still needed? */
 .read-only-rubric-card {
     min-height: 0;
 }
 
+/* TODO still needed? */
 .read-only-rubric-card h4 {
     margin-top: 16px;
     margin-bottom: 16px;
