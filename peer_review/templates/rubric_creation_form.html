@@ -27,6 +27,7 @@
               data-existing-rubric-description="{{ existing_rubric.description }}"
               data-existing-prompt-id="{% if existing_prompt %}{{ existing_prompt.id }}{% else %}null{% endif %}"
               data-existing-revision-id="{% if existing_revision %}{{ existing_revision.id }}{% else %}null{% endif %}"
+              data-existing-criteria="{{ criteria }}"
               data-review-is-in-progress={% if review_is_in_progress %}true{% else %}false{% endif %}>
 
             {% csrf_token %}

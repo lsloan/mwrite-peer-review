@@ -85,6 +85,10 @@ class RubricCreationFormView(HasRoleMixin, TemplateView):
             assignments.insert(0, existing_prompt)
         if existing_revision:
             assignments.insert(0, existing_revision)
+        if existing_rubric:
+            criteria = [c.description for c in existing_rubric.criteria.all()]
+        else:
+            criteria = None
         return {
             'course_id': course_id,
             'passback_assignment_id': passback_assignment_id,
@@ -94,6 +98,7 @@ class RubricCreationFormView(HasRoleMixin, TemplateView):
             'existing_prompt': existing_prompt,
             'existing_revision': existing_revision,
             'existing_rubric': existing_rubric,
+            'criteria': json.dumps(criteria),
             'review_is_in_progress': review_is_in_progress
         }
 
