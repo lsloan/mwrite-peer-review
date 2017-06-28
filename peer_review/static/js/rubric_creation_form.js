@@ -102,6 +102,7 @@
             },
             submitRubricForm: function() {
                 if(this.rubricIsValid) {
+
                     var data = {
                         promptId: this.selectedPromptId || null,
                         revisionId: this.selectedRevisionId || null,
@@ -110,7 +111,7 @@
                     };
 
                     postToEndpoint(
-                        document.querySelector('#rubric-form').getAttribute('action'), // TODO eventually we'll want to bring this under VueJS's control as well
+                        document.querySelector('#rubric-form').getAttribute('action'),
                         data,
                         function() {
                             // TODO is there a better event source than $root?
