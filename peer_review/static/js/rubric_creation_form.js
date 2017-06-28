@@ -213,8 +213,8 @@
             var $form = $('#rubric-form');
             this.assignments = assignmentsToOptions($form.data('assignments'));
             this.validations = $form.data('validation-info');
-            this.existingPromptId = $form.data('selected-assignment-id');
-            this.existingRevisionId = $form.data('selected-assignment-id');
+            this.selectedPromptId = $form.data('existing-prompt-id');
+            this.selectedRevisionId = $form.data('existing-revision-id');
             this.reviewIsInProgress = $form.data('review-is-in-progress');
             this.rubricDescription = $form.data('existing-rubric-description');
             // TODO grab existing criteria
@@ -227,14 +227,11 @@
             selectedRevisionId: null,
             rubricDescription: null,
             criteria: [{id: 0, description: ''}],
-            nextCriterionId: 1,
-
-            existingPromptId: null,
-            existingRevisionId: null
+            nextCriterionId: 1
         },
         computed: {
             promptChoices: function() {
-                if(this.assignments === null) {
+                if(!this.assignments) {
                     return null;
                 }
 
@@ -244,7 +241,7 @@
                 });
             },
             revisionChoices: function() {
-                if(this.assignments === null) {
+                if(!this.assignments) {
                     return null;
                 }
 
@@ -253,15 +250,43 @@
                 var revisionOptions = [noRevisionOption].concat(this.assignments);
                 return _.filter(revisionOptions, function(option) {
                     if(typeof(option) !== 'undefined') {
-                        return option.value === null || (option.value !== self.selectedPromptId && option.value !== self.selectedRevisionId);
+                        return !option.value || (option.value !== self.selectedPromptId && option.value !== self.selectedRevisionId);
                     }
                 });
             },
             promptIssues: function() {
-                return this.selectedPromptId !== null ? getValidationIssues(true, this.validations[this.selectedPromptId]) : [];
+                return this.selectedPromptId ? getValidationIssues(true, this.validations[this.selectedPromptId]) : [];
             },
             revisionIssues: function() {
-                return this.selectedRevisionId !== null ? getValidationIssues(false, this.validations[this.selectedRevisionId]) : [];
+                return this.selectedRevisionId ? getValidationIssues(false, this.validations[this.selectedRevisionId]) : [];
+            },
+            promptInfo: function() {
+                if(!this.selectedPromptId) {
+                    return '';
+                }
+                var validations = this.validations[this.selectedPromptId];
+                var sectionName = validations.sectionName || 'all students';
+                var localDueDate = validations.localDueDate;
+                if(sectionName !== null && localDueDate !== null) {
+                    return 'This prompt is assigned to ' + sectionName + ' and is due ' + localDueDate + '.';
+                }
+                else {
+                    return '';
+                }
+            },
+            revisionInfo: function() {
+                if(!this.selectedRevisionId) {
+                    return '';
+                }
+                var validations = this.validations[this.selectedRevisionId];
+                var sectionName = validations.sectionName || 'all students';
+                var localDueDate = validations.localDueDate;
+                if(sectionName !== null && localDueDate !== null) {
+                    return 'This revision is assigned to ' + sectionName + ' and is due ' + localDueDate + '.';
+                }
+                else {
+                    return '';
+                }
             }
         },
         methods: {

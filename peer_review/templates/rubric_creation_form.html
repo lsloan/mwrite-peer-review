@@ -63,7 +63,7 @@
                                 </mdl-select>
 
                                 <!-- TODO bind validation info -->
-                                <p class="assignment-info"></p>
+                                <p v-if="promptInfo" class="assignment-info">{{ promptInfo }}</p>
                             </div>
 
                             <!-- TODO this could be abstracted into its own component -->
@@ -104,7 +104,7 @@
                                         :options="revisionChoices">
                                     </mdl-select>
 
-                                    <p class="assignment-info"></p>
+                                    <p v-if="revisionInfo" class="assignment-info">{{ revisionInfo }}</p>
                                 </div>
 
                                 <!-- TODO this could be abstracted into its own component -->
