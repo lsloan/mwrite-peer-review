@@ -4,13 +4,15 @@
         components: _.defaults({'autosize-textarea': AutosizeTextarea}, VueMdl.components),
         directives: VueMdl.directives,
         mounted: function() {
-            var data = _.mapValues(document.querySelector('#rubric-form').dataset, JSON.parse);
-            this.assignments = data['assignments'];
-            this.validations = data['validation-info'];
-            this.selectedPromptId = data['existing-prompt-id'];
-            this.selectedRevisionId = data['existing-revision-id'];
-            this.reviewIsInProgress = data['review-is-in-progress'];
-            this.rubricDescription = data['existing-rubric-description'];
+            var data = document.querySelector('#rubric-form').dataset;
+            this.assignments = _.map(JSON.parse(data['assignments']), function(value, key) {
+                return {value: parseInt(key), name: value};
+            });
+            this.validations = JSON.parse(data['validationInfo']);
+            this.selectedPromptId = parseInt(data['existingPromptId']) || null;
+            this.selectedRevisionId = parseInt(data['existingRevisionId']) || null;
+            this.reviewIsInProgress = JSON.parse(data['reviewIsInProgress']);
+            this.rubricDescription = data['existingRubricDescription'];
             // TODO grab existing criteria
         },
         data: {
@@ -28,9 +30,9 @@
                     return null;
                 }
 
-                var self = this;
+                var vm = this;
                 return _.filter(this.assignments, function(option) {
-                    return option.value !== self.selectedRevisionId && option.value !== self.selectedPromptId;
+                    return option.value !== vm.selectedRevisionId && option.value !== vm.selectedPromptId;
                 });
             },
             revisionChoices: function() {
@@ -38,12 +40,12 @@
                     return null;
                 }
 
-                var self = this;
+                var vm = this;
                 var noRevisionOption = {value: null, name: 'No revision'};
                 var revisionOptions = [noRevisionOption].concat(this.assignments);
                 return _.filter(revisionOptions, function(option) {
                     if(typeof(option) !== 'undefined') {
-                        return !option.value || (option.value !== self.selectedPromptId && option.value !== self.selectedRevisionId);
+                        return !option.value || (option.value !== vm.selectedPromptId && option.value !== vm.selectedRevisionId);
                     }
                 });
             },
@@ -110,19 +112,19 @@
                         criteria: _.map(this.criteria, function(c) { return _.trim(c.description) || null; })
                     };
 
+                    var vm = this;
+
                     postToEndpoint(
                         document.querySelector('#rubric-form').getAttribute('action'),
                         data,
                         function() {
-                            // TODO is there a better event source than $root?
-                            this.$root.$emit('rubricSubmitted', {
+                            vm.$root.$emit('rubricSubmitted', {
                                 message: 'The rubric was successfully created.  You will be returned to the dashboard.'
                             });
                             setTimeout(function() { window.location.href = '/'; }, 4000);
                         },
                         function() {
-                            // TODO is there a better event source than $root?
-                            this.$root.$emit('rubricSubmitted', {
+                            vm.$root.$emit('rubricSubmitted', {
                                 message: 'An error occurred.  Please try again later.'
                             });
                         }

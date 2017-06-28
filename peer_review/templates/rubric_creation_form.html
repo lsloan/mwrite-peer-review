@@ -20,12 +20,13 @@
 
     <div id="vue-root">
         <form id="rubric-form"
+              @submit.prevent
               action="/rubric/course/{{ course_id }}/assignment/{{ passback_assignment_id }}"
               data-assignments="{{ potential_prompts_and_rubrics }}"
               data-validation-info="{{ validations }}"
-              data-existing-rubric-description="{% if existing_rubric %}{{ existing_rubric.description }}{% else %}null{% endif %}"
-              data-existing-prompt-id="{% if existing_prompt %}{{ existing_prompt }}{% else %}null{% endif %}"
-              data-existing-revision-id="{% if existing_revision %}{{ existing_revision }}{% else %}null{% endif %}"
+              data-existing-rubric-description="{{ existing_rubric.description }}"
+              data-existing-prompt-id="{% if existing_prompt %}{{ existing_prompt.id }}{% else %}null{% endif %}"
+              data-existing-revision-id="{% if existing_revision %}{{ existing_revision.id }}{% else %}null{% endif %}"
               data-review-is-in-progress={% if review_is_in_progress %}true{% else %}false{% endif %}>
 
             {% csrf_token %}
@@ -186,7 +187,8 @@
                             <button
                                     class="mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect mdl-button--accent"
                                     type="submit"
-                                    :disabled="!rubricIsValid">
+                                    :disabled="!rubricIsValid"
+                                    @click="submitRubricForm">
                                 Submit
                             </button>
                         </div>
