@@ -1,170 +1,4 @@
 (function() {
-    function populateIssuesList($container, issues) {
-        var $issuesList = $container.find('ul.mdl-list');
-        $issuesList.empty();
-        if (issues.length === 0) {
-            $container.addClass('hidden');
-            $container.attr('data-has-fatal-issues', false);
-        }
-        else {
-            for (var i = 0; i < issues.length; ++i) {
-                var issueIcon = issues[i].fatal ? 'warning' : 'error_outline';
-                var $element = $(
-                    '<li class="mdl-list__item">' +
-                        '<span class="mdl-list__item-primary-content">' +
-                            '<i class="material-icons mdl-list__item-icon">' + issueIcon + '</i>' +
-                            issues[i].message +
-                        '</span>' +
-                    '</li>'
-                );
-                $issuesList.append($element);
-            }
-            $container.removeClass('hidden');
-            $container.attr('data-has-fatal-issues', someIssuesAreFatal(issues));
-        }
-    }
-
-    function populateInfoParagraph($infoParagraph, validationsAreForPrompt, validations) {
-        if (typeof(validations) !== 'undefined') {
-            var sectionName = validations.sectionName || 'all students'; // TODO is this ok?
-            var localDueDate = validations.localDueDate;
-            if (sectionName !== null && localDueDate !== null) {
-                var assignmentType = validationsAreForPrompt ? 'prompt' : 'revision';
-                $infoParagraph.text('This ' + assignmentType + ' is assigned to ' + sectionName + ' and is due ' + localDueDate + '.');
-                $infoParagraph.removeClass('hidden');
-            }
-            else {
-                $infoParagraph.addClass('hidden');
-            }
-        }
-    }
-
-    function updateButtonState() {
-        var fatalIssuesExist = $.map($('.validations-container'), function (e) {
-                return $(e).attr('data-has-fatal-issues') === 'true';
-            })
-            .some(function (b) {
-                return b;
-            });
-        $('button[type="submit"]').prop('disabled', fatalIssuesExist);
-    }
-
-    function updateValidationStatus($selectedMenu, assignmentId) {
-        var validations = $('form').data('validation-info')[assignmentId];
-        var validationsAreForPrompt = $selectedMenu.attr('id') === 'prompt-menu';
-        var issues = getValidationIssues(validationsAreForPrompt, validations);
-        var $assignmentCard = $selectedMenu.parents('.mdl-card');
-        var $issuesContainer = $assignmentCard.find('.validations-container');
-        var $infoParagraph = $assignmentCard.find('.assignment-info');
-        populateIssuesList($issuesContainer, issues);
-        populateInfoParagraph($infoParagraph, validationsAreForPrompt, validations);
-        updateButtonState();
-    }
-
-    // TODO refactor for style / brevity
-    function refreshMenuItems(items, menuID, withoutItems) {
-        var $menu = $('#' + menuID);
-        var $itemContainer = $('ul[for="' + menuID + '"]');
-        $itemContainer.empty();
-        if(menuID === 'revision-menu' && $menu.attr('data-selected-assignment-id') !== '') {
-            var $noRevisionItem = $('<li></li>');
-            $noRevisionItem.addClass('mdl-menu__item');
-            $noRevisionItem.attr('data-assignment-id', '');
-            $noRevisionItem.text('No revision');
-            $noRevisionItem.click(selectAssignment);
-            $itemContainer.append($noRevisionItem);
-        }
-        for(var id in items) {
-            if(items.hasOwnProperty(id) && $.inArray(id, withoutItems) === -1) {
-                var $item = $('<li></li>');
-                $item.addClass('mdl-menu__item');
-                $item.attr('data-assignment-id', id);
-                $item.text(items[id]);
-                $item.click(selectAssignment);
-                $itemContainer.append($item);
-            }
-        }
-        componentHandler.upgradeElement($menu.get(0));
-    }
-
-    function selectMenu($selectedMenu, caption, assignmentId) {
-        $selectedMenu.find('span').text(caption);
-        $selectedMenu.attr('data-selected-assignment-id', assignmentId);
-        updateValidationStatus($selectedMenu, assignmentId);
-    }
-
-    // TODO compare with initializeMenus() and refactor
-    function selectAssignment(event) {
-        var $item = $(event.target);
-        var $itemContainer = $item.closest('ul');
-        var selectedMenuID = $itemContainer.attr('for');
-        var $selectedMenu = $('#' + selectedMenuID);
-        var otherMenuID = selectedMenuID === 'prompt-menu' ? 'revision-menu' : 'prompt-menu';
-
-        selectMenu($selectedMenu, $item.text(), $item.attr('data-assignment-id'));
-
-        var selectedAssignmentID = $item.attr('data-assignment-id');
-        var otherSelectedAssignmentID = $('#' + otherMenuID).attr('data-selected-assignment-id');
-        var withoutItems = [selectedAssignmentID, otherSelectedAssignmentID];
-
-        var assignmentNamesByID = $('form').data('assignments');
-        refreshMenuItems(assignmentNamesByID, selectedMenuID, withoutItems);
-        refreshMenuItems(assignmentNamesByID, otherMenuID, withoutItems);
-    }
-
-    // TODO compare with selectAssignment() and refactor
-    function initializeMenus() {
-        var menusSelector = '#prompt-menu, #revision-menu';
-        var withoutItems = [];
-        var assignmentNamesByID = $('form').data('assignments');
-        $(menusSelector).each(function(i, menu) {
-            var $menu = $(menu);
-            var existingSelectionID = $menu.attr('data-selected-assignment-id');
-            if(existingSelectionID) {
-                withoutItems.push(existingSelectionID);
-                selectMenu($menu, assignmentNamesByID[existingSelectionID], existingSelectionID);
-            }
-        });
-        $(menusSelector).each(function(i, menu) {
-            refreshMenuItems(assignmentNamesByID, $(menu).attr('id'), withoutItems);
-        });
-    }
-
-    function removeCriterionCard(event) {
-        $(event.currentTarget).closest('.criterion-card').remove();
-    }
-
-    function addCriterionCard(event) {
-        var template = $(event.currentTarget).attr('data-criterion-card-template');
-        var $criteriaContainer = $('.criteria-container');
-        var newIdNumber = parseInt($criteriaContainer.find('.criterion-card textarea').last().attr('id').split('-')[1]) + 1;
-        var newId = 'criterion-' + newIdNumber + '-textarea';
-        var $newCard = $(template);
-        $newCard.find('textarea').attr('id', newId);
-        $newCard.find('label').attr('for', newId);
-        $newCard.find('button.mdl-chip__action').click(removeCriterionCard);
-        var textField = $newCard.find('.mdl-textfield').get(0);
-        autosize($(textField).find('textarea').get(0));
-        componentHandler.upgradeElement(textField);
-        $criteriaContainer.append($newCard);
-    }
-
-    function validateData(data) {
-        if(!data.promptId) {
-            showToast('You must select a prompt assignment.');
-            return false;
-        }
-        if(!data.description) {
-            showToast('You must provide a rubric description.');
-            return false;
-        }
-        if(!data.criteria || data.criteria.length === 0) {
-            showToast('You must enter at least one criterion.');
-            return false;
-        }
-        return true;
-    }
-
     function submitRubricForm(event) {
         var data = {
             promptId: parseInt($('#prompt-menu').attr('data-selected-assignment-id')) || null,
@@ -226,8 +60,7 @@
             selectedPromptId: null,
             selectedRevisionId: null,
             rubricDescription: null,
-            criteria: [{id: 0, description: ''}],
-            nextCriterionId: 1
+            criteria: [{id: _.uniqueId('criterion'), description: ''}],
         },
         computed: {
             promptChoices: function() {
@@ -287,12 +120,20 @@
                 else {
                     return '';
                 }
+            },
+            rubricIsValid: function() {
+                var criteriaAreValid = _.every(this.criteria, function(criterion) {
+                    return criterion.description.length > 0;
+                });
+                var noAssignmentIssuesExist = _.every(this.promptIssues.concat(this.revisionIssues), function(issue) {
+                    return !issue.fatal;
+                });
+                return this.selectedPromptId && this.rubricDescription &&  criteriaAreValid && noAssignmentIssuesExist;
             }
         },
         methods: {
             addCriterion: function() {
-                this.criteria.push({id: this.nextCriterionId, description: ''});
-                this.nextCriterionId++;
+                this.criteria.push({id: _.uniqueId('criterion'), description: ''});
             },
             removeCriterion: function(id) {
                 this.criteria = this.criteria.filter(function(criterion) {
