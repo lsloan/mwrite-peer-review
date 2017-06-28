@@ -1,18 +1,11 @@
 (function() {
-    // TODO should this just be changed in the Django view?
-    function assignmentsToOptions(assignments) {
-        return _.map(assignments, function(val, key) {
-            return {value: parseInt(key), name: val};
-        });
-    }
-
     new Vue({
         el: '#vue-root',
         components: _.defaults({'autosize-textarea': AutosizeTextarea}, VueMdl.components),
         directives: VueMdl.directives,
         mounted: function() {
             var data = _.mapValues(document.querySelector('#rubric-form').dataset, JSON.parse);
-            this.assignments = assignmentsToOptions(data['assignments']);
+            this.assignments = data['assignments'];
             this.validations = data['validation-info'];
             this.selectedPromptId = data['existing-prompt-id'];
             this.selectedRevisionId = data['existing-revision-id'];
