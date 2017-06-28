@@ -11,5 +11,6 @@ var AutosizeTextarea = {
               '</div>',
     mounted: function() {
         autosize(this.$el.querySelector('textarea'));
+        componentHandler.upgradeElement(this.$el);
     }
 };
