@@ -85,10 +85,7 @@ class RubricCreationFormView(HasRoleMixin, TemplateView):
             assignments.insert(0, existing_prompt)
         if existing_revision:
             assignments.insert(0, existing_revision)
-        if existing_rubric:
-            criteria = [c.description for c in existing_rubric.criteria.all()]
-        else:
-            criteria = None
+        criteria = [c.description for c in existing_rubric.criteria.all()] if existing_rubric else None
         return {
             'course_id': course_id,
             'passback_assignment_id': passback_assignment_id,
