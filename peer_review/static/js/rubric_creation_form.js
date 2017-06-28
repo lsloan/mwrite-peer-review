@@ -40,8 +40,7 @@
 
     new Vue({
         el: '#vue-root',
-        components: _.defaults(VueMdl.components,
-                               {'autosize-textarea': AutosizeTextarea}),
+        components: _.defaults({'autosize-textarea': AutosizeTextarea}, VueMdl.components),
         directives: VueMdl.directives,
         mounted: function() {
             var $form = $('#rubric-form');
@@ -122,7 +121,7 @@
                 }
             },
             rubricIsValid: function() {
-                var criteriaAreValid = _.every(this.criteria, function(criterion) {
+                var criteriaAreValid = this.criteria.length > 0 && _.every(this.criteria, function(criterion) {
                     return criterion.description.length > 0;
                 });
                 var noAssignmentIssuesExist = _.every(this.promptIssues.concat(this.revisionIssues), function(issue) {
