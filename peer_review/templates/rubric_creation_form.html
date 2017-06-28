@@ -23,9 +23,9 @@
               action="/rubric/course/{{ course_id }}/assignment/{{ passback_assignment_id }}"
               data-assignments="{{ potential_prompts_and_rubrics }}"
               data-validation-info="{{ validations }}"
-              data-existing-rubric-description="{{ existing_rubric.description }}"
-              data-existing-prompt-id{% if existing_prompt %}="{{ existing_prompt }}"{% endif %}
-              data-existing-revision-id{% if existing_revision %}="{{ existing_revision }}"{% endif %}
+              data-existing-rubric-description="{% if existing_rubric %}{{ existing_rubric.description }}{% else %}null{% endif %}"
+              data-existing-prompt-id="{% if existing_prompt %}{{ existing_prompt }}{% else %}null{% endif %}"
+              data-existing-revision-id="{% if existing_revision %}{{ existing_revision }}{% else %}null{% endif %}"
               data-review-is-in-progress={% if review_is_in_progress %}true{% else %}false{% endif %}>
 
             {% csrf_token %}
@@ -196,7 +196,7 @@
                     <div class="mdl-grid">
                         <div class="mdl-cell mdl-cell--3-col mdl-cell--1-col-tablet mdl-cell-1-col-phone"></div>
                         <div class="mdl-cell mdl-cell--6-col mdl-cell--6-col-tablet mdl-cell-2-col-phone">
-                            <mdl-snackbar display-on="rubricUpdated"></mdl-snackbar>
+                            <mdl-snackbar display-on="rubricSubmitted"></mdl-snackbar>
                         </div>
                         <div class="mdl-cell mdl-cell--3-col mdl-cell--1-col-tablet mdl-cell-1-col-phone"></div>
                     </div>

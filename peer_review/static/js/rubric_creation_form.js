@@ -1,36 +1,4 @@
 (function() {
-    function submitRubricForm(event) {
-        var data = {
-            promptId: parseInt($('#prompt-menu').attr('data-selected-assignment-id')) || null,
-            revisionId: parseInt($('#revision-menu').attr('data-selected-assignment-id')) || null,
-            description: $.trim($('#rubric-description-textfield').val()) || null,
-            criteria: $.map($('.criterion-card textarea'), function(c) { return $.trim($(c).val()) || null; })
-        };
-        if(validateData(data)) {
-            postToEndpoint(
-                $('form').attr('action'),
-                data,
-                function() {
-                    showToast('The rubric was successfully created.  You will be returned to the dashboard.');
-                    setTimeout(function() { window.location.href = '/'; }, 4000);
-                },
-                function() {
-                    showToast('An error occurred.  Please try again later.');
-                }
-            );
-        }
-        event.preventDefault();
-    }
-
-    //$(document).ready(function () {
-    //    autosize($('textarea'));
-    //    initializeMenus();
-    //    $('#criteria-card').find('div.mdl-card__actions button').click(addCriterionCard);
-    //    $('form').submit(submitRubricForm);
-    //});
-
-    // TODO remove everything above
-
     // TODO should this just be changed in the Django view?
     function assignmentsToOptions(assignments) {
         return _.map(assignments, function(val, key) {
@@ -43,13 +11,13 @@
         components: _.defaults({'autosize-textarea': AutosizeTextarea}, VueMdl.components),
         directives: VueMdl.directives,
         mounted: function() {
-            var $form = $('#rubric-form');
-            this.assignments = assignmentsToOptions($form.data('assignments'));
-            this.validations = $form.data('validation-info');
-            this.selectedPromptId = $form.data('existing-prompt-id');
-            this.selectedRevisionId = $form.data('existing-revision-id');
-            this.reviewIsInProgress = $form.data('review-is-in-progress');
-            this.rubricDescription = $form.data('existing-rubric-description');
+            var data = _.mapValues(document.querySelector('#rubric-form').dataset, JSON.parse);
+            this.assignments = assignmentsToOptions(data['assignments']);
+            this.validations = data['validation-info'];
+            this.selectedPromptId = data['existing-prompt-id'];
+            this.selectedRevisionId = data['existing-revision-id'];
+            this.reviewIsInProgress = data['review-is-in-progress'];
+            this.rubricDescription = data['existing-rubric-description'];
             // TODO grab existing criteria
         },
         data: {
@@ -59,7 +27,7 @@
             selectedPromptId: null,
             selectedRevisionId: null,
             rubricDescription: null,
-            criteria: [{id: _.uniqueId('criterion'), description: ''}],
+            criteria: [{id: _.uniqueId('criterion'), description: ''}]
         },
         computed: {
             promptChoices: function() {
@@ -138,6 +106,34 @@
                 this.criteria = this.criteria.filter(function(criterion) {
                     return criterion.id !== id;
                 });
+            },
+            submitRubricForm: function() {
+                if(this.rubricIsValid) {
+                    var data = {
+                        promptId: this.selectedPromptId || null,
+                        revisionId: this.selectedRevisionId || null,
+                        description: _.trim(this.rubricDescription) || null,
+                        criteria: _.map(this.criteria, function(c) { return _.trim(c.description) || null; })
+                    };
+
+                    postToEndpoint(
+                        document.querySelector('#rubric-form').getAttribute('action'), // TODO eventually we'll want to bring this under VueJS's control as well
+                        data,
+                        function() {
+                            // TODO is there a better event source than $root?
+                            this.$root.$emit('rubricSubmitted', {
+                                message: 'The rubric was successfully created.  You will be returned to the dashboard.'
+                            });
+                            setTimeout(function() { window.location.href = '/'; }, 4000);
+                        },
+                        function() {
+                            // TODO is there a better event source than $root?
+                            this.$root.$emit('rubricSubmitted', {
+                                message: 'An error occurred.  Please try again later.'
+                            });
+                        }
+                    );
+                }
             }
         }
     });
