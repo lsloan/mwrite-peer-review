@@ -12,5 +12,8 @@ var AutosizeTextarea = {
     mounted: function() {
         autosize(this.$el.querySelector('textarea'));
         componentHandler.upgradeElement(this.$el);
+    },
+    updated: function() {
+        this.$el.MaterialTextfield.checkDirty();
     }
 };
