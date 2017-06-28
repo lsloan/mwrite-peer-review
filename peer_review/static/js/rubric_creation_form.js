@@ -13,7 +13,11 @@
             this.selectedRevisionId = parseInt(data['existingRevisionId']) || null;
             this.reviewIsInProgress = JSON.parse(data['reviewIsInProgress']);
             this.rubricDescription = data['existingRubricDescription'];
-            // TODO grab existing criteria
+            if(data['existingCriteria']) {
+                this.criteria = _.map(JSON.parse(data['existingCriteria']), function(c) {
+                    return {id: _.uniqueId('criterion'), description: c};
+                });
+            }
         },
         data: {
             assignments: null,
