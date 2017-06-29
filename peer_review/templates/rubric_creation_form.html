@@ -88,7 +88,7 @@
                     <div class="mdl-cell mdl-cell--3-col mdl-cell--1-col-tablet mdl-cell-1-col-phone"></div>
                 </div>
 
-                <template v-if="!(reviewIsInProgress && !existingRevision)">
+                <template v-if="!(reviewIsInProgress && !selectedRevision.value)">
                     <div class="mdl-grid">
                         <div class="mdl-cell mdl-cell--3-col mdl-cell--1-col-tablet mdl-cell-1-col-phone"></div>
 
@@ -138,7 +138,7 @@
                             title="Description"
                             supporting-text="slot">
                         <div slot="supporting-text" class="mdl-card__supporting-text">
-                            <autosize-textarea v-model="rubricDescription" label="Enter a description for this rubric here."></autosize-textarea>
+                            <autosize-textarea v-model="rubricDescription" label="Enter a description for this rubric here." :disabled="reviewIsInProgress"></autosize-textarea>
                         </div>
                     </mdl-card>
 
@@ -163,7 +163,7 @@
                                         </button>
                                     </div>
                                     <div class="mdl-card__supporting-text">
-                                        <autosize-textarea v-model="criterion.description" label="Enter a description for this criterion here."></autosize-textarea>
+                                        <autosize-textarea v-model="criterion.description" label="Enter a description for this criterion here." :disabled="reviewIsInProgress"></autosize-textarea>
                                     </div>
                                 </div>
                             </mdl-card>

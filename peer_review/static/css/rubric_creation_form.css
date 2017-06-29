@@ -77,3 +77,7 @@ button[type="submit"] {
     margin-top: 16px;
     margin-bottom: 16px;
 }
+
+#rubric-form textarea[disabled], #rubric-form button[disabled][type=button] {
+    color: inherit;
+}
