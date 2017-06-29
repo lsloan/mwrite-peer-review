@@ -159,6 +159,9 @@
                         }
                     );
                 }
+                else {
+                    this.$root.$emit('rubricSubmitted', 'This rubric is not valid.  Double check that you have selected a writing prompt, added a description, and created criteria.');
+                }
             }
         }
     });
