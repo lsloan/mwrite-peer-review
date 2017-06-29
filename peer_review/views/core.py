@@ -85,19 +85,18 @@ class RubricCreationFormView(HasRoleMixin, TemplateView):
             assignments.insert(0, existing_prompt)
         if existing_revision:
             assignments.insert(0, existing_revision)
-        criterion_card_html = render_to_string('criterion_card.html', {'removable': True})
+        criteria = [c.description for c in existing_rubric.criteria.all()] if existing_rubric else None
         return {
             'course_id': course_id,
             'passback_assignment_id': passback_assignment_id,
             'potential_prompts_and_rubrics': json.dumps({a.id: a.title for a in assignments}),
             'validations': json.dumps({assignment.id: assignment.validation for assignment in fetched_assignments},
                                       default=AssignmentValidation.json_default),
-            'should_show_revision_info': not (review_is_in_progress and not existing_revision),
             'existing_prompt': existing_prompt,
             'existing_revision': existing_revision,
             'existing_rubric': existing_rubric,
-            'review_is_in_progress': review_is_in_progress,
-            'criterion_card_html': criterion_card_html.replace('\n', '')
+            'criteria': json.dumps(criteria),
+            'review_is_in_progress': review_is_in_progress
         }
 
     # noinspection PyMethodMayBeStatic

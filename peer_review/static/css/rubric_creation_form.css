@@ -15,16 +15,13 @@ textarea {
     width: 100%;
 }
 
-#prompt-card.mdl-card, #revision-card.mdl-card {
+.mdl-card, .mdl-card .mdl-card__supporting-text {
     overflow: visible;
     z-index: auto;
 }
 
-#criteria-card .mdl-card {
+.criterion-card {
     margin-bottom: 16px;
-}
-
-#criteria-card .mdl-card {
     width: 100%;
     min-height: 0;
 }
@@ -44,8 +41,12 @@ button[type="submit"] {
 
 #prompt-menu, #revision-menu {
     border-bottom: 1px solid darkgray;
+    border-radius: 4px;
     margin-top: 20px;
     text-transform: none;
+    display: block;
+    min-width: 60%;
+    text-align: left;
 }
 
 .validations-container {
@@ -66,11 +67,17 @@ button[type="submit"] {
     margin-top: 25px;
 }
 
+/* TODO still needed? */
 .read-only-rubric-card {
     min-height: 0;
 }
 
+/* TODO still needed? */
 .read-only-rubric-card h4 {
     margin-top: 16px;
     margin-bottom: 16px;
+}
+
+#rubric-form textarea[disabled], #rubric-form button[disabled][type=button] {
+    color: inherit;
 }
