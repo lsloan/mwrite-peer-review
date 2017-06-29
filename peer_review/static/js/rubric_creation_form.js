@@ -26,7 +26,9 @@
 
             this.reviewIsInProgress = JSON.parse(data['reviewIsInProgress']);
             this.rubricDescription = data['existingRubricDescription'];
-            if(data['existingCriteria']) {
+
+            var existingCriteria = JSON.parse(data['existingCriteria']);
+            if(existingCriteria && existingCriteria.length > 0) {
                 this.criteria = _.map(JSON.parse(data['existingCriteria']), function(c) {
                     return {id: _.uniqueId('criterion'), description: c};
                 });
