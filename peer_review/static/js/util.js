@@ -12,10 +12,12 @@
         };
     }
 
-    window.postToEndpoint = function(endpoint, data, successAction, failureAction) {
-        var _successAction = successAction || function() {};
-        var _failureAction = failureAction || function() {};
-        $.ajax(makePostParams(endpoint, data)).done(_successAction).fail(_failureAction);
+    window.postToEndpoint = function(endpoint, data, successAction, failureAction, finallyAction) {
+        var doNothing = function() {};
+        var _successAction = successAction || doNothing;
+        var _failureAction = failureAction || doNothing;
+        var _finallyAction = finallyAction || doNothing;
+        $.ajax(makePostParams(endpoint, data)).done(_successAction).fail(_failureAction).always(_finallyAction);
     };
 
     window.showToast = function(message) {

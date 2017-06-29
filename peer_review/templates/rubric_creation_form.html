@@ -189,7 +189,7 @@
                             <button
                                     class="mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect mdl-button--accent"
                                     type="submit"
-                                    :disabled="!rubricIsValid"
+                                    :disabled="!rubricIsValid || submissionInProgress"
                                     @click="submitRubricForm">
                                 Submit
                             </button>

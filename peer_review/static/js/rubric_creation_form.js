@@ -47,7 +47,8 @@
             selectedPrompt: null,
             selectedRevision: noRevisionOption,
             rubricDescription: null,
-            criteria: [{id: _.uniqueId('criterion'), description: ''}]
+            criteria: [{id: _.uniqueId('criterion'), description: ''}],
+            submissionInProgress: false
         },
         computed: {
             promptChoices: function() {
@@ -137,8 +138,8 @@
                         criteria: _.map(this.criteria, function(c) { return _.trim(c.description) || null; })
                     };
 
+                    this.submissionInProgress = true;
                     var vm = this;
-
                     postToEndpoint(
                         document.querySelector('#rubric-form').getAttribute('action'),
                         data,
@@ -152,6 +153,9 @@
                             vm.$root.$emit('rubricSubmitted', {
                                 message: 'An error occurred.  Please try again later.'
                             });
+                        },
+                        function() {
+                            vm.submissionInProgress = false;
                         }
                     );
                 }
