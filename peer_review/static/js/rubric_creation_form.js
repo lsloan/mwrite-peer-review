@@ -1,7 +1,11 @@
 (function() {
+    var noRevisionOption = {value: null, name: 'No revision'};
+
     new Vue({
         el: '#vue-root',
-        components: _.defaults({'autosize-textarea': AutosizeTextarea}, VueMdl.components),
+        components: _.defaults({'autosize-textarea': AutosizeTextarea,
+                                'dropdown': Dropdown},
+                               VueMdl.components),
         directives: VueMdl.directives,
         mounted: function() {
             var data = document.querySelector('#rubric-form').dataset;
@@ -9,8 +13,17 @@
                 return {value: parseInt(key), name: value};
             });
             this.validations = JSON.parse(data['validationInfo']);
-            this.selectedPromptId = parseInt(data['existingPromptId']) || null;
-            this.selectedRevisionId = parseInt(data['existingRevisionId']) || null;
+
+            var existingPromptId = parseInt(data['existingPromptId']);
+            if(existingPromptId) {
+                this.selectedPrompt = {value: existingPromptId, name: this.assignments[existingPromptId]};
+            }
+
+            var existingRevisionId = parseInt(data['existingRevisionId']);
+            if(existingRevisionId) {
+                this.selectedRevision = {value: existingRevisionId, name: this.assignments[existingRevisionId]};
+            }
+
             this.reviewIsInProgress = JSON.parse(data['reviewIsInProgress']);
             this.rubricDescription = data['existingRubricDescription'];
             if(data['existingCriteria']) {
@@ -23,8 +36,8 @@
             assignments: null,
             validations: null,
             reviewIsInProgress: null,
-            selectedPromptId: null,
-            selectedRevisionId: null,
+            selectedPrompt: null,
+            selectedRevision: noRevisionOption,
             rubricDescription: null,
             criteria: [{id: _.uniqueId('criterion'), description: ''}]
         },
@@ -36,7 +49,7 @@
 
                 var vm = this;
                 return _.filter(this.assignments, function(option) {
-                    return option.value !== vm.selectedRevisionId && option.value !== vm.selectedPromptId;
+                    return option.value !== (vm.selectedRevision && vm.selectedRevision.value) && option.value !== (vm.selectedPrompt && vm.selectedPrompt.value);
                 });
             },
             revisionChoices: function() {
@@ -45,25 +58,25 @@
                 }
 
                 var vm = this;
-                var noRevisionOption = {value: null, name: 'No revision'};
-                var revisionOptions = [noRevisionOption].concat(this.assignments);
+                var revisionSelected = this.selectedRevision && this.selectedRevision.value;
+                var revisionOptions = revisionSelected ? [noRevisionOption].concat(this.assignments) : this.assignments;
                 return _.filter(revisionOptions, function(option) {
                     if(typeof(option) !== 'undefined') {
-                        return !option.value || (option.value !== vm.selectedPromptId && option.value !== vm.selectedRevisionId);
+                        return !option.value || (option.value !== (vm.selectedPrompt && vm.selectedPrompt.value) && option.value !== (vm.selectedRevision && vm.selectedRevision.value));
                     }
                 });
             },
             promptIssues: function() {
-                return this.selectedPromptId ? getValidationIssues(true, this.validations[this.selectedPromptId]) : [];
+                return this.selectedPrompt ? getValidationIssues(true, this.validations[this.selectedPrompt.value]) : [];
             },
             revisionIssues: function() {
-                return this.selectedRevisionId ? getValidationIssues(false, this.validations[this.selectedRevisionId]) : [];
+                return this.selectedRevision && this.selectedRevision.value ? getValidationIssues(false, this.validations[this.selectedRevision.value]) : [];
             },
             promptInfo: function() {
-                if(!this.selectedPromptId) {
+                if(!this.selectedPrompt) {
                     return '';
                 }
-                var validations = this.validations[this.selectedPromptId];
+                var validations = this.validations[this.selectedPrompt.value];
                 var sectionName = validations.sectionName || 'all students';
                 var localDueDate = validations.localDueDate;
                 if(sectionName !== null && localDueDate !== null) {
@@ -74,10 +87,10 @@
                 }
             },
             revisionInfo: function() {
-                if(!this.selectedRevisionId) {
+                if(!this.selectedRevision || this.selectedRevision.value === null) {
                     return '';
                 }
-                var validations = this.validations[this.selectedRevisionId];
+                var validations = this.validations[this.selectedRevision.value];
                 var sectionName = validations.sectionName || 'all students';
                 var localDueDate = validations.localDueDate;
                 if(sectionName !== null && localDueDate !== null) {
@@ -94,7 +107,7 @@
                 var noAssignmentIssuesExist = _.every(this.promptIssues.concat(this.revisionIssues), function(issue) {
                     return !issue.fatal;
                 });
-                return this.selectedPromptId && this.rubricDescription &&  criteriaAreValid && noAssignmentIssuesExist;
+                return this.selectedPrompt && this.rubricDescription &&  criteriaAreValid && noAssignmentIssuesExist;
             }
         },
         methods: {
@@ -110,8 +123,8 @@
                 if(this.rubricIsValid) {
 
                     var data = {
-                        promptId: this.selectedPromptId || null,
-                        revisionId: this.selectedRevisionId || null,
+                        promptId: this.selectedPrompt.value || null,
+                        revisionId: this.selectedRevision.value || null,
                         description: _.trim(this.rubricDescription) || null,
                         criteria: _.map(this.criteria, function(c) { return _.trim(c.description) || null; })
                     };
