@@ -16,12 +16,18 @@
 
             var existingPromptId = parseInt(data['existingPromptId']);
             if(existingPromptId) {
-                this.selectedPrompt = {value: existingPromptId, name: this.assignments[existingPromptId]};
+                this.selectedPrompt = {
+                    value: existingPromptId,
+                    name: _.find(this.assignments, function(a) { return a.value === existingPromptId; }).name
+                };
             }
 
             var existingRevisionId = parseInt(data['existingRevisionId']);
             if(existingRevisionId) {
-                this.selectedRevision = {value: existingRevisionId, name: this.assignments[existingRevisionId]};
+                this.selectedRevision = {
+                    value: existingRevisionId,
+                    name: _.find(this.assignments, function(a) { return a.value === existingRevisionId; }).name
+                };
             }
 
             this.reviewIsInProgress = JSON.parse(data['reviewIsInProgress']);
