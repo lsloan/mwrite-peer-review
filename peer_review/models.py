@@ -28,6 +28,7 @@ class CanvasStudent(models.Model):
         db_table = 'canvas_students'
 
     id = models.IntegerField(primary_key=True)
+    section = models.TextField()
     full_name = models.TextField()
     sortable_name = models.TextField()
 

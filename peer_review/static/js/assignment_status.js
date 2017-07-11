@@ -35,6 +35,19 @@ $(function() {
 	});
 
 	$('.dropdown-link').on('click', function() {
-		console.log($(this).text());
-	})
+		var section = $(this).text();
+		if (section != "All Sections") {
+			$("tbody>tr").each(function() {
+				if($(this).find("td:eq(1)").text() == section) {
+					$(this).show();
+				} else {
+					$(this).hide();
+				}
+			});
+		} else {
+			$("tbody>tr").each(function() {
+				$(this).show();
+			});
+		}
+	});
 });

@@ -22,9 +22,10 @@
 	<div class="dropdown">
 		<button class="dropbtn">Filter reviews by section</button>
 	 	<div class="dropdown-content">
-		    <a class="dropdown-link" href="#">001</a>
-		    <a class="dropdown-link" href="#">002</a>
-		    <a class="dropdown-link" href="#">003</a>
+	 		<a class="dropdown-link" href="#">All Sections</a>
+	 		{% for section in sections %}
+	 			<a class="dropdown-link" href="#">{{section}}</a>
+	 		{% endfor %}
 	 	</div>
 	</div>
 
@@ -41,24 +42,11 @@
 	    	{% for review in reviews %}
 	    		<tr>
 	    			<td>{{review.author.full_name}}</td>
-	    			<td>001</td>
-	    			<td>{{review.completed}} of 3</td>
-	    			<td>{{review.received}} of 3</td>
+	    			<td>{{review.author.section}}</td>
+	    			<td>{{review.completed}} of {{review.total_completed}}</td>
+	    			<td>{{review.received}} of {{review.total_received}}</td>
 	    		</tr>
 	    	{% endfor %}
-	        <!-- <tr>
-	            <td>Yuan Tian</td>
-	            <td>001</td>
-	            <td>1 of 3</td>
-	            <td>1 of 3</td>
-	        </tr>
-
-	        <tr>
-	            <td>Jimmy Liu</td>
-	            <td>002</td>
-	            <td>2 of 3</td>
-	            <td>0 of 3</td>
-	        </tr> -->
 	    </tbody>        
 	</table>
 

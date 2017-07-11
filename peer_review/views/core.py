@@ -326,7 +326,7 @@ class AssignmentStatus(HasRoleMixin, TemplateView):
 
     # TODO see how much of this can be accomplished with aggregation via the ORM
     def get_context_data(self, **kwargs):
-        
+
         rubric = Rubric.objects.get(id=kwargs['rubric_id'])
         number_of_criteria = rubric.criteria.count()
 
@@ -336,28 +336,44 @@ class AssignmentStatus(HasRoleMixin, TemplateView):
         #               rubric.reviewed_assignment.canvas_submission_set.order_by('author__sortable_name').all())
 
         reviews = []
+        sections = []
         for submission in submissions:
-            peer_reviews_completed = submission.author.peer_review_student.all()\
-                                            .annotate(received = Count('comments', distinct=True))\
-                                            .filter(received__gte = 3)
-
-            peer_reviews_receive = submission.peer_review_submission.all()\
-                                            .annotate(received = Count('comments', distinct=True))\
-                                            .filter(received__gte = 3)
-
+            completed = submission.author.peer_review_student.all()
+            total_completed = completed.values('student').annotate(Count('student'))
+            peer_reviews_completed = completed.annotate(received = Count('comments', distinct=True))\
+                                            .filter(received__gte = number_of_criteria)
             completed_reviews = len(peer_reviews_completed)
-            
-            received_reviews = len(peer_reviews_receive)
+            total_completed_num = 0
+            if total_completed:
+                total_completed_num = total_completed[0]['student__count']
+
+            received = submission.peer_review_submission.all()
+            total_received = received.values('submission').annotate(Count('submission'))
+            peer_reviews_received = received.annotate(received = Count('comments', distinct=True))\
+                                            .filter(received__gte = number_of_criteria)
+            received_reviews = len(peer_reviews_received)
+            print(total_received)
+            total_received_num = 0
+            if total_received:
+                total_received_num = total_received[0]['submission__count']
+
+            if submission.author.section not in sections:
+                sections.append(submission.author.section)
 
             reviews.append({
                 'author': submission.author,
+                'total_completed': total_completed_num,
                 'completed': completed_reviews,
+                'total_received': total_received_num,
                 'received': received_reviews,
-                # 'total': peer_reviews_completed.count(),
             })
 
-        return {'reviews': reviews,
-                'rubric': rubric}
+        sections.sort()
+
+        return {'title': self.request.session['lti_launch_params']['context_title'],
+                'reviews': reviews,
+                'rubric': rubric,
+                'sections': sections}
         
 
 
