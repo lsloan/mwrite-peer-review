@@ -320,30 +320,45 @@ class StudentDashboardView(HasRoleMixin, TemplateView):
                 'finished_prompt': finished_prompt}
 
 
-class ReviewsByStudentView(HasRoleMixin, TemplateView):
+class AssignmentStatus(HasRoleMixin, TemplateView):
     allowed_roles = 'instructor'
-    template_name = 'reviews_by_student.html'
+    template_name = 'assignment_status.html'
 
     # TODO see how much of this can be accomplished with aggregation via the ORM
     def get_context_data(self, **kwargs):
+        
         rubric = Rubric.objects.get(id=kwargs['rubric_id'])
         number_of_criteria = rubric.criteria.count()
-        authors = map(lambda s: s.author,
-                      rubric.reviewed_assignment.canvas_submission_set.order_by('author__sortable_name').all())
+
+        submissions = rubric.reviewed_assignment.canvas_submission_set.all()
+
+        # authors = map(lambda s: (s.author, s.id),
+        #               rubric.reviewed_assignment.canvas_submission_set.order_by('author__sortable_name').all())
+
         reviews = []
-        for author in authors:
-            peer_reviews = PeerReview.objects.filter(student=author, submission__assignment=rubric.reviewed_assignment)
-            completed_reviews = 0
-            for peer_review in peer_reviews:
-                if peer_review.comments.count() >= number_of_criteria:
-                    completed_reviews += 1
+        for submission in submissions:
+            peer_reviews_completed = submission.author.peer_review_student.all()\
+                                            .annotate(received = Count('comments', distinct=True))\
+                                            .filter(received__gte = 3)
+
+            peer_reviews_receive = submission.peer_review_submission.all()\
+                                            .annotate(received = Count('comments', distinct=True))\
+                                            .filter(received__gte = 3)
+
+            completed_reviews = len(peer_reviews_completed)
+            
+            received_reviews = len(peer_reviews_receive)
+
             reviews.append({
-                'author': author,
+                'author': submission.author,
                 'completed': completed_reviews,
-                'total': peer_reviews.count()
+                'received': received_reviews,
+                # 'total': peer_reviews_completed.count(),
             })
+
         return {'reviews': reviews,
                 'rubric': rubric}
+        
 
 
 class ReviewsOfMyWorkView(HasRoleMixin, TemplateView):

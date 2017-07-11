@@ -17,3 +17,16 @@
 
 .validation-container {
 }
+
+.mdl-layout__header-row {
+    padding-left: 20px;  
+}
+
+.mdl-grid {
+	position: relative;
+}
+
+.sortable {
+	position: relative;
+	top: 100px;
+}

@@ -6,7 +6,6 @@
         <title>M-Write Peer Review</title>
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
-        <script defer src="{% static 'js/lib/lodash/lodash-4.17.4.js' %}"></script>
         <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons" />
         <link rel="stylesheet" href="https://code.getmdl.io/1.3.0/material.indigo-blue.min.css" />
         <script defer src="https://code.getmdl.io/1.3.0/material.min.js"></script>
@@ -22,22 +21,22 @@
                     </span>
                     <div class="mdl-layout-spacer"></div>
                     <nav class="mdl-navigation">
-                        <a class="mdl-navigation__link" href="#">Thing A</a>
-                        <a class="mdl-navigation__link" href="#">Thing B</a>
-                        <a class="mdl-navigation__link" href="#">Thing C</a>
+                        <a class="mdl-navigation__link" href="#">PEER REVIEW</a>
+                        <a class="mdl-navigation__link" href="#">STUDENTS</a>
+                        <!-- <a class="mdl-navigation__link" href="#">Thing C</a> -->
                     </nav>
                 </div>
             </header>
-            <div class="mdl-layout__drawer">
+            <!-- <div class="mdl-layout__drawer">
                 <span class="mdl-layout__title">
                     {% if title %}{{ title }}{% else %}M-Write Peer Review{% endif %}
                 </span>
                 <nav class="mdl-navigation">
-                    <a class="mdl-navigation__link" href="#">Thing A</a>
-                    <a class="mdl-navigation__link" href="#">Thing B</a>
+                    <a class="mdl-navigation__link" href="#">PEER REVIEW</a>
+                    <a class="mdl-navigation__link" href="#">STUDENTS</a>
                     <a class="mdl-navigation__link" href="#">Thing C</a>
                 </nav>
-            </div>
+            </div> -->
             <main class="mdl-layout__content">
                 {% block content %}{% endblock %}
             </main>

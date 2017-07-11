@@ -1,0 +1,87 @@
+{% extends 'base_mdl.html' %}
+{% load static %}
+
+{% block header %}
+	<link rel="stylesheet" href="{% static 'css/common.css' %}" />
+    <link rel="stylesheet" href="{% static 'css/assignment_status.css' %}" />
+	<script src="{% static 'js/lib/jquery.tablesorter.min.js' %}" ></script>
+	<script src="{% static 'js/assignment_status.js' %}" ></script>
+	<link href="https://fonts.googleapis.com/icon?family=Material+Icons"
+      rel="stylesheet">
+{% endblock %}
+
+{% block content %}
+	<div class="dashboard_links">
+		<a href="/dashboard/instructor" class="go_instructor_dashboard">Peer Review</a>
+		<p class="slash_between">/</p>
+		<p class="certain_card">Peer Review #1</p>
+	</div>
+
+	<p class="title">Peer Review #1</p>
+
+	<div class="dropdown">
+		<button class="dropbtn">Filter reviews by section</button>
+	 	<div class="dropdown-content">
+		    <a class="dropdown-link" href="#">001</a>
+		    <a class="dropdown-link" href="#">002</a>
+		    <a class="dropdown-link" href="#">003</a>
+	 	</div>
+	</div>
+
+	<table class="sortable">
+	    <thead>
+	        <tr>
+	            <th>Student Name</th>
+	            <th>Section</th>
+	            <th>Reviews Completed</th>
+	            <th>Reviews Received</th>
+	        </tr>
+	    </thead>
+	    <tbody>
+	    	{% for review in reviews %}
+	    		<tr>
+	    			<td>{{review.author.full_name}}</td>
+	    			<td>001</td>
+	    			<td>{{review.completed}} of 3</td>
+	    			<td>{{review.received}} of 3</td>
+	    		</tr>
+	    	{% endfor %}
+	        <!-- <tr>
+	            <td>Yuan Tian</td>
+	            <td>001</td>
+	            <td>1 of 3</td>
+	            <td>1 of 3</td>
+	        </tr>
+
+	        <tr>
+	            <td>Jimmy Liu</td>
+	            <td>002</td>
+	            <td>2 of 3</td>
+	            <td>0 of 3</td>
+	        </tr> -->
+	    </tbody>        
+	</table>
+
+	<style type="text/css">
+		.dropbtn {
+		    background: url(/images/icons/arrow_down.svg) no-repeat right #FAFAFA;
+		    padding-right: 15px;
+		    font-size: 12px;
+		    border: none;
+		    cursor: pointer;
+		    width: 250px;
+		    height: 40px;
+		    padding-left: 15px;
+		    text-align: left;
+		    outline: none;
+		}
+
+		.sortable thead tr th.headerSortUp {
+			background: url("{% static 'images/icons/arrow_down.svg' %}") no-repeat right white;
+		}
+
+		.sortable thead tr th.headerSortDown {
+			background: url("{% static 'images/icons/arrow_up.svg' %}") no-repeat right white;
+		}
+	</style>
+{% endblock %}
