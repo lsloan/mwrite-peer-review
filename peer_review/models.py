@@ -98,8 +98,8 @@ class PeerReview(models.Model):
         unique_together = (('student', 'submission'),)
 
     id = models.AutoField(primary_key=True)
-    student = models.ForeignKey(CanvasStudent, models.DO_NOTHING, related_name='peer_review_student')
-    submission = models.ForeignKey(CanvasSubmission, models.DO_NOTHING, related_name='peer_review_submission')
+    student = models.ForeignKey(CanvasStudent, models.DO_NOTHING, related_name='peer_reviews_for_student')
+    submission = models.ForeignKey(CanvasSubmission, models.DO_NOTHING, related_name='peer_reviews_for_submission')
 
 
 # noinspection PyClassHasNoInit

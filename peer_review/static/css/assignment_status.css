@@ -110,3 +110,37 @@
 .sortable tbody tr td.lalign {
 	text-align: left;
 }
+
+.entry_with_zero {
+    background-color: #F9EAEC;
+}
+
+.zero_completed_or_received {
+    color: #E16877;
+    font-weight: 600;
+}
+
+.dropbtn {
+    background-color: #FAFAFA;
+    padding-right: 15px;
+    font-size: 12px;
+    border: none;
+    cursor: pointer;
+    width: 250px;
+    height: 40px;
+    padding-left: 15px;
+    text-align: left;
+    outline: none;
+    display: flex;
+}
+
+.dropdown-title {
+    position: relative;
+    top: 7px;
+}
+
+.dropdown-icon {
+    position: relative;
+    top: 7px;
+    left: 45px;
+}

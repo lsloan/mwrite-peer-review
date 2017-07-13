@@ -75,3 +75,5 @@ config/
 
 staticfiles/
 !/peer_review/static/js/lib/
+
+mwrite_dev.sql

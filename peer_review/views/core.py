@@ -332,13 +332,10 @@ class AssignmentStatus(HasRoleMixin, TemplateView):
 
         submissions = rubric.reviewed_assignment.canvas_submission_set.all()
 
-        # authors = map(lambda s: (s.author, s.id),
-        #               rubric.reviewed_assignment.canvas_submission_set.order_by('author__sortable_name').all())
-
         reviews = []
         sections = []
         for submission in submissions:
-            completed = submission.author.peer_review_student.all()
+            completed = submission.author.peer_reviews_for_student.all()
             total_completed = completed.values('student').annotate(Count('student'))
             peer_reviews_completed = completed.annotate(received = Count('comments', distinct=True))\
                                             .filter(received__gte = number_of_criteria)
@@ -347,12 +344,12 @@ class AssignmentStatus(HasRoleMixin, TemplateView):
             if total_completed:
                 total_completed_num = total_completed[0]['student__count']
 
-            received = submission.peer_review_submission.all()
+            received = submission.peer_reviews_for_submission.all()
             total_received = received.values('submission').annotate(Count('submission'))
             peer_reviews_received = received.annotate(received = Count('comments', distinct=True))\
                                             .filter(received__gte = number_of_criteria)
             received_reviews = len(peer_reviews_received)
-            print(total_received)
+
             total_received_num = 0
             if total_received:
                 total_received_num = total_received[0]['submission__count']
