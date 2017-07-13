@@ -241,6 +241,32 @@ class InstructorDashboardView(HasRoleMixin, TemplateView):
         peer_review_assignments = CanvasAssignment.objects.filter(id__in=fetched_assignments.keys(),
                                                                   is_peer_review_assignment=True) \
                                                           .order_by('due_date_utc')
+        
+        assignments = []                                                          
+        for assignment in peer_review_assignments:
+            rubric = Rubric.objects.filter(passback_assignment=assignment)
+            num_reviews = 0
+            received_reviews = 0
+            if rubric:
+                number_of_criteria = rubric[0].criteria.count()
+                submissions = assignment.rubric_for_review.reviewed_assignment.canvas_submission_set.annotate(Count('peer_reviews_for_submission'))
+
+                for submission in submissions:
+                    num_reviews += submission.peer_reviews_for_submission__count
+                    peer_reviews_per_submission = submission.peer_reviews_for_submission.all()\
+                            .annotate(received = Count('comments', distinct=True))\
+                            .filter(received__gte = number_of_criteria)
+                    received_reviews += len(peer_reviews_per_submission)
+                # print(num_reviews)
+                # print(received_reviews)
+            assignments.append({
+                'assignment': assignment,
+                'num_reviews': num_reviews,
+                'received_reviews': received_reviews,
+            })
+                    
+                                                                       
+
         rubric_assignments = thread_last(peer_review_assignments,
                                          (map, InstructorDashboardView.get_rubric_for_review),
                                          (filter, lambda mr: mr is not None),
@@ -253,9 +279,10 @@ class InstructorDashboardView(HasRoleMixin, TemplateView):
         return {
             'title': self.request.session['lti_launch_params']['context_title'],
             'course_id': course_id,
-            'assignments': peer_review_assignments,
+            # 'assignments': peer_review_assignments,
             'validation_info': json.dumps({a.id: a.validation for a in rubric_assignments},
-                                          default=AssignmentValidation.json_default)
+                                          default=AssignmentValidation.json_default),
+            'assignments': assignments,
         }
 
 

@@ -1,27 +1,44 @@
 <div class="peer-review-assignment-card mdl-card mdl-cell mdl-cell--3-col mdl-shadow--2dp"
-     data-prompt-id="{{ assignment.rubric_for_review.reviewed_assignment_id }}"
-     data-revision-id="{{ assignment.rubric_for_review.revision_assignment_id }}"
-     data-reviews-in-progress="{% if assignment.rubric_for_review.peer_review_distribution.is_distribution_complete %}true{% else %}false{% endif %}">
+     data-prompt-id="{{ assignment.assignment.rubric_for_review.reviewed_assignment_id }}"
+     data-revision-id="{{ assignment.assignment.rubric_for_review.revision_assignment_id }}"
+     data-reviews-in-progress="{% if assignment.assignment.rubric_for_review.peer_review_distribution.is_distribution_complete %}true{% else %}false{% endif %}">
     <div class="mdl-card__title mdl-card--expand">
-        <h2 class="mdl-card__title-text">{{ assignment.title }}</h2>
+        <h2 class="mdl-card__title-text">{{ assignment.assignment.title }}</h2>
     </div>
     <div class="mdl-card__supporting-text">
         <div class="icon-container validation-container">
-            <i class="material-icons icon-24px ok-icon-color">done</i>
-            <span class="icon-caption">This rubric has no problems.</span>
+            {% if assignment.assignment.rubric_for_review %}
+                <i class="material-icons icon-24px ok-icon-color">done</i>
+                <span class="icon-caption">Rubric was configured correctly</span>
+            {% else %}
+                <i class="material-icons icon-24px">not_interested</i>
+                <span class="icon-caption">Rubric has not been created</span>
+            {% endif %}
+        </div>
+    </div>
+    <div class="mdl-card__supporting-text">
+        <div class="icon-container">
+            <i class="material-icons icon-24px">date_range</i>
+            <span class="icon-caption">Opened {% if assignment.assignment.rubric_for_review.reviewed_assignment.due_date_utc %}{{ assignment.assignment.rubric_for_review.reviewed_assignment.due_date_utc | date:'F j g:i A' }}{% else %}anytime{% endif %}</span>
         </div>
     </div>
     <div class="mdl-card__supporting-text">
         <div class="icon-container">
             <i class="material-icons icon-24px">query_builder</i>
-            <span class="icon-caption">Due {% if assignment.due_date_utc %}{{ assignment.due_date_utc | date:'F j g:i A' }}{% else %}anytime{% endif %}</span>
+            <span class="icon-caption">Due by {% if assignment.assignment.due_date_utc %}{{ assignment.assignment.due_date_utc | date:'F j g:i A' }}{% else %}anytime{% endif %}</span>
+        </div>
+    </div>
+    <div class="mdl-card__supporting-text">
+        <div class="icon-container">
+            <i class="material-icons icon-24px">trending_up</i>
+            <span class="icon-caption">{{assignment.received_reviews }} of {{ assignment.num_reviews }} reviews received</span>
         </div>
     </div>
     <div class="mdl-card__actions mdl-card--border">
         <a class="mdl-button mdl-button--colored mdl-js-button mdl-js-ripple-effect"
-           href="/rubric/course/{{ course_id }}/assignment/{{ assignment.id }}">
-            {% if assignment.rubric_for_review %}
-                {% if assignment.rubric_for_review.peer_review_distribution.is_distribution_complete %}
+           href="/rubric/course/{{ course_id }}/assignment/{{ assignment.assignment.id }}">
+            {% if assignment.assignment.rubric_for_review %}
+                {% if assignment.assignment.rubric_for_review.peer_review_distribution.is_distribution_complete %}
                     View
                 {% else %}
                     Edit
@@ -30,9 +47,9 @@
                 Create
             {% endif %} Rubric
         </a>
-        {% if assignment.rubric_for_review.peer_review_distribution.is_distribution_complete %}
+        {% if assignment.assignment.rubric_for_review.peer_review_distribution.is_distribution_complete %}
             <a class="mdl-button mdl-button--colored mdl-js-button mdl-js-ripple-effect"
-               href="/review/rubric/{{ assignment.rubric_for_review.id }}/all">
+               href="/review/rubric/{{ assignment.assignment.rubric_for_review.id }}/all">
                 View Reviews
             </a>
         {% endif %}
