@@ -11,3 +11,12 @@
 .icon-caption {
     margin-left: 10px;
 }
+
+.mdl-layout__header-row {
+    padding-left: 20px;  
+}
+
+.nav_link_click {
+    opacity: 1;
+    border-bottom: 5px solid #03A9F3;
+}

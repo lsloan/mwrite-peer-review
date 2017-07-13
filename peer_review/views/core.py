@@ -320,30 +320,58 @@ class StudentDashboardView(HasRoleMixin, TemplateView):
                 'finished_prompt': finished_prompt}
 
 
-class ReviewsByStudentView(HasRoleMixin, TemplateView):
+class AssignmentStatus(HasRoleMixin, TemplateView):
     allowed_roles = 'instructor'
-    template_name = 'reviews_by_student.html'
+    template_name = 'assignment_status.html'
 
     # TODO see how much of this can be accomplished with aggregation via the ORM
     def get_context_data(self, **kwargs):
+
         rubric = Rubric.objects.get(id=kwargs['rubric_id'])
         number_of_criteria = rubric.criteria.count()
-        authors = map(lambda s: s.author,
-                      rubric.reviewed_assignment.canvas_submission_set.order_by('author__sortable_name').all())
+
+        submissions = rubric.reviewed_assignment.canvas_submission_set.all()
+
         reviews = []
-        for author in authors:
-            peer_reviews = PeerReview.objects.filter(student=author, submission__assignment=rubric.reviewed_assignment)
-            completed_reviews = 0
-            for peer_review in peer_reviews:
-                if peer_review.comments.count() >= number_of_criteria:
-                    completed_reviews += 1
+        sections = []
+        for submission in submissions:
+            completed = submission.author.peer_reviews_for_student.all()
+            total_completed = completed.values('student').annotate(Count('student'))
+            peer_reviews_completed = completed.annotate(received = Count('comments', distinct=True))\
+                                            .filter(received__gte = number_of_criteria)
+            completed_reviews = len(peer_reviews_completed)
+            total_completed_num = 0
+            if total_completed:
+                total_completed_num = total_completed[0]['student__count']
+
+            received = submission.peer_reviews_for_submission.all()
+            total_received = received.values('submission').annotate(Count('submission'))
+            peer_reviews_received = received.annotate(received = Count('comments', distinct=True))\
+                                            .filter(received__gte = number_of_criteria)
+            received_reviews = len(peer_reviews_received)
+
+            total_received_num = 0
+            if total_received:
+                total_received_num = total_received[0]['submission__count']
+
+            if submission.author.section not in sections:
+                sections.append(submission.author.section)
+
             reviews.append({
-                'author': author,
+                'author': submission.author,
+                'total_completed': total_completed_num,
                 'completed': completed_reviews,
-                'total': peer_reviews.count()
+                'total_received': total_received_num,
+                'received': received_reviews,
             })
-        return {'reviews': reviews,
-                'rubric': rubric}
+
+        sections.sort()
+
+        return {'title': self.request.session['lti_launch_params']['context_title'],
+                'reviews': reviews,
+                'rubric': rubric,
+                'sections': sections}
+        
 
 
 class ReviewsOfMyWorkView(HasRoleMixin, TemplateView):

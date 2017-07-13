@@ -17,3 +17,7 @@
 
 .validation-container {
 }
+
+.mdl-grid {
+	position: relative;
+}
