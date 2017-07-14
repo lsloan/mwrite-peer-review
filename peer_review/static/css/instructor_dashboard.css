@@ -21,3 +21,43 @@
 .mdl-grid {
 	position: relative;
 }
+
+.mdl-card__title.mdl-card--expand {
+	height: 60px;
+}
+
+.mdl-card__supporting-text {
+	height: 20px;
+}
+
+.rubric_link_center {
+	display: block;
+}
+
+@media screen and (max-width: 1400px) {
+	.mdl-card__actions.mdl-card--border {
+		height: 85px;
+	}
+
+	.rubric_link_left {
+		display: block;
+	}
+
+	.review_link {
+		display: block;
+	}
+}
+
+@media screen and (min-width: 1400px) {
+	.rubric_link_left {
+		position: relative;
+		float: left;
+		width: 125px;
+	}
+
+	.review_link {
+		position: relative;
+		float: left;
+		width: 125px;
+	}
+}

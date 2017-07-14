@@ -33,4 +33,11 @@
             updateValidationText(validationsInfo, $peerReviewCard);
         });
     });
+
+    $('.mdl-card__actions.mdl-card--border').each(function() {
+        if ($(this).find('.review_link').length == 0) {
+            $(this).find('.rubric_link_left').addClass('rubric_link_center');
+            $(this).find('.rubric_link_left').removeClass('rubric_link_left');
+        }
+    });
 })();
