@@ -54,7 +54,7 @@
         </a>
         {% if assignment.assignment.rubric_for_review.peer_review_distribution.is_distribution_complete %}
             <a class="mdl-button mdl-button--colored mdl-js-button mdl-js-ripple-effect review_link"
-               href="/review/rubric/{{ assignment.assignment.rubric_for_review.id }}/all">
+               href="/status/rubric/{{ assignment.assignment.rubric_for_review.id }}/all">
                 View Reviews
             </a>
         {% endif %}
