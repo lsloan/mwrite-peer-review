@@ -1,6 +1,6 @@
-.peer-review-assignment_card {
-    width: 280px;
-    height: 320px;
+.peer-review-assignment-card {
+	width: 330px;
+	height: 320px;
 }
 
 .ok-icon-color {
@@ -20,6 +20,7 @@
 
 .mdl-grid {
 	position: relative;
+	top: 60px;
 }
 
 .mdl-card__title.mdl-card--expand {
