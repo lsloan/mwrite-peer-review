@@ -96,7 +96,8 @@ class RubricCreationFormView(HasRoleMixin, TemplateView):
             'existing_revision': existing_revision,
             'existing_rubric': existing_rubric,
             'criteria': json.dumps(criteria),
-            'review_is_in_progress': review_is_in_progress
+            'review_is_in_progress': review_is_in_progress,
+            'title': self.request.session['lti_launch_params']['context_title'],
         }
 
     # noinspection PyMethodMayBeStatic
@@ -241,21 +242,39 @@ class InstructorDashboardView(HasRoleMixin, TemplateView):
         peer_review_assignments = CanvasAssignment.objects.filter(id__in=fetched_assignments.keys(),
                                                                   is_peer_review_assignment=True) \
                                                           .order_by('due_date_utc')
-        rubric_assignments = thread_last(peer_review_assignments,
-                                         (map, InstructorDashboardView.get_rubric_for_review),
-                                         (filter, lambda mr: mr is not None),
-                                         (map, lambda r: (r.reviewed_assignment, r.revision_assignment)),
-                                         chain.from_iterable,
-                                         (filter, lambda ma: ma is not None),
-                                         list)
-        for assignment in rubric_assignments:
-            assignment.validation = fetched_assignments[assignment.id].validation
+
+        reviews = []       
+        prompt_assignments = []                                                   
+        for assignment in peer_review_assignments:
+            rubric = Rubric.objects.filter(passback_assignment=assignment)
+            num_reviews = 0
+            received_reviews = 0
+            if rubric:
+                number_of_criteria = rubric[0].criteria.count()
+
+                prompt_assignment = assignment.rubric_for_review.reviewed_assignment
+                prompt_assignment.validation = fetched_assignments[prompt_assignment.id].validation
+                prompt_assignments.append(prompt_assignment)
+
+                submissions = prompt_assignment.canvas_submission_set.annotate(Count('peer_reviews_for_submission'))
+
+                for submission in submissions:
+                    num_reviews += submission.peer_reviews_for_submission__count
+                    peer_reviews_per_submission = CanvasSubmission.num_comments_each_review_per_submission.__get__(submission).filter(received__gte = number_of_criteria)
+                    received_reviews += len(peer_reviews_per_submission)
+
+            reviews.append({
+                'assignment': assignment,
+                'num_reviews': num_reviews,
+                'received_reviews': received_reviews,
+            })
+
         return {
             'title': self.request.session['lti_launch_params']['context_title'],
             'course_id': course_id,
-            'assignments': peer_review_assignments,
-            'validation_info': json.dumps({a.id: a.validation for a in rubric_assignments},
-                                          default=AssignmentValidation.json_default)
+            'validation_info': json.dumps({a.id: a.validation for a in prompt_assignments},
+                                          default=AssignmentValidation.json_default),
+            'reviews': reviews,
         }
 
 

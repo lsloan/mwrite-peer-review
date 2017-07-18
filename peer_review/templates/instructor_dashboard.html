@@ -11,8 +11,8 @@
 
 {% block content %}
     <div class="mdl-grid" data-validations-info="{{ validation_info }}">
-        {% for assignment in assignments %}
-            {% include 'peer_review_assignment_card.html' with assignment=assignment %}
+        {% for review in reviews %}
+            {% include 'peer_review_assignment_card.html' with review=review %}
         {% endfor %}
     </div>
 {% endblock %}

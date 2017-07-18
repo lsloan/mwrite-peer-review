@@ -45,6 +45,11 @@ class CanvasSubmission(models.Model):
     assignment = models.ForeignKey(CanvasAssignment, models.DO_NOTHING, related_name='canvas_submission_set')
     filename = models.CharField(unique=True, max_length=255)
 
+    @property
+    def num_comments_each_review_per_submission(self):
+        return PeerReview.objects.filter(submission=self)\
+                                .annotate(received = models.Count('comments', distinct=True))
+                                
 
 # noinspection PyClassHasNoInit
 class Rubric(models.Model):
