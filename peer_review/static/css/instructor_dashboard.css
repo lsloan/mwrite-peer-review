@@ -1,6 +1,6 @@
 .peer-review-assignment-card {
-	width: 330px;
-	height: 320px;
+    width: 330px;
+    height: 320px;
 }
 
 .ok-icon-color {
@@ -19,46 +19,51 @@
 }
 
 .mdl-grid {
-	position: relative;
-	top: 60px;
+    position: relative;
+    top: 60px;
 }
 
 .mdl-card__title.mdl-card--expand {
-	height: 60px;
+    height: 60px;
 }
 
 .mdl-card__supporting-text {
-	height: 20px;
+    height: 20px;
 }
 
 .rubric_link_center {
-	display: block;
+    display: block;
+}
+
+.go_instructor_dashboard {
+    pointer-events: none;
+    cursor: default;
 }
 
 @media screen and (max-width: 1400px) {
-	.mdl-card__actions.mdl-card--border {
-		height: 85px;
-	}
+    .mdl-card__actions.mdl-card--border {
+        height: 85px;
+    }
 
-	.rubric_link_left {
-		display: block;
-	}
+    .rubric_link_left {
+        display: block;
+    }
 
-	.review_link {
-		display: block;
-	}
+    .review_link {
+        display: block;
+    }
 }
 
 @media screen and (min-width: 1400px) {
-	.rubric_link_left {
-		position: relative;
-		float: left;
-		width: 125px;
-	}
+    .rubric_link_left {
+        position: relative;
+        float: left;
+        width: 125px;
+    }
 
-	.review_link {
-		position: relative;
-		float: left;
-		width: 125px;
-	}
+    .review_link {
+        position: relative;
+        float: left;
+        width: 125px;
+    }
 }
