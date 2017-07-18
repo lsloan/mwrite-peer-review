@@ -260,9 +260,6 @@ class InstructorDashboardView(HasRoleMixin, TemplateView):
 
                 for submission in submissions:
                     num_reviews += submission.peer_reviews_for_submission__count
-                    # peer_reviews_per_submission = submission.peer_reviews_for_submission.all()\
-                    #         .annotate(received = Count('comments', distinct=True))
-                    #         .filter(received__gte = number_of_criteria)
                     peer_reviews_per_submission = CanvasSubmission.num_comments_each_review_per_submission.__get__(submission).filter(received__gte = number_of_criteria)
                     received_reviews += len(peer_reviews_per_submission)
 
