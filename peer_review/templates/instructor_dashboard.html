@@ -10,6 +10,9 @@
 {% endblock %}
 
 {% block content %}
+    <div class="dashboard_links">
+        <a href="/dashboard/instructor" class="go_instructor_dashboard">Peer Review</a>
+    </div>
     <div class="mdl-grid" data-validations-info="{{ validation_info }}">
         {% for review in reviews %}
             {% include 'peer_review_assignment_card.html' with review=review %}
