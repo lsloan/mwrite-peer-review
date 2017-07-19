@@ -67,4 +67,10 @@ $(function() {
             $(this).append('<i class="material-icons header_icons">arrow_drop_up</i>');
         } 
     });
+
+    $(".student_entry").on("click", function() {
+        var student_id = $(this).find(".student_id").text();
+        var rubric_id = window.location.href.split('/').reverse()[1];
+        window.location = "/review/student/" + student_id + "/rubric/" + rubric_id;
+    });
 });

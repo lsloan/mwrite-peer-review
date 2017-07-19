@@ -49,6 +49,7 @@
                     <td class="student_section">{{review.author.section}}</td>
                     <td class="student_completed">{{review.completed}} of {{review.total_completed}}</td>
                     <td class="student_received">{{review.received}} of {{review.total_received}}</td>
+                    <td class="student_id" style="display: none;">{{review.author.id}}</td>
                 </tr>
             {% endfor %}
         </tbody>        
