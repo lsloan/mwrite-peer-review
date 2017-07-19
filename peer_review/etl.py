@@ -79,3 +79,11 @@ def persist_assignments(course_id):
     for assignment in assignments:
         assignment.save()
     return assignments
+
+
+def persist_students(course_id):
+    raise NotImplemented()
+
+
+def persist_submissions(course_id, assignment_id):
+    raise NotImplemented()
