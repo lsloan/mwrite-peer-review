@@ -4,7 +4,6 @@ from django.db import models
 class CanvasAssignment(models.Model):
 
     class Meta:
-        managed = False
         db_table = 'canvas_assignments'
 
     id = models.IntegerField(primary_key=True)
@@ -24,11 +23,10 @@ class CanvasAssignment(models.Model):
 class CanvasStudent(models.Model):
 
     class Meta:
-        managed = False
         db_table = 'canvas_students'
 
     id = models.IntegerField(primary_key=True)
-    section = models.TextField()
+    section = models.TextField(blank=True, null=True)
     full_name = models.TextField()
     sortable_name = models.TextField()
 
@@ -37,7 +35,6 @@ class CanvasStudent(models.Model):
 class CanvasSubmission(models.Model):
 
     class Meta:
-        managed = False
         db_table = 'canvas_submissions'
 
     id = models.IntegerField(primary_key=True)
@@ -67,7 +64,6 @@ class CanvasSubmission(models.Model):
 class Rubric(models.Model):
 
     class Meta:
-        managed = False
         db_table = 'rubrics'
 
     id = models.AutoField(primary_key=True)
@@ -98,7 +94,6 @@ class Rubric(models.Model):
 class Criterion(models.Model):
 
     class Meta:
-        managed = False
         db_table = 'criteria'
 
     id = models.AutoField(primary_key=True)
@@ -113,7 +108,6 @@ class Criterion(models.Model):
 class PeerReview(models.Model):
 
     class Meta:
-        managed = False
         db_table = 'peer_reviews'
         unique_together = (('student', 'submission'),)
 
@@ -126,7 +120,6 @@ class PeerReview(models.Model):
 class PeerReviewComment(models.Model):
 
     class Meta:
-        managed = False
         db_table = 'peer_review_comments'
         unique_together = (('criterion', 'peer_review'),)
 
@@ -141,7 +134,6 @@ class PeerReviewComment(models.Model):
 class PeerReviewDistribution(models.Model):
 
     class Meta:
-        managed = False
         db_table = 'peer_review_distributions'
 
     id = models.AutoField(primary_key=True)
