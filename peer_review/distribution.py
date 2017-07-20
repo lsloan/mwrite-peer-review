@@ -1,7 +1,6 @@
 import logging
 
 from toolz.itertoolz import unique
-from toolz.functoolz import thread_last
 
 from django.db import transaction
 
