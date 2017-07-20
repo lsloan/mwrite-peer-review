@@ -1,6 +1,25 @@
 from django.db import models
 
 
+class CanvasCourse(models.Model):
+
+    class Meta:
+        db_table = 'canvas_courses'
+
+    id = models.IntegerField(primary_key=True)
+    name = models.TextField()
+
+
+class CanvasSection(models.Model):
+
+    class Meta:
+        db_table = 'canvas_section'
+
+    id = models.AutoField(primary_key=True)
+    course = models.OneToOneField(CanvasCourse, models.DO_NOTHING)
+    name = models.TextField()
+
+
 class CanvasAssignment(models.Model):
 
     class Meta:
@@ -26,7 +45,7 @@ class CanvasStudent(models.Model):
         db_table = 'canvas_students'
 
     id = models.IntegerField(primary_key=True)
-    section = models.TextField(blank=True, null=True)
+    section = models.ForeignKey(CanvasSection, models.DO_NOTHING, blank=True, null=True)
     full_name = models.TextField()
     sortable_name = models.TextField()
 
