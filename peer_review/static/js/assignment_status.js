@@ -69,8 +69,8 @@ $(function() {
     });
 
     $(".student_entry").on("click", function() {
-        var student_id = $(this).find(".student_id").text();
-        var rubric_id = window.location.href.split('/').reverse()[1];
+        var student_id = $(this).attr('data-student-id');
+        var rubric_id = $(this).attr('data-rubric-id');
         window.location = "/review/student/" + student_id + "/rubric/" + rubric_id;
     });
 });
