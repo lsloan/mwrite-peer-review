@@ -71,13 +71,14 @@ class CanvasSubmission(models.Model):
 
     @property
     def num_comments_each_review_per_studetn(self):
-        return PeerReview.objects.filter(student=self.author, submission__assignment=self.assignment)\
-                                .annotate(completed = models.Count('comments', distinct=True))   
+        return PeerReview.objects.filter(student=self.author, submission__assignment=self.assignment) \
+                                 .annotate(completed=models.Count('comments', distinct=True))
 
     @property
     def num_comments_each_review_per_submission(self):
-        return PeerReview.objects.filter(submission=self)\
-                                .annotate(received = models.Count('comments', distinct=True))
+        return PeerReview.objects.filter(submission=self) \
+                                 .annotate(received=models.Count('comments', distinct=True))
+
 
 # noinspection PyClassHasNoInit
 class Rubric(models.Model):
