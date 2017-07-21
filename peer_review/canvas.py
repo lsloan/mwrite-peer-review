@@ -53,5 +53,5 @@ def retrieve(resource, *params):
         url = links.get('next') if links else None
         if not url:
             break
-        route_params = None
+        route_params = {}
     return resources
