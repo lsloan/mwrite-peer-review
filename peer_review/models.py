@@ -15,7 +15,7 @@ class CanvasSection(models.Model):
     class Meta:
         db_table = 'canvas_section'
 
-    id = models.AutoField(primary_key=True)
+    id = models.IntegerField(primary_key=True)
     course = models.OneToOneField(CanvasCourse, models.DO_NOTHING)
     name = models.TextField()
 
@@ -45,7 +45,7 @@ class CanvasStudent(models.Model):
         db_table = 'canvas_students'
 
     id = models.IntegerField(primary_key=True)
-    section = models.ForeignKey(CanvasSection, models.DO_NOTHING, blank=True, null=True)
+    section = models.ManyToManyField(CanvasSection, blank=True)
     full_name = models.TextField()
     sortable_name = models.TextField()
 

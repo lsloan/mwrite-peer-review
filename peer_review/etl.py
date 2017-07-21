@@ -1,11 +1,11 @@
 import logging
 from toolz.functoolz import thread_last
-from toolz.itertoolz import unique
+from toolz.itertoolz import unique, remove
 from django.conf import settings
 from django.utils.dateparse import parse_datetime
 from peer_review.util import utc_to_timezone, to_camel_case
 from peer_review.canvas import retrieve
-from peer_review.models import CanvasAssignment
+from peer_review.models import CanvasAssignment, CanvasSection, CanvasStudent, CanvasCourse
 
 log = logging.getLogger(__name__)
 
@@ -81,8 +81,12 @@ def persist_assignments(course_id):
     return assignments
 
 
-def persist_students(course_id):
-    raise NotImplemented()
+def persist_students(course):
+    sections = retrieve('sections', course.id)
+    students = retrieve('students', course.id)
+
+    for section in sections:
+        section = CanvasSection.objects.get_or_create()
 
 
 def persist_submissions(course_id, assignment_id):

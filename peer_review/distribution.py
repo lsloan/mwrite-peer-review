@@ -28,10 +28,10 @@ def review_distribution_task(utc_timestamp):
         if not prompts_for_distribution:
             log.info('No prompts ready for review distribution.')
         else:
-            course_ids = unique(map(lambda a: a.course_id, prompts_for_distribution))
-            for course_id in course_ids:
-                log.info('Persisting students for course %d' % course_id)
-                persist_students(course_id)
+            courses = unique(map(lambda a: a.course, prompts_for_distribution))
+            for course in courses:
+                log.info('Persisting students for course %d' % course.id)
+                persist_students(course)
 
             for prompt in prompts_for_distribution:
                 log.info('Distributing reviews for prompt %d...' % prompt.id)
