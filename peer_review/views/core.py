@@ -432,6 +432,15 @@ class ReviewsForAStudentView(HasRoleMixin, TemplateView):
                 'student': student,
                 'review': details}
 
+class AllStudentsReviews(HasRoleMixin, TemplateView):
+    allowed_roles = 'instructor'
+    template_name = 'reviews_for_all_students.html'
+
+    def get_context_data(self, **kwargs):
+        return {
+            'title': self.request.session['lti_launch_params']['context_title'],
+        }
+
 class OverviewForAStudent(HasRoleMixin, TemplateView):
     allowed_roles = 'instructor'
     template_name = 'overview_for_a_student.html'
@@ -474,7 +483,7 @@ class OverviewForAStudent(HasRoleMixin, TemplateView):
                 'completed': completed_reviews,
                 'total_received': total_received_num,
                 'received': received_reviews,
-                'graded': False
+                'graded': True
             })
 
         return {'title': self.request.session['lti_launch_params']['context_title'],
