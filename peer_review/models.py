@@ -44,12 +44,26 @@ class CanvasSubmission(models.Model):
     author = models.ForeignKey(CanvasStudent, models.DO_NOTHING)
     assignment = models.ForeignKey(CanvasAssignment, models.DO_NOTHING, related_name='canvas_submission_set')
     filename = models.CharField(unique=True, max_length=255)
+    
+    @property
+    def total_completed_by_a_student(self):
+        return PeerReview.objects.filter(student=self.author, submission__assignment=self.assignment)\
+                                .values('student').annotate(models.Count('student'))
+                            
+    @property
+    def total_received_of_a_student(self):
+        return PeerReview.objects.filter(submission=self)\
+                        .values('submission').annotate(models.Count('submission'))
+
+    @property
+    def num_comments_each_review_per_studetn(self):
+        return PeerReview.objects.filter(student=self.author, submission__assignment=self.assignment)\
+                                .annotate(completed = models.Count('comments', distinct=True))   
 
     @property
     def num_comments_each_review_per_submission(self):
         return PeerReview.objects.filter(submission=self)\
                                 .annotate(received = models.Count('comments', distinct=True))
-                                
 
 # noinspection PyClassHasNoInit
 class Rubric(models.Model):
@@ -78,6 +92,9 @@ class Rubric(models.Model):
                                                related_name='rubric_for_revision')
     revision_fetch_complete = models.BooleanField(default=False)
 
+    @property
+    def num_criteria(self):
+        return Criterion.objects.filter(rubric=self).count()
 
 # noinspection PyClassHasNoInit
 class Criterion(models.Model):

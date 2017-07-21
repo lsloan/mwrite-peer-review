@@ -1,0 +1,31 @@
+{% extends 'base_mdl.html' %}
+{% load static %}
+
+{% block header %}
+	<link rel="stylesheet" href="{% static 'css/common.css' %}" />
+	<link rel="stylesheet" href="{% static 'css/student_reviews_header.css' %}" />
+	<link rel="stylesheet" href="{% static 'css/overview_for_a_student.css' %}" />
+	<script src="{% static 'js/common.js' %}" ></script>
+	<script src="{% static 'js/student_reviews_header.js' %}" ></script>
+	<link href="https://fonts.googleapis.com/icon?family=Material+Icons"
+	      rel="stylesheet">
+{% endblock %}
+
+{% block content %}
+	<div class="dashboard_links">
+		<a href="#" class="link_for_nav is_students">Students</a>
+		<p class="slash_between">/</p>
+		<a href="/review/student/{{student_id}}" class="link_for_nav">{{student_name}}</a>
+		<p class="slash_between">/</p>
+		<p class="text_on_nav">Overview</p>
+	</div>
+
+	{% include 'students_reviews_header.html' %}
+
+	<div class="overview_title">{{student_first_name}}'s Peer Review Activity</div>
+
+	<div class="mdl-grid">
+	{% for review in reviews %}
+        {% include 'peer_review_card_for_student.html' with review=review %}
+    {% endfor %}
+{% endblock %}

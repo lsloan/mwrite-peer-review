@@ -2,6 +2,7 @@
     position: relative;
     display: flex;
     top: 70px;
+    justify-content: space-between;
 }
 
 .student_name {
@@ -13,7 +14,7 @@
 
 .download {
     position: relative;
-    left: 78%;
+    left: -3%;
     width: 160px;
     height: 30px;
     background-color: white;

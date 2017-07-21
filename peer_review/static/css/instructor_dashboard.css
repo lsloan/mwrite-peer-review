@@ -35,7 +35,7 @@
     display: block;
 }
 
-.go_instructor_dashboard {
+.link_for_nav {
     pointer-events: none;
     cursor: default;
 }
