@@ -437,6 +437,7 @@ class AllStudentsReviews(HasRoleMixin, TemplateView):
     template_name = 'reviews_for_all_students.html'
 
     def get_context_data(self, **kwargs):
+        
         return {
             'title': self.request.session['lti_launch_params']['context_title'],
         }
