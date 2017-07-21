@@ -1,7 +1,10 @@
+import os
+import shutil
 import logging
+import requests
 from functools import partial
 from toolz.functoolz import thread_last
-from toolz.itertoolz import unique
+from toolz.itertoolz import unique, remove
 from django.db import transaction
 from django.conf import settings
 from django.utils.dateparse import parse_datetime
@@ -112,5 +115,42 @@ def persist_students(course):
             student.save()
 
 
-def persist_submissions(course_id, assignment_id):
-    raise NotImplemented()
+def _download_single_attachment(destination, attachment):
+    attachment_response = requests.get(attachment['url'])
+    attachment_response.raise_for_status()
+    attachment_filename = '%d_%s' % (attachment['id'], attachment['filename'])
+    attachment_path = os.path.join(destination, attachment_filename)
+    with open(attachment_path, 'w') as attachment_file:
+        attachment_file.write(attachment_response.content)
+    return attachment_file
+
+
+def _download_multiple_attachments(destination, submission):
+    temp_directory_path = os.path.join(settings.MEDIA_ROOT, str(submission.id))
+    os.makedirs(temp_directory_path, exist_ok=True)
+    for attachment in submission['attachments']:
+        _download_single_attachment(temp_directory_path, attachment)
+
+    archive_format = 'zip'
+    attachment_archive_filename = '%d_submissions.%s' % (submission.id, archive_format)
+    shutil.make_archive(attachment_archive_filename, archive_format, destination, temp_directory_path)
+
+
+def _download_submission(raw_submission):
+    attachments = raw_submission['attachments']
+    destination = os.path.join(settings.MEDIA_ROOT, 'submissions')
+    os.makedirs(destination)
+    if len(attachments) > 1:
+        _download_multiple_attachments(destination, raw_submission['attachments'])
+    else:
+        _download_single_attachment(destination, raw_submission['attachments'][0])
+
+
+def persist_submissions(assignment):
+    submissions = thread_last(retrieve('submissions', assignment.course.id, assignment.id),
+                              (remove, lambda s: s['workflow_state'] == 'unsubmitted'),
+                              (remove, lambda s: s.get('attachments') is None),
+                              list)
+    for submission in submissions:
+        _download_submission(submission)
+

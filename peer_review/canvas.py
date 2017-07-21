@@ -9,6 +9,7 @@ _routes = {
     'course':               {'route': 'courses/%s'},
     'assignments':          {'route': 'courses/%s/assignments'},
     'assignment-overrides': {'route': 'courses/%s/assignments/%s/overrides'},
+    'submissions':          {'route': 'courses/%s/assignments/%s/submissions'},
     'students':             {'route': 'courses/%s/users',
                              'params': {
                                  'enrollment_type[]': ['student'],

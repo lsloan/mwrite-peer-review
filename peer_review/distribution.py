@@ -39,7 +39,7 @@ def review_distribution_task(utc_timestamp):
                 with transaction.atomic():
                     try:
                         log.debug('Fetching and persisting submissions for prompt %d...' % prompt.id)
-                        persist_submissions(prompt.course_id, prompt.id)
+                        persist_submissions(prompt)
                         log.debug('Finished persisting submissions for prompt %d' % prompt.id)
 
                         log.debug('Distributing for prompt %d for review...' % prompt.id)
