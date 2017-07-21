@@ -1,11 +1,13 @@
 import logging
+from functools import partial
 from toolz.functoolz import thread_last
-from toolz.itertoolz import unique, remove
+from toolz.itertoolz import unique
+from django.db import transaction
 from django.conf import settings
 from django.utils.dateparse import parse_datetime
 from peer_review.util import utc_to_timezone, to_camel_case
 from peer_review.canvas import retrieve
-from peer_review.models import CanvasAssignment, CanvasSection, CanvasStudent, CanvasCourse
+from peer_review.models import CanvasAssignment, CanvasSection, CanvasStudent
 
 log = logging.getLogger(__name__)
 
@@ -81,12 +83,33 @@ def persist_assignments(course_id):
     return assignments
 
 
-def persist_students(course):
-    sections = retrieve('sections', course.id)
-    students = retrieve('students', course.id)
+def _convert_section(section):
+    return CanvasSection(id=section['id'], name=section['name'], course_id=section['course_id'])
 
-    for section in sections:
-        section = CanvasSection.objects.get_or_create()
+
+def _convert_student(sections_by_id, raw_student):
+    student = CanvasStudent(id=raw_student['id'],
+                            username=raw_student['login_id'],
+                            full_name=raw_student['name'],
+                            sortable_name=raw_student['sortable_name'])
+    for section_id in map(lambda e: e['course_section_id'], raw_student['enrollments']):
+        student.sections.add(sections_by_id[section_id])
+    return student
+
+
+def persist_students(course):
+    raw_sections = retrieve('sections', course.id)
+    sections = list(map(_convert_section, raw_sections))
+    sections_by_id = {section.id: section for section in sections}
+
+    raw_students = retrieve('students', course.id)
+    students = list(map(partial(_convert_student, sections_by_id), raw_students))
+
+    with transaction.atomic():
+        for section in sections:
+            section.save()
+        for student in students:
+            student.save()
 
 
 def persist_submissions(course_id, assignment_id):
