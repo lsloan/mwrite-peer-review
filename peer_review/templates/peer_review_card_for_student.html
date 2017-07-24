@@ -1,0 +1,49 @@
+<div class="peer_review_card_for_student mdl-card mdl-cell mdl-cell--3-col mdl-shadow--2dp">
+    {% if review.completed == review.total_completed and review.received == review.total_received and review.graded %}
+        <div class="mdl-card__title mdl-card--expand review_done">
+            <h2 class="mdl-card__title-text review_title">{{review.title}}</h2>
+        </div>
+    {% else %}
+        <div class="mdl-card__title mdl-card--expand review_in_progress">
+            <h2 class="mdl-card__title-text review_title">{{review.title}}</h2>
+        </div>
+    {% endif %}
+
+    <div class="mdl-card__supporting-text">
+        <div class="icon-container validation-container">
+        {% if review.completed == review.total_completed %}
+            <i class="material-icons icon-24px">done</i>
+        {% else %}
+            <i class="material-icons icon-24px">info_outline</i>
+        {% endif %}
+        <span class="icon-caption">Submitted {{review.completed}}/{{review.total_completed}} peer reviews on time</span>
+        </div>
+    </div>
+
+    <div class="mdl-card__supporting-text">
+        <div class="icon-container validation-container">
+        {% if review.received == review.total_received %}
+            <i class="material-icons icon-24px">done</i>
+        {% else %}
+            <i class="material-icons icon-24px">info_outline</i>
+        {% endif %}
+        <span class="icon-caption">Received {{review.received}}/{{review.total_received}} peer reviews</span>
+        </div>
+    </div>
+
+    <div class="mdl-card__supporting-text">
+        <div class="icon-container validation-container">
+        {% if review.graded %}
+            <i class="material-icons icon-24px">done</i>
+            <span class="icon-caption">Graded by Writing Fellow</span>
+        {% else %}
+            <i class="material-icons icon-24px">alarm</i>
+            <span class="icon-caption">Not yet graded by Writing Fellow</span>
+        {% endif %}
+        </div>
+    </div>
+
+    <div class="mdl-card__actions mdl-card--border">
+        <a class="mdl-button mdl-js-button mdl-js-ripple-effect review_link" href="/review/student/{{student_id}}/rubric/{{review.rubric_id}}">Go To {{review.title}}</a>
+    </div>
+</div>

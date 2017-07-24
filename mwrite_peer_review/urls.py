@@ -35,6 +35,7 @@ urlpatterns = [
     url(r'^rubric/course/(?P<course_id>[0-9]+)/assignment/(?P<assignment_id>[0-9]+)$', RubricCreationFormView.as_view()),
     url(r'^review/submission/(?P<submission_id>[0-9]+)$', PeerReviewView.as_view()),
     url(r'^review/submission/(?P<submission_id>[0-9]+)/completed$', ReviewsOfMyWorkView.as_view()),
+    url(r'^review/students$', AllStudentsReviews.as_view()),
     url(r'^review/student/(?P<student_id>[0-9]+)$', OverviewForAStudent.as_view()),
     url(r'^review/student/(?P<student_id>[0-9]+)/rubric/(?P<rubric_id>[0-9]+)$', ReviewsForAStudentView.as_view()),
     url(r'^safari$', SafariLaunchPopup.as_view()),
