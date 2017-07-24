@@ -12,11 +12,6 @@
     top: 125px;
 }
 
-.review_link {
-    display: block;
-    color: #777777;
-}
-
 .student_link {
     pointer-events: none;
     cursor: default;

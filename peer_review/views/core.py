@@ -355,22 +355,15 @@ class AssignmentStatus(HasRoleMixin, TemplateView):
         reviews = []
         sections = []
         for submission in submissions:
-            total_completed = CanvasSubmission.total_completed_by_a_student.__get__(submission)
+            total_completed_num = len(CanvasSubmission.total_completed_by_a_student.__get__(submission))
             peer_reviews_completed = CanvasSubmission.num_comments_each_review_per_studetn.__get__(submission)\
                                             .filter(completed__gte = number_of_criteria)
             completed_reviews = len(peer_reviews_completed)
-            total_completed_num = 0
-            if total_completed:
-                total_completed_num = total_completed[0]['student__count']
 
-            total_received = CanvasSubmission.total_received_of_a_student.__get__(submission)
+            total_received_num = len(CanvasSubmission.total_received_of_a_student.__get__(submission))
             peer_reviews_received = CanvasSubmission.num_comments_each_review_per_submission.__get__(submission)\
                                                     .filter(received__gte = number_of_criteria)
             received_reviews = len(peer_reviews_received)
-
-            total_received_num = 0
-            if total_received:
-                total_received_num = total_received[0]['submission__count']
 
             if submission.author.section not in sections:
                 sections.append(submission.author.section)
@@ -419,18 +412,70 @@ class ReviewsForAStudentView(HasRoleMixin, TemplateView):
 
     def get_context_data(self, **kwargs):
 
-        rubric = Rubric.objects.get(id=kwargs['rubric_id'])
         student = CanvasStudent.objects.get(id=kwargs['student_id'])
 
-        peer_review_ids = PeerReview.objects.filter(submission__assignment=rubric.reviewed_assignment, student=student)\
-                                            .values_list('id')
-        details = [(criterion,
-                    PeerReviewComment.objects.filter(criterion=criterion, peer_review_id__in=peer_review_ids)
-                                             .order_by('peer_review__submission__author_id'))
-                   for criterion in rubric.criteria.all()]
+        assignments = CanvasSubmission.objects.filter(author__id=student.id).values('assignment')
+        rubrics = Rubric.objects.filter(reviewed_assignment__in=assignments)
+
+        reviews = []
+        for rubric in rubrics:
+            reviews.append({
+                'rubric_id': rubric.id,
+                'title': rubric.passback_assignment.title,
+            })
+
+        rubric = Rubric.objects.get(id=kwargs['rubric_id'])
+        number_of_criteria = Rubric.num_criteria.__get__(rubric)
+        submission = rubric.reviewed_assignment.canvas_submission_set.get(author__id=student.id)
+
+        completed = []
+        completed_num = 0
+        total_completed = CanvasSubmission.total_completed_by_a_student.__get__(submission)
+        for peer_review in total_completed:
+            completed_review = False
+            if PeerReviewComment.objects.filter(peer_review__id=peer_review.id).count() == number_of_criteria:
+                completed_review = True
+                completed_num += 1
+
+            completed.append({
+                'student': peer_review.submission.author,
+                'student_first_name': peer_review.submission.author.full_name.split()[0],
+                'completed': completed_review
+            })
+
+        received = []
+        received_num = 0
+        total_received = CanvasSubmission.total_received_of_a_student.__get__(submission)
+        for peer_review in total_received:
+            received_review = False
+            if PeerReviewComment.objects.filter(peer_review__id=peer_review.id).count() == number_of_criteria:
+                received_review = True
+                received_num += 1
+
+            received.append({
+                'student': peer_review.student,
+                'student_first_name': peer_review.student.full_name.split()[0],
+                'received': received_review
+            })
+        # peer_review_ids = PeerReview.objects.filter(submission__assignment=rubric.reviewed_assignment, student=student)\
+        #                                     .values_list('id')
+        # details = [(criterion,
+        #             PeerReviewComment.objects.filter(criterion=criterion, peer_review_id__in=peer_review_ids)
+        #                                      .order_by('peer_review__submission__author_id'))
+        #            for criterion in rubric.criteria.all()]
         return {'prompt_title': rubric.reviewed_assignment.title,
-                'student': student,
-                'review': details}
+                'student_id': student.id,
+                'student_name': student.full_name,
+                'student_first_name': student.full_name.split()[0],
+                'reviews': reviews,
+                'total_completed': len(total_completed),
+                'completed_num': completed_num,
+                'completed': completed,
+                'total_received': len(total_received),
+                'received_num': received_num,
+                'received': received,
+                # 'review': details
+                }
 
 class AllStudentsReviews(HasRoleMixin, TemplateView):
     allowed_roles = 'instructor'
@@ -460,22 +505,15 @@ class OverviewForAStudent(HasRoleMixin, TemplateView):
 
             submission = rubric.reviewed_assignment.canvas_submission_set.get(author__id=student_id)
 
-            total_completed = CanvasSubmission.total_completed_by_a_student.__get__(submission)
+            total_completed_num = len(CanvasSubmission.total_completed_by_a_student.__get__(submission))
             peer_reviews_completed = CanvasSubmission.num_comments_each_review_per_studetn.__get__(submission)\
                                             .filter(completed__gte = number_of_criteria)
             completed_reviews = len(peer_reviews_completed)
-            total_completed_num = 0
-            if total_completed:
-                total_completed_num = total_completed[0]['student__count']
 
-            total_received = CanvasSubmission.total_received_of_a_student.__get__(submission)
+            total_received_num = len(CanvasSubmission.total_received_of_a_student.__get__(submission))
             peer_reviews_received = CanvasSubmission.num_comments_each_review_per_submission.__get__(submission)\
                                                     .filter(received__gte = number_of_criteria)
             received_reviews = len(peer_reviews_received)
-
-            total_received_num = 0
-            if total_received:
-                total_received_num = total_received[0]['submission__count']
 
             reviews.append({
                 'title': rubric.passback_assignment.title,
