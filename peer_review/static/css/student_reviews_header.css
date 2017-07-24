@@ -1,0 +1,66 @@
+.name_and_download {
+    position: relative;
+    display: flex;
+    top: 70px;
+}
+
+.student_name {
+    margin-left: 20px;
+    font-size: 20px;
+    font-weight: 400;
+    color: #535353;
+}
+
+.download {
+    position: relative;
+    left: 78%;
+    width: 160px;
+    height: 30px;
+    background-color: white;
+    border: 1px solid #6171BF;
+    color: #6171BF;
+    display: flex;
+    outline: none;
+}
+
+.download:hover {
+    cursor: pointer;
+}
+
+.download_icon {
+    margin-top: 5px;
+    margin-left: 5px;
+    margin-right: 5px;
+}
+
+.reviews {
+    position: relative;
+    top: 80px;
+    margin-left: 20px;
+    display: flex;
+    border-bottom: 1px solid #909090;
+    width: 97%;
+    margin: 0 auto;
+}
+
+.each_review {
+    padding: 3px 10px 3px 10px;
+    margin-left: 20px;
+    margin-right: 30px;
+    height: 20px;
+}
+
+.each_review_link {
+    font-weight: 300;
+    color: #909090;
+    text-decoration: none;
+}
+
+.show_border {
+    border-bottom: 2px solid #03A9F3;
+}
+
+.change_link_style {
+    font-weight: 400;
+    color: #535353;
+}

@@ -44,7 +44,7 @@
         </thead>
         <tbody>
             {% for review in reviews %}
-                <tr class="student_entry">
+                <tr class="student_entry" data-student-id={{review.author.id}} data-rubric-id={{rubric.id}}>
                     <td class="student_name">{{review.author.full_name}}</td>
                     <td class="student_section">{{review.author.section}}</td>
                     <td class="student_completed">{{review.completed}} of {{review.total_completed}}</td>

@@ -131,3 +131,7 @@
     top: 7px;
     left: 45px;
 }
+
+.student_entry:hover {
+    cursor: pointer;
+}
