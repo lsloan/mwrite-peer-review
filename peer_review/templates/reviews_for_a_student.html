@@ -49,10 +49,10 @@
 
                     <div class="mdl-card__actions mdl-card--border">
                     {% if not review.completed %}
-                        <a class='mdl-button mdl-js-button mdl-js-ripple-effect review_link' href="mailto:yuant@umich.edu">EMAIL {{student_first_name}}</a> 
-                        <a class='mdl-button mdl-js-button mdl-js-ripple-effect review_link' href="#">SEE {{review.student_first_name}}'s SUBMISSION</a>
+                        <a class='mdl-button mdl-js-button mdl-js-ripple-effect review_link' href="mailto:{{student_email}}">Email {{student_first_name}}</a> 
+                        <a class='mdl-button mdl-js-button mdl-js-ripple-effect review_link' href="/submissions/{{submission.id}}/download">See {{review.student_first_name}}'s submission</a>
                     {% else %}
-                        <a class='mdl-button mdl-js-button mdl-js-ripple-effect review_link' href="#">SEE REVIEW</a>
+                        <a class='mdl-button mdl-js-button mdl-js-ripple-effect review_link' href="#">See review</a>
                     {% endif %}
                     </div>
                 </div>
@@ -87,10 +87,10 @@
 
                     <div class="mdl-card__actions mdl-card--border">
                     {% if not review.received %}
-                        <a class='mdl-button mdl-js-button mdl-js-ripple-effect review_link' href="mailto:{{student_email}}">EMAIL {{review.student_first_name}}</a> 
-                        <a class='mdl-button mdl-js-button mdl-js-ripple-effect review_link' href="/submissions/{{submission.id}}/download">SEE {{student_first_name}}'s SUBMISSION</a>
+                        <a class='mdl-button mdl-js-button mdl-js-ripple-effect review_link' href="mailto:{{student_email}}">Email {{review.student_first_name}}</a> 
+                        <a class='mdl-button mdl-js-button mdl-js-ripple-effect review_link' href="/submissions/{{submission.id}}/download">See {{student_first_name}}'s submission</a>
                     {% else %}
-                        <a class='mdl-button mdl-js-button mdl-js-ripple-effect review_link' href="#">SEE REVIEW</a>
+                        <a class='mdl-button mdl-js-button mdl-js-ripple-effect review_link' href="#">See review</a>
                     {% endif %}
                     </div>
                 </div>
