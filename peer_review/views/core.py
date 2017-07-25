@@ -5,7 +5,7 @@ from datetime import datetime
 from itertools import chain
 
 from django.db import transaction
-from django.db.models import Q, F, Count, Case, When, Value, BooleanField
+from django.db.models import Q, F, Count, Case, When, Value, BooleanField, Max
 from django.http import HttpResponse, Http404
 from django.shortcuts import redirect
 from django.template.loader import render_to_string
@@ -20,6 +20,10 @@ from peer_review.etl import persist_assignments, AssignmentValidation
 from peer_review.models import Rubric, Criterion, CanvasAssignment, PeerReviewDistribution, CanvasSubmission, \
     PeerReview, PeerReviewComment, CanvasStudent
 from peer_review.util import parse_json_body, some
+from django.shortcuts import render
+import csv
+import webbrowser
+import os
 
 logger = logging.getLogger(__name__)
 
@@ -410,7 +414,7 @@ class ReviewsForAStudentView(HasRoleMixin, TemplateView):
     allowed_roles = 'instructor'
     template_name = 'reviews_for_a_student.html'
 
-    def get_context_data(self, **kwargs):
+    def get(self, request, *args, **kwargs):
 
         student = CanvasStudent.objects.get(id=kwargs['student_id'])
 
@@ -433,14 +437,18 @@ class ReviewsForAStudentView(HasRoleMixin, TemplateView):
         total_completed = CanvasSubmission.total_completed_by_a_student.__get__(submission)
         for peer_review in total_completed:
             completed_review = False
-            if PeerReviewComment.objects.filter(peer_review__id=peer_review.id).count() == number_of_criteria:
+            submit_time = ''
+            comments = PeerReviewComment.objects.filter(peer_review__id=peer_review.id)
+            if comments.count() >= number_of_criteria:
+                submit_time = comments.aggregate(Max('commented_at_utc'))
                 completed_review = True
                 completed_num += 1
 
             completed.append({
                 'student': peer_review.submission.author,
                 'student_first_name': peer_review.submission.author.full_name.split()[0],
-                'completed': completed_review
+                'completed': completed_review,
+                'submit_time': submit_time
             })
 
         received = []
@@ -448,17 +456,38 @@ class ReviewsForAStudentView(HasRoleMixin, TemplateView):
         total_received = CanvasSubmission.total_received_of_a_student.__get__(submission)
         for peer_review in total_received:
             received_review = False
-            if PeerReviewComment.objects.filter(peer_review__id=peer_review.id).count() == number_of_criteria:
+            submit_time = ''
+            comments = PeerReviewComment.objects.filter(peer_review__id=peer_review.id)
+            if comments.count() >= number_of_criteria:
+                submit_time = comments.aggregate(Max('commented_at_utc'))
                 received_review = True
                 received_num += 1
 
             received.append({
                 'student': peer_review.student,
                 'student_first_name': peer_review.student.full_name.split()[0],
-                'received': received_review
+                'received': received_review,
+                'submit_time': submit_time
             })
 
-        return {'prompt_title': rubric.reviewed_assignment.title,
+        if request.is_ajax():
+            output_file = 'reviews_data_'+ student.full_name +'_rubric_'+ str(rubric.id) +'.csv'
+
+            with open(output_file, 'w') as csvfile:
+                writer = csv.writer(csvfile, delimiter=',', quoting=csv.QUOTE_MINIMAL)
+                writer.writerow(['reviewer', 'author', 'criterion', 'comment'])
+
+                comments_completed = PeerReviewComment.objects.filter(peer_review__in=total_completed)
+                for comment in comments_completed:
+                    writer.writerow([comment.peer_review.student.sortable_name, comment.peer_review.submission.author.sortable_name, comment.criterion.id, comment.comment])
+
+                comments_received = PeerReviewComment.objects.filter(peer_review__in=total_received)
+                for comment in comments_received:
+                    writer.writerow([comment.peer_review.student.sortable_name, comment.peer_review.submission.author.sortable_name, comment.criterion.id, comment.comment])
+            
+            webbrowser.open('file://' + os.path.abspath(output_file))
+
+        return render(request, 'reviews_for_a_student.html', {'prompt_title': rubric.reviewed_assignment.title,
                 'student_id': student.id,
                 'student_name': student.full_name,
                 'student_email': 'yuant@umich.edu',
@@ -471,7 +500,7 @@ class ReviewsForAStudentView(HasRoleMixin, TemplateView):
                 'received_num': received_num,
                 'received': received,
                 'submission': submission,
-                }
+                })
 
 class AllStudentsReviews(HasRoleMixin, TemplateView):
     allowed_roles = 'instructor'
@@ -487,10 +516,16 @@ class OverviewForAStudent(HasRoleMixin, TemplateView):
     allowed_roles = 'instructor'
     template_name = 'overview_for_a_student.html'
 
-    def get_context_data(self, **kwargs):
+    def get(self, request, *args, **kwargs): 
 
         student_id = kwargs['student_id']
         student = CanvasStudent.objects.get(id=student_id)
+
+        if request.is_ajax():
+            output_file = 'reviews_data_'+ student.full_name +'.csv'
+            with open(output_file, 'w') as csvfile:
+                writer = csv.writer(csvfile, delimiter=',', quoting=csv.QUOTE_MINIMAL)
+                writer.writerow(['reviewer', 'author', 'criterion', 'comment'])
 
         assignments = CanvasSubmission.objects.filter(author__id=student_id).values('assignment')
         rubrics = Rubric.objects.filter(reviewed_assignment__in=assignments)
@@ -501,12 +536,12 @@ class OverviewForAStudent(HasRoleMixin, TemplateView):
 
             submission = rubric.reviewed_assignment.canvas_submission_set.get(author__id=student_id)
 
-            total_completed_num = len(CanvasSubmission.total_completed_by_a_student.__get__(submission))
+            total_completed = CanvasSubmission.total_completed_by_a_student.__get__(submission)
             peer_reviews_completed = CanvasSubmission.num_comments_each_review_per_studetn.__get__(submission)\
                                             .filter(completed__gte = number_of_criteria)
             completed_reviews = len(peer_reviews_completed)
 
-            total_received_num = len(CanvasSubmission.total_received_of_a_student.__get__(submission))
+            total_received = CanvasSubmission.total_received_of_a_student.__get__(submission)
             peer_reviews_received = CanvasSubmission.num_comments_each_review_per_submission.__get__(submission)\
                                                     .filter(received__gte = number_of_criteria)
             received_reviews = len(peer_reviews_received)
@@ -514,14 +549,29 @@ class OverviewForAStudent(HasRoleMixin, TemplateView):
             reviews.append({
                 'title': rubric.passback_assignment.title,
                 'rubric_id': rubric.id,
-                'total_completed': total_completed_num,
+                'total_completed': len(total_completed),
                 'completed': completed_reviews,
-                'total_received': total_received_num,
+                'total_received': len(total_received),
                 'received': received_reviews,
             })
 
-        return {'title': self.request.session['lti_launch_params']['context_title'],
+            if request.is_ajax():
+                with open(output_file, 'a') as csvfile:
+                    writer = csv.writer(csvfile, delimiter=',', quoting=csv.QUOTE_MINIMAL)
+
+                    comments_completed = PeerReviewComment.objects.filter(peer_review__in=total_completed)
+                    for comment in comments_completed:
+                        writer.writerow([comment.peer_review.student.sortable_name, comment.peer_review.submission.author.sortable_name, comment.criterion.id, comment.comment])
+
+                    comments_received = PeerReviewComment.objects.filter(peer_review__in=total_received)
+                    for comment in comments_received:
+                        writer.writerow([comment.peer_review.student.sortable_name, comment.peer_review.submission.author.sortable_name, comment.criterion.id, comment.comment])
+
+        if request.is_ajax():
+            webbrowser.open('file://' + os.path.abspath(output_file))
+
+        return render(request, 'overview_for_a_student.html', {'title': self.request.session['lti_launch_params']['context_title'],
                 'student_id': student_id,
                 'student_name': student.full_name,
                 'student_first_name': student.full_name.split()[0],
-                'reviews': reviews}
+                'reviews': reviews})
