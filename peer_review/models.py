@@ -47,13 +47,11 @@ class CanvasSubmission(models.Model):
     
     @property
     def total_completed_by_a_student(self):
-        return PeerReview.objects.filter(student=self.author, submission__assignment=self.assignment)\
-                                .values('student').annotate(models.Count('student'))
+        return PeerReview.objects.filter(student=self.author, submission__assignment=self.assignment)
                             
     @property
     def total_received_of_a_student(self):
-        return PeerReview.objects.filter(submission=self)\
-                        .values('submission').annotate(models.Count('submission'))
+        return PeerReview.objects.filter(submission=self)
 
     @property
     def num_comments_each_review_per_studetn(self):

@@ -68,3 +68,8 @@
     color: white;
     font-size: 18px;
 }
+
+.review_link {
+    display: block;
+    color: #777777;
+}
