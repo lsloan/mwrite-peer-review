@@ -66,3 +66,11 @@ def delete(resource, *params):
     response = requests.delete(url, headers=headers)
     response.raise_for_status()
     return response
+
+
+def create(resource, *params, **kwargs):
+    response = requests.post(_make_url(resource, params),
+                             json=kwargs['data'],
+                             headers=_make_headers())
+    response.raise_for_status()
+    return response
