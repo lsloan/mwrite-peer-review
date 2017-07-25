@@ -87,8 +87,8 @@
 
                     <div class="mdl-card__actions mdl-card--border">
                     {% if not review.received %}
-                        <a class='mdl-button mdl-js-button mdl-js-ripple-effect review_link' href="mailto:yuant@umich.edu">EMAIL {{review.student_first_name}}</a> 
-                        <a class='mdl-button mdl-js-button mdl-js-ripple-effect review_link' href="#">SEE {{student_first_name}}'s SUBMISSION</a>
+                        <a class='mdl-button mdl-js-button mdl-js-ripple-effect review_link' href="mailto:{{student_email}}">EMAIL {{review.student_first_name}}</a> 
+                        <a class='mdl-button mdl-js-button mdl-js-ripple-effect review_link' href="/submissions/{{submission.id}}/download">SEE {{student_first_name}}'s SUBMISSION</a>
                     {% else %}
                         <a class='mdl-button mdl-js-button mdl-js-ripple-effect review_link' href="#">SEE REVIEW</a>
                     {% endif %}
@@ -97,37 +97,4 @@
             {% endfor %}
         </div>
     </div>
-    <!-- <div class="mdl-grid">
-        <div class="mdl-cell mdl-cell--2-col mdl-cell--2-col-tablet mdl-cell-1-col-phone"></div>
-        <div class="mdl-card mdl-shadow--2dp mdl-cell mdl-cell--8-col mdl-cell--6-col-tablet mdl-cell-2-col-phone">
-            <div class="mdl-card__title">
-                <h1 class="mdl-card__title-text">Comments For {{ prompt_title }} by {{ student.sortable_name }}</h1>
-            </div>
-            <div class="mdl-card__supporting-text">
-                {% for criterion, comments in review %}
-                    <div class="mdl-card mdl-shadow--2dp criterion-comments-card">
-                        <div class="mdl-card__supporting-text">
-                            <p>{{ criterion.description }}</p>
-                            <div class="mdl-list">
-                                {% for comment in comments %}
-                                    <div class="mdl-list__item">
-                                        <span class="mdl-list__item-primary-content">
-                                            <span>
-                                                <b>{{ student.sortable_name }} said concerning
-                                                    <a href="/submissions/{{ comment.peer_review.submission.id }}/download">
-                                                        {{ comment.peer_review.submission.author.sortable_name }}'s submission
-                                                    </a>
-                                                </b> "{{ comment.comment }}"
-                                            </span>
-                                        </span>
-                                    </div>
-                                {% endfor %}
-                            </div>
-                        </div>
-                    </div>
-                {% endfor %}
-            </div>
-        </div>
-        <div class="mdl-cell mdl-cell--2-col mdl-cell--2-col-tablet mdl-cell-1-col-phone"></div>
-    </div> -->
 {% endblock %}

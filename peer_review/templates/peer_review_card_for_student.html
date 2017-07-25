@@ -31,18 +31,6 @@
         </div>
     </div>
 
-    <div class="mdl-card__supporting-text">
-        <div class="icon-container validation-container">
-        {% if review.graded %}
-            <i class="material-icons icon-24px">done</i>
-            <span class="icon-caption">Graded by Writing Fellow</span>
-        {% else %}
-            <i class="material-icons icon-24px">alarm</i>
-            <span class="icon-caption">Not yet graded by Writing Fellow</span>
-        {% endif %}
-        </div>
-    </div>
-
     <div class="mdl-card__actions mdl-card--border">
         <a class="mdl-button mdl-js-button mdl-js-ripple-effect review_link" href="/review/student/{{student_id}}/rubric/{{review.rubric_id}}">Go To {{review.title}}</a>
     </div>

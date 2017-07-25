@@ -457,15 +457,11 @@ class ReviewsForAStudentView(HasRoleMixin, TemplateView):
                 'student_first_name': peer_review.student.full_name.split()[0],
                 'received': received_review
             })
-        # peer_review_ids = PeerReview.objects.filter(submission__assignment=rubric.reviewed_assignment, student=student)\
-        #                                     .values_list('id')
-        # details = [(criterion,
-        #             PeerReviewComment.objects.filter(criterion=criterion, peer_review_id__in=peer_review_ids)
-        #                                      .order_by('peer_review__submission__author_id'))
-        #            for criterion in rubric.criteria.all()]
+
         return {'prompt_title': rubric.reviewed_assignment.title,
                 'student_id': student.id,
                 'student_name': student.full_name,
+                'student_email': 'yuant@umich.edu',
                 'student_first_name': student.full_name.split()[0],
                 'reviews': reviews,
                 'total_completed': len(total_completed),
@@ -474,7 +470,7 @@ class ReviewsForAStudentView(HasRoleMixin, TemplateView):
                 'total_received': len(total_received),
                 'received_num': received_num,
                 'received': received,
-                # 'review': details
+                'submission': submission,
                 }
 
 class AllStudentsReviews(HasRoleMixin, TemplateView):
@@ -522,7 +518,6 @@ class OverviewForAStudent(HasRoleMixin, TemplateView):
                 'completed': completed_reviews,
                 'total_received': total_received_num,
                 'received': received_reviews,
-                'graded': True
             })
 
         return {'title': self.request.session['lti_launch_params']['context_title'],
