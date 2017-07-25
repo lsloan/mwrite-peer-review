@@ -8,6 +8,7 @@ _page_regex = re.compile('<(?P<page_url>.*)>.*rel="(?P<page_key>.*)"')
 _routes = {
     'course':               {'route': 'courses/%s'},
     'assignments':          {'route': 'courses/%s/assignments'},
+    'assignment':           {'route': 'courses/%s/assignments/%s'},
     'assignment-overrides': {'route': 'courses/%s/assignments/%s/overrides'},
     'submissions':          {'route': 'courses/%s/assignments/%s/submissions'},
     'students':             {'route': 'courses/%s/users',
@@ -43,16 +44,25 @@ def retrieve(resource, *params):
     route_params = _routes[resource].get('params') if 'params' in _routes[resource] else {}
     while True:
         headers = _make_headers()
-        response = requests.get(url, headers=headers, params=merge(route_params, {'per_page': 500}))
+        response = requests.get(url, headers=headers, params=merge(route_params, {'per_page': 500}))  # TODO clean me
         response.raise_for_status()
-        if isinstance(response.json(), dict):
-            resources = response.json()
+        json_data = response.json()
+        if isinstance(json_data, dict):
+            resources = json_data
             break
         else:
-            resources += response.json()
-        links = _parse_links(response)
+            resources += json_data
+        links = _parse_links(response)  # TODO may be able to replace with requests's link parsing
         url = links.get('next') if links else None
         if not url:
             break
         route_params = {}
     return resources
+
+
+def delete(resource, *params):
+    url = _make_url(resource, params)
+    headers = _make_headers()
+    response = requests.delete(url, headers=headers)
+    response.raise_for_status()
+    return response
