@@ -83,7 +83,7 @@ def create(resource, *params, **kwargs):
     return response.json()
 
 
-def upload_submission(user_token, course_id, assignment_id, filename, contents, mime_type=None):
+def submit_file(user_token, course_id, assignment_id, filename, contents, mime_type=None):
 
     # TODO don't do this
     saved_token = settings.CANVAS_API_TOKEN
@@ -98,12 +98,11 @@ def upload_submission(user_token, course_id, assignment_id, filename, contents, 
     file_size = contents.tell()
     contents.seek(0, SEEK_SET)
 
-    file_desc = {
+    pending_file_desc = create('submission_file', course_id, assignment_id, data={
         'name': filename,
         'size': file_size,
         'content_type': mime_type
-    }
-    pending_file_desc = create('submission_file', course_id, assignment_id, data=file_desc)
+    })
 
     file_upload_response = requests.post(pending_file_desc['upload_url'],
                                          data=pending_file_desc['upload_params'],
@@ -114,7 +113,14 @@ def upload_submission(user_token, course_id, assignment_id, filename, contents, 
     file_confirmation_response = requests.post(file_upload_response.headers['location'])
     file_confirmation_response.raise_for_status()
 
+    file_submission_json = create('submissions', course_id, assignment_id, data={
+        'submission': {
+            'submission_type': 'online_upload',
+            'file_ids': [file_confirmation_response.json()['id']]
+        }
+    })
+
     # TODO remove this when we fix the above
     settings.CANVAS_API_TOKEN = saved_token
 
-    return file_confirmation_response.json()
+    return file_submission_json
