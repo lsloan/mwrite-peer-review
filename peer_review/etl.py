@@ -153,4 +153,3 @@ def persist_submissions(assignment):
                               list)
     for submission in submissions:
         _download_submission(submission)
-

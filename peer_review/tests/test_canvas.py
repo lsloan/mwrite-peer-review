@@ -1,4 +1,8 @@
 from io import StringIO
+from datetime import datetime, timedelta
+from django.db import transaction
+from peer_review.etl import persist_assignments
+from peer_review.models import Criterion, Rubric
 from peer_review.canvas import retrieve, create, delete, submit_file
 
 
@@ -8,18 +12,53 @@ def delete_all_assignments(course_id):
         delete('assignment', course_id, assignment['id'])
 
 
-def create_test_assignments(course_id, n=1):
-    assignment_template = {
+def create_test_assignments(course_id, num_pairs=1):
+    now = datetime.utcnow()
+    ten_minutes = timedelta(minutes=10)
+
+    prompt_template = {
         'submission_types': ['online_upload'],
         'allowed_extensions': ['txt'],
-        'published': True
+        'published': True,
+        'due_at': (now - ten_minutes).isoformat() + 'Z'
     }
-    created_assignments = []
-    for i in range(1, n+1):
-        assignment_template['name'] = 'Test Prompt %s' % i
-        created_assignment = create('assignments', course_id, data={'assignment': assignment_template})
-        created_assignments.append(created_assignment)
-    return created_assignments
+    peer_review_template = {
+        'submission_types': ['external_tool'],
+        'published': True,
+        'due_at': (now + ten_minutes).isoformat() + 'Z',
+        'external_tool_tag_attributes': {
+            'new_tab': True,
+            'url': 'https://peer-review-dev.mwrite.openshift.dsc.umich.edu/launch'
+        }
+    }
+
+    pairings = []
+    for i in range(1, num_pairs+1):
+        prompt_template['name'] = 'Test Prompt %s' % i
+        created_assignment = create('assignments', course_id, data={'assignment': prompt_template})
+
+        peer_review_template['name'] = 'Test Peer Review %s' % i
+        created_peer_review = create('assignments', course_id, data={'assignment': peer_review_template})
+
+        pairings.append((created_assignment['id'], created_peer_review['id']))
+
+    return pairings
+
+
+def create_test_rubrics(course_id, pairings, num_criteria=3):
+    persist_assignments(course_id)
+    for i, pairing in enumerate(pairings, 1):
+        prompt_id, peer_review_id = pairing
+        with transaction.atomic():
+            rubric, _ = Rubric.objects.get_or_create(defaults={
+                'description': 'This is test rubric #%d.' % i,
+                'reviewed_assignment_id': prompt_id,
+                'passback_assignment_id': peer_review_id
+            })
+            criteria = [Criterion(description='This is test criterion %d for test rubric %d.' % (i, j),
+                                  rubric=rubric)
+                        for j in range(1, num_criteria+1)]
+            Criterion.objects.bulk_create(criteria)
 
 
 def submit_for_assignments(course_id, assignments, users):
