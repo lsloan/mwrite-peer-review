@@ -16,7 +16,7 @@ class CanvasSection(models.Model):
         db_table = 'canvas_section'
 
     id = models.IntegerField(primary_key=True)
-    course = models.OneToOneField(CanvasCourse, models.DO_NOTHING)
+    course = models.ForeignKey(CanvasCourse, models.CASCADE)
     name = models.TextField()
 
 
