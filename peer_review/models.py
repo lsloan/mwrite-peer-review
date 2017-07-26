@@ -27,7 +27,7 @@ class CanvasAssignment(models.Model):
 
     id = models.IntegerField(primary_key=True)
     title = models.TextField()
-    course_id = models.IntegerField()
+    course = models.ForeignKey(CanvasCourse, models.CASCADE)
     due_date_utc = models.DateTimeField(blank=True, null=True)
     is_peer_review_assignment = models.BooleanField(default=False)
 
