@@ -28,6 +28,3 @@
         {% include 'peer_review_card_for_student.html' with review=review %}
     {% endfor %}
 {% endblock %}
-for review in completed:
-                    comments_completed = review.comments
-                    writer.writerow([review.student.sortable_name, review.submission.author, comments_completed.comment])

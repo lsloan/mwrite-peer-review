@@ -22,8 +22,7 @@ from peer_review.models import Rubric, Criterion, CanvasAssignment, PeerReviewDi
 from peer_review.util import parse_json_body, some
 from django.shortcuts import render
 import csv
-import webbrowser
-import os
+import webbrowser, os, time
 
 logger = logging.getLogger(__name__)
 
@@ -440,7 +439,7 @@ class ReviewsForAStudentView(HasRoleMixin, TemplateView):
             submit_time = ''
             comments = PeerReviewComment.objects.filter(peer_review__id=peer_review.id)
             if comments.count() >= number_of_criteria:
-                submit_time = comments.aggregate(Max('commented_at_utc'))
+                submit_time = comments.aggregate(Max('commented_at_utc'))['commented_at_utc__max']
                 completed_review = True
                 completed_num += 1
 
@@ -459,7 +458,7 @@ class ReviewsForAStudentView(HasRoleMixin, TemplateView):
             submit_time = ''
             comments = PeerReviewComment.objects.filter(peer_review__id=peer_review.id)
             if comments.count() >= number_of_criteria:
-                submit_time = comments.aggregate(Max('commented_at_utc'))
+                submit_time = comments.aggregate(Max('commented_at_utc'))['commented_at_utc__max']
                 received_review = True
                 received_num += 1
 
@@ -486,6 +485,8 @@ class ReviewsForAStudentView(HasRoleMixin, TemplateView):
                     writer.writerow([comment.peer_review.student.sortable_name, comment.peer_review.submission.author.sortable_name, comment.criterion.id, comment.comment])
             
             webbrowser.open('file://' + os.path.abspath(output_file))
+            time.sleep(1)
+            os.remove(os.path.abspath(output_file))
 
         return render(request, 'reviews_for_a_student.html', {'prompt_title': rubric.reviewed_assignment.title,
                 'student_id': student.id,
@@ -569,6 +570,8 @@ class OverviewForAStudent(HasRoleMixin, TemplateView):
 
         if request.is_ajax():
             webbrowser.open('file://' + os.path.abspath(output_file))
+            time.sleep(1)
+            os.remove(os.path.abspath(output_file))
 
         return render(request, 'overview_for_a_student.html', {'title': self.request.session['lti_launch_params']['context_title'],
                 'student_id': student_id,

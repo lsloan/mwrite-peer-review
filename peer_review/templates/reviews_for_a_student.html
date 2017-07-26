@@ -39,7 +39,7 @@
                         <div class="icon-container validation-container">
                         {% if review.completed %}
                             <i class="material-icons icon-24px">done</i>
-                            <span class="icon-caption">Submited On Time(1/1/17 1.11pm)</span>
+                            <span class="icon-caption">Submited On Time({{review.submit_time}})</span>
                         {% else %}
                             <i class="material-icons icon-24px">info_outline</i>
                             <span class="icon-caption">{{student_first_name}} did not submit a peer review for {{review.student_first_name}}</span>
@@ -77,7 +77,7 @@
                         <div class="icon-container validation-container">
                         {% if review.received %}
                             <i class="material-icons icon-24px">done</i>
-                            <span class="icon-caption">Received On Time(1/1/17 1.11pm)</span>
+                            <span class="icon-caption">Received On Time({{review.submit_time}})</span>
                         {% else %}
                             <i class="material-icons icon-24px">info_outline</i>
                             <span class="icon-caption">{{student_first_name}} did not receive a peer review from {{review.student_first_name}}</span>
