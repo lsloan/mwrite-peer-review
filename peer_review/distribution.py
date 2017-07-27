@@ -40,19 +40,19 @@ def review_distribution_task(utc_timestamp):
                 log.info('Distributing reviews for prompt %d...' % prompt.id)
 
                 try:
+                    log.debug('Fetching and persisting submissions for prompt %d...' % prompt.id)
+                    persist_submissions(prompt)
+                    log.debug('Finished persisting submissions for prompt %d' % prompt.id)
+
+                    log.debug('Distributing for prompt %d for review...' % prompt.id)
                     with transaction.atomic():
-                        log.debug('Fetching and persisting submissions for prompt %d...' % prompt.id)
-                        persist_submissions(prompt)
-                        log.debug('Finished persisting submissions for prompt %d' % prompt.id)
-
-                        log.debug('Distributing for prompt %d for review...' % prompt.id)
                         distribute_reviews(prompt.id)
-                        log.debug('Finished review distribution for prompt %d' % prompt.id)
-
                         distribution = prompt.rubric_for_prompt.peer_review_distribution
                         distribution.is_distribution_complete = True
                         distribution.distributed_at_utc = utc_timestamp  # TODO correct?
                         distribution.save()
+                    log.debug('Finished review distribution for prompt %d' % prompt.id)
+
                 except Exception as ex:
                     # TODO expose failed prompt distribution to health check
                     log.error('Skipping review distribution for prompt %d due to error' % prompt.id, ex)
