@@ -1,14 +1,16 @@
+import os
 import json
 import logging
+import mimetypes
 from collections import OrderedDict
 from datetime import datetime
 from itertools import chain
 
+from django.conf import settings
 from django.db import transaction
 from django.db.models import Q, F, Count, Case, When, Value, BooleanField
 from django.http import HttpResponse, Http404
 from django.shortcuts import redirect
-from django.template.loader import render_to_string
 from django.views.generic import View, TemplateView
 from django.core.exceptions import PermissionDenied
 from rolepermissions.checkers import has_role
@@ -384,7 +386,6 @@ class AssignmentStatus(HasRoleMixin, TemplateView):
                 'sections': sections}
         
 
-
 class ReviewsOfMyWorkView(HasRoleMixin, TemplateView):
     allowed_roles = 'student'
     template_name = 'reviews_of_my_work.html'
@@ -473,6 +474,7 @@ class ReviewsForAStudentView(HasRoleMixin, TemplateView):
                 'submission': submission,
                 }
 
+
 class AllStudentsReviews(HasRoleMixin, TemplateView):
     allowed_roles = 'instructor'
     template_name = 'reviews_for_all_students.html'
@@ -482,6 +484,7 @@ class AllStudentsReviews(HasRoleMixin, TemplateView):
         return {
             'title': self.request.session['lti_launch_params']['context_title'],
         }
+
 
 class OverviewForAStudent(HasRoleMixin, TemplateView):
     allowed_roles = 'instructor'
@@ -525,3 +528,32 @@ class OverviewForAStudent(HasRoleMixin, TemplateView):
                 'student_name': student.full_name,
                 'student_first_name': student.full_name.split()[0],
                 'reviews': reviews}
+
+
+class SubmissionDownloadView(HasRoleMixin, View):
+    allowed_roles = ['instructor', 'student']
+
+    def get(self, request, *args, **kwargs):
+
+        submission_id = int(kwargs['submission_id'])
+
+        if not has_role(request.user, 'instructor'):
+            student_id = int(self.request.session['lti_launch_params']['custom_canvas_user_id'])
+            submissions_for_review = PeerReview.objects.filter(student_id=student_id).values_list('id', flat=True)
+            submissions_by_author = CanvasSubmission.objects.filter(author_id=student_id).values_list('id', flat=True)
+            if submission_id not in submissions_for_review and submission_id not in submissions_by_author:
+                raise PermissionDenied
+
+        try:
+            submission = CanvasSubmission.objects.get(id=submission_id)
+        except CanvasSubmission.DoesNotExist:
+            raise Http404
+
+        with open(os.path.join(settings.MEDIA_ROOT, 'submissions', submission.filename), 'rb') as submission_file:
+            submission_bytes = submission_file.read()
+
+        content_type = mimetypes.guess_type(submission.filename)[0] or 'application/octet-stream'
+        response = HttpResponse(submission_bytes, content_type)
+        response['Content-Disposition'] = 'attachment; filename="%s"' % submission.filename
+
+        return response
