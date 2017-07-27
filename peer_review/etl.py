@@ -1,11 +1,16 @@
+import os
+import shutil
 import logging
+import requests
 from toolz.functoolz import thread_last
-from toolz.itertoolz import unique
+from toolz.itertoolz import unique, remove
+from django.db import transaction
 from django.conf import settings
+from django.core.files import File
 from django.utils.dateparse import parse_datetime
 from peer_review.util import utc_to_timezone, to_camel_case
 from peer_review.canvas import retrieve
-from peer_review.models import CanvasAssignment
+from peer_review.models import CanvasAssignment, CanvasSection, CanvasStudent, CanvasCourse, CanvasSubmission
 
 log = logging.getLogger(__name__)
 
@@ -73,9 +78,98 @@ def _convert_assignment(assignment):
                             validation=validation)
 
 
+def persist_course(course_id):
+    raw_course = retrieve('course', course_id)
+    course, _ = CanvasCourse.objects.get_or_create(defaults={
+        'id': course_id,
+        'name': raw_course['name']
+    })
+    return course
+
+
 def persist_assignments(course_id):
     canvas_assignments = retrieve('assignments', course_id)
     assignments = [_convert_assignment(canvas_assignment) for canvas_assignment in canvas_assignments]
     for assignment in assignments:
         assignment.save()
     return assignments
+
+
+def _convert_section(section):
+    return CanvasSection(id=section['id'], name=section['name'], course_id=section['course_id'])
+
+
+def persist_sections(course):
+    raw_sections = retrieve('sections', course.id)
+    sections = list(map(_convert_section, raw_sections))
+    with transaction.atomic():
+        for section in sections:
+            section.save()
+
+
+def _convert_student(raw_student):
+    return CanvasStudent(id=raw_student['id'],
+                         username=raw_student['login_id'],
+                         full_name=raw_student['name'],
+                         sortable_name=raw_student['sortable_name'])
+
+
+def persist_students(course):
+    raw_students = retrieve('students', course.id)
+    enrollments_by_student_id = {s['id']: s['enrollments'] for s in raw_students}
+    students = list(map(_convert_student, raw_students))
+
+    with transaction.atomic():
+        for student in students:
+            student.save()
+            for enrollment in enrollments_by_student_id[student.id]:
+                student.sections.add(CanvasSection.objects.get(id=enrollment['course_section_id']))
+
+
+def _download_single_attachment(destination, attachment):
+    attachment_response = requests.get(attachment['url'])
+    attachment_response.raise_for_status()
+    attachment_filename = '%d_%s' % (attachment['id'], attachment['filename'])
+    attachment_path = os.path.join(destination, attachment_filename)
+    with open(attachment_path, 'wb') as attachment_file:
+        attachment_file.write(attachment_response.content)
+    return attachment_filename
+
+
+def _download_multiple_attachments(destination, submission):
+    temp_directory_path = os.path.join(settings.MEDIA_ROOT, str(submission.id))
+    os.makedirs(temp_directory_path, exist_ok=True)
+    for attachment in submission['attachments']:
+        _download_single_attachment(temp_directory_path, attachment)
+
+    archive_format = 'zip'
+    attachment_archive_filename = '%d_submissions.%s' % (submission.id, archive_format)
+    shutil.make_archive(attachment_archive_filename, archive_format, destination, temp_directory_path)
+    return attachment_archive_filename
+
+
+def _convert_submission(raw_submission, filename):
+    return CanvasSubmission(id=raw_submission['id'],
+                            author_id=raw_submission['user_id'],
+                            assignment_id=raw_submission['assignment_id'],
+                            filename=filename)
+
+
+def _download_submission(raw_submission):
+    attachments = raw_submission['attachments']
+    destination = os.path.join(settings.MEDIA_ROOT, 'submissions')
+    os.makedirs(destination, exist_ok=True)
+    if len(attachments) > 1:
+        filename = _download_multiple_attachments(destination, raw_submission['attachments'])
+    else:
+        filename = _download_single_attachment(destination, raw_submission['attachments'][0])
+    return _convert_submission(raw_submission, filename)
+
+
+def persist_submissions(assignment):
+    thread_last(retrieve('submissions', assignment.course.id, assignment.id),
+                (remove, lambda s: s['workflow_state'] == 'unsubmitted'),
+                (remove, lambda s: s.get('attachments') is None),
+                (map, lambda s: _download_submission(s)),
+                list,
+                CanvasSubmission.objects.bulk_create)
