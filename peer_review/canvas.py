@@ -89,38 +89,39 @@ def submit_file(user_token, course_id, assignment_id, filename, contents, mime_t
     saved_token = settings.CANVAS_API_TOKEN
     settings.CANVAS_API_TOKEN = user_token
 
-    if not mime_type:
-        mime_type, _ = mimetypes.guess_type(filename)
+    try:
         if not mime_type:
-            raise RuntimeError('Unknown MIME type for %s' % filename)
+            mime_type, _ = mimetypes.guess_type(filename)
+            if not mime_type:
+                raise RuntimeError('Unknown MIME type for %s' % filename)
 
-    contents.seek(0, SEEK_END)
-    file_size = contents.tell()
-    contents.seek(0, SEEK_SET)
+        contents.seek(0, SEEK_END)
+        file_size = contents.tell()
+        contents.seek(0, SEEK_SET)
 
-    pending_file_desc = create('submission_file', course_id, assignment_id, data={
-        'name': filename,
-        'size': file_size,
-        'content_type': mime_type
-    })
+        pending_file_desc = create('submission_file', course_id, assignment_id, data={
+            'name': filename,
+            'size': file_size,
+            'content_type': mime_type
+        })
 
-    file_upload_response = requests.post(pending_file_desc['upload_url'],
-                                         data=pending_file_desc['upload_params'],
-                                         files={'file': contents},
-                                         allow_redirects=False)
-    file_upload_response.raise_for_status()
+        file_upload_response = requests.post(pending_file_desc['upload_url'],
+                                             data=pending_file_desc['upload_params'],
+                                             files={'file': contents},
+                                             allow_redirects=False)
+        file_upload_response.raise_for_status()
 
-    file_confirmation_response = requests.post(file_upload_response.headers['location'])
-    file_confirmation_response.raise_for_status()
+        file_confirmation_response = requests.post(file_upload_response.headers['location'])
+        file_confirmation_response.raise_for_status()
 
-    file_submission_json = create('submissions', course_id, assignment_id, data={
-        'submission': {
-            'submission_type': 'online_upload',
-            'file_ids': [file_confirmation_response.json()['id']]
-        }
-    })
-
-    # TODO remove this when we fix the above
-    settings.CANVAS_API_TOKEN = saved_token
+        file_submission_json = create('submissions', course_id, assignment_id, data={
+            'submission': {
+                'submission_type': 'online_upload',
+                'file_ids': [file_confirmation_response.json()['id']]
+            }
+        })
+    finally:
+        # TODO remove this when we fix the above
+        settings.CANVAS_API_TOKEN = saved_token
 
     return file_submission_json
