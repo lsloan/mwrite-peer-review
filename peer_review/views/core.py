@@ -469,6 +469,7 @@ class ReviewsForAStudentView(HasRoleMixin, TemplateView):
             })
 
         return {'prompt_title': rubric.reviewed_assignment.title,
+                'rubric_id': rubric.id,
                 'student_id': student.id,
                 'student_name': student.full_name,
                 'student_email': 'yuant@umich.edu',
@@ -549,7 +550,7 @@ class OverviewDownload(HasRoleMixin, TemplateView):
         rubrics = Rubric.objects.filter(reviewed_assignment__in=assignments)
 
         for rubric in rubrics:
-            submission = rubric.reviewed_assignment.canvas_submission_set.get(author__id=student_id)
+            submission = rubric.reviewed_assignment.canvas_submission_set.get(author__id=kwargs['student_id'])
 
             total_completed = CanvasSubmission.total_completed_by_a_student.__get__(submission)
             comments_completed = PeerReviewComment.objects.filter(peer_review__in=total_completed)
