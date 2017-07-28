@@ -107,7 +107,7 @@
                             <div class="mdl-card__supporting-text">
                                 <p>
                                     Peer reviews will be distributed at
-                                    <span v-if="peerReviewOpenDateIsPromptDueDate">CHANGEME/prompt_due_date</span>
+                                    <span v-if="peerReviewOpenDateIsPromptDueDate">{{ promptDueDate }}</span>
                                     <span v-else>CHANGEME/whatever_user_selects</span>.  Students who have not completed
                                     the writing prompt assignment in Canvas by this date will be unable to
                                     participate in peer review.
