@@ -38,7 +38,9 @@ urlpatterns = [
     url(r'^review/submission/(?P<submission_id>[0-9]+)/completed$', ReviewsOfMyWorkView.as_view()),
     url(r'^review/students$', AllStudentsReviews.as_view()),
     url(r'^review/student/(?P<student_id>[0-9]+)$', OverviewForAStudent.as_view()),
+    url(r'^review/student/(?P<student_id>[0-9]+)/download$', OverviewDownload.as_view()),
     url(r'^review/student/(?P<student_id>[0-9]+)/rubric/(?P<rubric_id>[0-9]+)$', ReviewsForAStudentView.as_view()),
+    url(r'^review/student/(?P<student_id>[0-9]+)/rubric/(?P<rubric_id>[0-9]+)/download$', ReviewsDownload.as_view()),
     url(r'^safari$', SafariLaunchPopup.as_view()),
     url(r'^(?P<url>health)$', FixedHttpProxy.as_view(base_url=settings.MWRITE_PEER_REVIEW_LEGACY_URL)),
     url(r'^(?P<url>.*)$', LtiProxyView.as_view(base_url=settings.MWRITE_PEER_REVIEW_LEGACY_URL))
