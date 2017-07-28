@@ -48,7 +48,8 @@
             selectedRevision: noRevisionOption,
             rubricDescription: null,
             criteria: [{id: _.uniqueId('criterion'), description: ''}],
-            submissionInProgress: false
+            submissionInProgress: false,
+            peerReviewOpenDateIsPromptDueDate: true
         },
         computed: {
             promptChoices: function() {

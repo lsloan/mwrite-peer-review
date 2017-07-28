@@ -89,6 +89,35 @@
                     <div class="mdl-cell mdl-cell--3-col mdl-cell--1-col-tablet mdl-cell-1-col-phone"></div>
                 </div>
 
+                <div class="mdl-grid">
+                    <div class="mdl-cell mdl-cell--3-col mdl-cell--1-col-tablet mdl-cell-1-col-phone"></div>
+
+                    <mdl-card
+                            class="mdl-card mdl-shadow--2dp mdl-cell mdl-cell--6-col mdl-cell--6-col-tablet mdl-cell-2-col-phone"
+                            title="Peer Review"
+                            supporting-text="slot">
+                        <div slot="supporting-text">
+                            <div class="mdl-card__supporting-text">
+                                <mdl-switch v-model="peerReviewOpenDateIsPromptDueDate">
+                                    Use the writing prompt's due date as the peer review open date
+                                </mdl-switch>
+                            </div>
+                            <div class="mdl-card__supporting-text">
+                                <p>
+                                    Peer reviews will be distributed at
+                                    <span v-if="peerReviewOpenDateIsPromptDueDate">CHANGEME/prompt_due_date</span>
+                                    <span v-else>CHANGEME/whatever_user_selects</span>.  Students who have not completed
+                                    the writing prompt assignment in Canvas by this date will be unable to
+                                    participate in peer review.
+                                </p>
+                            </div>
+
+                        </div>
+                    </mdl-card>
+
+                    <div class="mdl-cell mdl-cell--3-col mdl-cell--1-col-tablet mdl-cell-1-col-phone"></div>
+                </div>
+
                 <template v-if="!(reviewIsInProgress && !selectedRevision.value)">
                     <div class="mdl-grid">
                         <div class="mdl-cell mdl-cell--3-col mdl-cell--1-col-tablet mdl-cell-1-col-phone"></div>
