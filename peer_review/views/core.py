@@ -584,7 +584,6 @@ class ReviewsDownload(HasRoleMixin, TemplateView):
         rubric = Rubric.objects.get(id=kwargs['rubric_id'])
         submission = rubric.reviewed_assignment.canvas_submission_set.get(author__id=kwargs['student_id'])
 
-        from djqscsv import render_to_csv_response
         total_completed = CanvasSubmission.total_completed_by_a_student.__get__(submission)
         comments_completed = PeerReviewComment.objects.filter(peer_review__in=total_completed)
         
