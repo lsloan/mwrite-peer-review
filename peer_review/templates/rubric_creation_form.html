@@ -67,7 +67,9 @@
                                         :disabled="reviewIsInProgress"
                                         empty-caption="Select an assignment">
                                 </dropdown>
-                                <p v-if="promptInfo" class="assignment-info">{{ promptInfo }}</p>
+                                <p v-if="promptSection && promptDueDate" class="assignment-info">
+                                    This prompt is assigned to {{ promptSection }} and is due {{ promptDueDate }}.
+                                </p>
                             </div>
 
                             <!-- TODO this could be abstracted into its own component -->
@@ -137,7 +139,9 @@
                                             :options="revisionChoices"
                                             :disabled="reviewIsInProgress">
                                     </dropdown>
-                                    <p v-if="revisionInfo" class="assignment-info">{{ revisionInfo }}</p>
+                                    <p v-if="revisionSection && revisionDueDate" class="assignment-info">
+                                        This revision is assigned to {{ revisionSection }} and is due {{ revisionDueDate }}.
+                                    </p>
                                 </div>
 
                                 <!-- TODO this could be abstracted into its own component -->

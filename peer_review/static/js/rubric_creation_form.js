@@ -82,33 +82,37 @@
             revisionIssues: function() {
                 return this.selectedRevision && this.selectedRevision.value ? getValidationIssues(false, this.validations[this.selectedRevision.value]) : [];
             },
-            promptInfo: function() {
-                if(!this.selectedPrompt) {
-                    return '';
+            promptSection: function() {
+                var sectionName = null;
+                if(this.selectedPrompt) {
+                    var validations = this.validations[this.selectedPrompt.value];
+                    sectionName = validations.sectionName || 'all students';
                 }
-                var validations = this.validations[this.selectedPrompt.value];
-                var sectionName = validations.sectionName || 'all students';
-                var localDueDate = validations.localDueDate;
-                if(sectionName !== null && localDueDate !== null) {
-                    return 'This prompt is assigned to ' + sectionName + ' and is due ' + localDueDate + '.';
-                }
-                else {
-                    return '';
-                }
+                return sectionName
             },
-            revisionInfo: function() {
-                if(!this.selectedRevision || this.selectedRevision.value === null) {
-                    return '';
+            promptDueDate: function() {
+                var localDueDate = null;
+                if(this.selectedPrompt) {
+                    var validations = this.validations[this.selectedPrompt.value];
+                    localDueDate = validations.localDueDate;
                 }
-                var validations = this.validations[this.selectedRevision.value];
-                var sectionName = validations.sectionName || 'all students';
-                var localDueDate = validations.localDueDate;
-                if(sectionName !== null && localDueDate !== null) {
-                    return 'This revision is assigned to ' + sectionName + ' and is due ' + localDueDate + '.';
+                return localDueDate;
+            },
+            revisionSection: function() {
+                var sectionName = null;
+                if(this.selectedRevision && this.selectedRevision.value) {
+                    var validations = this.validations[this.selectedRevision.value];
+                    sectionName = validations.sectionName || 'all students';
                 }
-                else {
-                    return '';
+                return sectionName;
+            },
+            revisionDueDate: function() {
+                var localDueDate = null;
+                if(this.selectedRevision && this.selectedRevision.value) {
+                    var validations = this.validations[this.selectedRevision.value];
+                    localDueDate = validations.localDueDate;
                 }
+                return localDueDate;
             },
             rubricIsValid: function() {
                 var criteriaAreValid = this.criteria.length > 0 && _.every(this.criteria, function(criterion) {
