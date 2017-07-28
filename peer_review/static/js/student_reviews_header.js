@@ -7,13 +7,6 @@ $(function() {
     });
 
     $('.download_title').on('click', function() {
-        var csrf = $('meta[name="csrf"]').attr('content')
-
-        $.ajax ({
-            type: 'get',
-            url: '',
-            dataType: 'json',
-            data: {csrfmiddlewaretoken: csrf},
-        });
+        window.location.href = window.location.href + '/download';
     });
 });

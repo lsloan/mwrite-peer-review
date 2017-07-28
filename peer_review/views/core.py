@@ -21,8 +21,7 @@ from peer_review.models import Rubric, Criterion, CanvasAssignment, PeerReviewDi
     PeerReview, PeerReviewComment, CanvasStudent
 from peer_review.util import parse_json_body, some
 from django.shortcuts import render
-import csv
-import webbrowser, os, time
+import csv, io
 
 logger = logging.getLogger(__name__)
 
@@ -413,7 +412,7 @@ class ReviewsForAStudentView(HasRoleMixin, TemplateView):
     allowed_roles = 'instructor'
     template_name = 'reviews_for_a_student.html'
 
-    def get(self, request, *args, **kwargs):
+    def get_context_data(self, **kwargs):
 
         student = CanvasStudent.objects.get(id=kwargs['student_id'])
 
@@ -469,26 +468,7 @@ class ReviewsForAStudentView(HasRoleMixin, TemplateView):
                 'submit_time': submit_time
             })
 
-        if request.is_ajax():
-            output_file = 'reviews_data_'+ student.full_name +'_rubric_'+ str(rubric.id) +'.csv'
-
-            with open(output_file, 'w') as csvfile:
-                writer = csv.writer(csvfile, delimiter=',', quoting=csv.QUOTE_MINIMAL)
-                writer.writerow(['reviewer', 'author', 'criterion', 'comment'])
-
-                comments_completed = PeerReviewComment.objects.filter(peer_review__in=total_completed)
-                for comment in comments_completed:
-                    writer.writerow([comment.peer_review.student.sortable_name, comment.peer_review.submission.author.sortable_name, comment.criterion.id, comment.comment])
-
-                comments_received = PeerReviewComment.objects.filter(peer_review__in=total_received)
-                for comment in comments_received:
-                    writer.writerow([comment.peer_review.student.sortable_name, comment.peer_review.submission.author.sortable_name, comment.criterion.id, comment.comment])
-            
-            webbrowser.open('file://' + os.path.abspath(output_file))
-            time.sleep(1)
-            os.remove(os.path.abspath(output_file))
-
-        return render(request, 'reviews_for_a_student.html', {'prompt_title': rubric.reviewed_assignment.title,
+        return {'prompt_title': rubric.reviewed_assignment.title,
                 'student_id': student.id,
                 'student_name': student.full_name,
                 'student_email': 'yuant@umich.edu',
@@ -501,7 +481,7 @@ class ReviewsForAStudentView(HasRoleMixin, TemplateView):
                 'received_num': received_num,
                 'received': received,
                 'submission': submission,
-                })
+                }
 
 class AllStudentsReviews(HasRoleMixin, TemplateView):
     allowed_roles = 'instructor'
@@ -517,16 +497,10 @@ class OverviewForAStudent(HasRoleMixin, TemplateView):
     allowed_roles = 'instructor'
     template_name = 'overview_for_a_student.html'
 
-    def get(self, request, *args, **kwargs): 
+    def get_context_data(self, **kwargs):
 
         student_id = kwargs['student_id']
         student = CanvasStudent.objects.get(id=student_id)
-
-        if request.is_ajax():
-            output_file = 'reviews_data_'+ student.full_name +'.csv'
-            with open(output_file, 'w') as csvfile:
-                writer = csv.writer(csvfile, delimiter=',', quoting=csv.QUOTE_MINIMAL)
-                writer.writerow(['reviewer', 'author', 'criterion', 'comment'])
 
         assignments = CanvasSubmission.objects.filter(author__id=student_id).values('assignment')
         rubrics = Rubric.objects.filter(reviewed_assignment__in=assignments)
@@ -556,25 +530,69 @@ class OverviewForAStudent(HasRoleMixin, TemplateView):
                 'received': received_reviews,
             })
 
-            if request.is_ajax():
-                with open(output_file, 'a') as csvfile:
-                    writer = csv.writer(csvfile, delimiter=',', quoting=csv.QUOTE_MINIMAL)
-
-                    comments_completed = PeerReviewComment.objects.filter(peer_review__in=total_completed)
-                    for comment in comments_completed:
-                        writer.writerow([comment.peer_review.student.sortable_name, comment.peer_review.submission.author.sortable_name, comment.criterion.id, comment.comment])
-
-                    comments_received = PeerReviewComment.objects.filter(peer_review__in=total_received)
-                    for comment in comments_received:
-                        writer.writerow([comment.peer_review.student.sortable_name, comment.peer_review.submission.author.sortable_name, comment.criterion.id, comment.comment])
-
-        if request.is_ajax():
-            webbrowser.open('file://' + os.path.abspath(output_file))
-            time.sleep(1)
-            os.remove(os.path.abspath(output_file))
-
-        return render(request, 'overview_for_a_student.html', {'title': self.request.session['lti_launch_params']['context_title'],
+        return {'title': self.request.session['lti_launch_params']['context_title'],
                 'student_id': student_id,
                 'student_name': student.full_name,
                 'student_first_name': student.full_name.split()[0],
-                'reviews': reviews})
+                'reviews': reviews}
+
+class OverviewDownload(HasRoleMixin, TemplateView):
+    allowed_roles = 'instructor'
+
+    def get(self, request, *args, **kwargs):
+
+        output = io.StringIO()
+        writer = csv.writer(output, delimiter=',', quoting=csv.QUOTE_MINIMAL)
+        writer.writerow(['reviewer', 'author', 'criterion', 'comment'])
+
+        assignments = CanvasSubmission.objects.filter(author__id=kwargs['student_id']).values('assignment')
+        rubrics = Rubric.objects.filter(reviewed_assignment__in=assignments)
+
+        for rubric in rubrics:
+            submission = rubric.reviewed_assignment.canvas_submission_set.get(author__id=student_id)
+
+            total_completed = CanvasSubmission.total_completed_by_a_student.__get__(submission)
+            comments_completed = PeerReviewComment.objects.filter(peer_review__in=total_completed)
+            for comment in comments_completed:
+                writer.writerow([comment.peer_review.student.sortable_name, comment.peer_review.submission.author.sortable_name, comment.criterion.id, comment.comment])
+
+            total_received = CanvasSubmission.total_received_of_a_student.__get__(submission)
+            comments_received = PeerReviewComment.objects.filter(peer_review__in=total_received)
+            for comment in comments_received:
+                writer.writerow([comment.peer_review.student.sortable_name, comment.peer_review.submission.author.sortable_name, comment.criterion.id, comment.comment])
+
+        response = HttpResponse(output.getvalue(), content_type="text/csv")
+        response["Content-Disposition"] = "attachment"
+
+        return response
+
+class ReviewsDownload(HasRoleMixin, TemplateView):
+    allowed_roles = 'instructor'
+
+    def get(self, request, *args, **kwargs):
+
+        output = io.StringIO()
+        writer = csv.writer(output, delimiter=',', quoting=csv.QUOTE_MINIMAL)
+        writer.writerow(['reviewer', 'author', 'criterion', 'comment'])
+
+        rubric = Rubric.objects.get(id=kwargs['rubric_id'])
+        submission = rubric.reviewed_assignment.canvas_submission_set.get(author__id=kwargs['student_id'])
+
+        from djqscsv import render_to_csv_response
+        total_completed = CanvasSubmission.total_completed_by_a_student.__get__(submission)
+        comments_completed = PeerReviewComment.objects.filter(peer_review__in=total_completed)
+        
+        for comment in comments_completed:
+            writer.writerow([comment.peer_review.student.sortable_name, comment.peer_review.submission.author.sortable_name, comment.criterion.id, comment.comment])
+
+        total_received = CanvasSubmission.total_received_of_a_student.__get__(submission)
+        comments_received = PeerReviewComment.objects.filter(peer_review__in=total_received)
+        for comment in comments_received:
+            writer.writerow([comment.peer_review.student.sortable_name, comment.peer_review.submission.author.sortable_name, comment.criterion.id, comment.comment])
+
+        response = HttpResponse(output.getvalue(), content_type="text/csv")
+        response["Content-Disposition"] = "attachment"
+
+        return response
+    
+        
