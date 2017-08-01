@@ -51,7 +51,6 @@
             criteria: [{id: _.uniqueId('criterion'), description: ''}],
             submissionInProgress: false,
             peerReviewOpenDateIsPromptDueDate: true,
-
             peerReviewOpenHourChoices: _.map(_.range(1, 13), function(i) { return i.toString(); }),
             peerReviewOpenMinuteChoices: ['00', '15', '30', '45'],
             peerReviewOpenAMPMChoices: ['AM', 'PM'],

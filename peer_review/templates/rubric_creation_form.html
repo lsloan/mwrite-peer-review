@@ -5,6 +5,8 @@
     <link rel="stylesheet" href="{% static 'css/common.css' %}" />
     <link rel="stylesheet" href="{% static 'css/rubric_creation_form.css' %}"/>
 
+    <script defer src="{% static 'js/lib/momentjs/moment.min.js' %}"></script>
+
     <script defer src="{% static 'js/lib/vue/vue.js' %}"></script>
     <script defer src="{% static 'js/lib/vue-mdl/vue-mdl.js' %}"></script>
 
@@ -106,7 +108,11 @@
                                 </mdl-switch>
                             </div>
                             <div v-if="!peerReviewOpenDateIsPromptDueDate" class="mdl-card__supporting-text datetime-container">
-                                <div><datepicker></datepicker></div>
+                                <div>
+                                    <datepicker
+                                            format="MMM d yyyy">
+                                    </datepicker>
+                                </div>
                                 <div>
                                     <mdl-select
                                             id="peer-review-open-hour-select"
@@ -126,7 +132,7 @@
                                 <div>
                                     <mdl-select
                                             id="peer-review-open-ampm-select"
-                                            label="Hour"
+                                            label="AM / PM"
                                             v-model="peerReviewOpenAMPM"
                                             :options="peerReviewOpenAMPMChoices">
                                     </mdl-select>
