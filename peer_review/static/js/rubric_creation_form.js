@@ -129,6 +129,16 @@
                     return !issue.fatal;
                 });
                 return this.selectedPrompt && this.rubricDescription &&  criteriaAreValid && noAssignmentIssuesExist;
+            },
+            peerReviewOpenDisabledDates: function() {
+                if(this.promptDueDate) {
+                    return {
+                        to: moment(this.promptDueDate, 'MMM D h:mm A').toDate()
+                    };
+                }
+                else {
+                    return {};
+                }
             }
         },
         methods: {

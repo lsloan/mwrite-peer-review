@@ -110,7 +110,8 @@
                             <div v-if="!peerReviewOpenDateIsPromptDueDate" class="mdl-card__supporting-text datetime-container">
                                 <div>
                                     <datepicker
-                                            format="MMM d yyyy">
+                                            format="MMM d yyyy"
+                                            :disabled="peerReviewOpenDisabledDates">
                                     </datepicker>
                                 </div>
                                 <div>
