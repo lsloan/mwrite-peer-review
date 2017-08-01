@@ -8,6 +8,7 @@
     <script defer src="{% static 'js/lib/vue/vue.js' %}"></script>
     <script defer src="{% static 'js/lib/vue-mdl/vue-mdl.js' %}"></script>
 
+    <script defer src="{% static 'js/lib/vuejs-datepicker/build.js' %}"></script>
     <script defer src="{% static 'js/lib/autoresize/autosize.min.js' %}"></script>
     <script defer src="{% static 'js/components/autosize_textarea.js' %}"></script>
     <script defer src="{% static 'js/components/dropdown.js' %}"></script>
@@ -103,6 +104,33 @@
                                 <mdl-switch v-model="peerReviewOpenDateIsPromptDueDate">
                                     Use the writing prompt's due date as the peer review open date
                                 </mdl-switch>
+                            </div>
+                            <div v-if="!peerReviewOpenDateIsPromptDueDate" class="mdl-card__supporting-text datetime-container">
+                                <div><datepicker></datepicker></div>
+                                <div>
+                                    <mdl-select
+                                            id="peer-review-open-hour-select"
+                                            label="Hour"
+                                            v-model="peerReviewOpenHour"
+                                            :options="peerReviewOpenHourChoices">
+                                    </mdl-select>
+                                </div>
+                                <div>
+                                    <mdl-select
+                                            id="peer-review-open-minute-select"
+                                            label="Minute"
+                                            v-model="peerReviewOpenMinute"
+                                            :options="peerReviewOpenMinuteChoices">
+                                    </mdl-select>
+                                </div>
+                                <div>
+                                    <mdl-select
+                                            id="peer-review-open-ampm-select"
+                                            label="Hour"
+                                            v-model="peerReviewOpenAMPM"
+                                            :options="peerReviewOpenAMPMChoices">
+                                    </mdl-select>
+                                </div>
                             </div>
                             <div class="mdl-card__supporting-text">
                                 <p>

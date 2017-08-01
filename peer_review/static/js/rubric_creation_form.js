@@ -4,7 +4,8 @@
     new Vue({
         el: '#vue-root',
         components: _.defaults({'autosize-textarea': AutosizeTextarea,
-                                'dropdown': Dropdown},
+                                'dropdown': Dropdown,
+                                'datepicker': Datepicker},
                                VueMdl.components),
         directives: VueMdl.directives,
         mounted: function() {
@@ -49,7 +50,14 @@
             rubricDescription: null,
             criteria: [{id: _.uniqueId('criterion'), description: ''}],
             submissionInProgress: false,
-            peerReviewOpenDateIsPromptDueDate: true
+            peerReviewOpenDateIsPromptDueDate: true,
+
+            peerReviewOpenHourChoices: _.map(_.range(1, 13), function(i) { return i.toString(); }),
+            peerReviewOpenMinuteChoices: ['00', '15', '30', '45'],
+            peerReviewOpenAMPMChoices: ['AM', 'PM'],
+            peerReviewOpenHour: null,
+            peerReviewOpenMinute: null,
+            peerReviewOpenAMPM: null
         },
         computed: {
             promptChoices: function() {
