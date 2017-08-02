@@ -228,6 +228,7 @@
                     );
                 }
                 else {
+                    // TODO not bad to have a guard, but this should be unreachable, so we need another way to tell the user what to do / what not do
                     this.$root.$emit('notification', {
                         message: 'This rubric is not valid.  Double check that you have selected a writing prompt, added a description, and created criteria.'
                     });
