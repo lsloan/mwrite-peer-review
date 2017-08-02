@@ -158,6 +158,34 @@
                 return date;
             }
         },
+        watch: {
+            // TODO is there a better (i.e. declarative) way to do this?
+            promptDueDate: function(newPromptDueDate) {
+                if(newPromptDueDate) {
+                    var date = moment(newPromptDueDate, localDateFormat);
+                    var meridian = 'AM';
+                    var hour = date.hour();
+                    if(hour > 12) {
+                        hour -= 12;
+                        meridian = 'PM';
+                    }
+                    var minute = date.minute();
+                    // TODO the following could be replaced with _.flow(), but only if we use lodash.fp which will be much easier w/ ES6
+                    var closestMinuteChoice = _(this.peerReviewOpenMinuteChoices)
+                        .filter(function(choice) {
+                            return parseInt(choice) > minute;
+                        })
+                        .minBy(function(choice) {
+                            return Math.abs(minute - parseInt(choice));
+                        });
+
+                    this.peerReviewOpenHour = hour.toString();
+                    this.peerReviewOpenMinute = closestMinuteChoice;
+                    this.peerReviewOpenAMPM = meridian;
+                    this.selectedPeerReviewOpenDate = date.toDate();
+                }
+            }
+        },
         methods: {
             addCriterion: function() {
                 this.criteria.push({id: _.uniqueId('criterion'), description: ''});
