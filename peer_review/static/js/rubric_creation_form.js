@@ -157,6 +157,13 @@
                 }
                 return date;
             },
+            peerReviewOpenDateStr: function() {
+                var dateStr = '';
+                if(this.peerReviewOpenDate) {
+                    dateStr = moment(this.peerReviewOpenDate).format(localDateFormat);
+                }
+                return dateStr;
+            },
             peerReviewOpenDateIsValid: function() {
                 if(!this.peerReviewOpenDate) {
                     return false;
