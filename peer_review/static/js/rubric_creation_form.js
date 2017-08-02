@@ -1,5 +1,6 @@
 (function() {
     var noRevisionOption = {value: null, name: 'No revision'};
+    var localDateFormat = 'MMM D h:mm A';
 
     new Vue({
         el: '#vue-root',
@@ -50,6 +51,7 @@
             rubricDescription: null,
             criteria: [{id: _.uniqueId('criterion'), description: ''}],
             submissionInProgress: false,
+            selectedPeerReviewOpenDate: null,
             peerReviewOpenDateIsPromptDueDate: true,
             peerReviewOpenHourChoices: _.map(_.range(1, 13), function(i) { return i.toString(); }),
             peerReviewOpenMinuteChoices: ['00', '15', '30', '45'],
@@ -131,14 +133,29 @@
                 return this.selectedPrompt && this.rubricDescription &&  criteriaAreValid && noAssignmentIssuesExist;
             },
             peerReviewOpenDisabledDates: function() {
+                var dates = {};
                 if(this.promptDueDate) {
-                    return {
-                        to: moment(this.promptDueDate, 'MMM D h:mm A').toDate()
-                    };
+                    dates = {to: moment(this.promptDueDate, localDateFormat).toDate()};
+                }
+                return dates;
+            },
+            peerReviewOpenDate: function() {
+                var date = null;
+                if(this.peerReviewOpenDateIsPromptDueDate) {
+                    date = moment(this.promptDueDate, localDateFormat).utc().toDate();
                 }
                 else {
-                    return {};
+                    if(this.selectedPeerReviewOpenDate && this.peerReviewOpenHour && this.peerReviewOpenMinute && this.peerReviewOpenAMPM) {
+                        var hours12 = parseInt(this.peerReviewOpenHour);
+                        var hours24 = this.peerReviewOpenAMPM === 'PM' ? hours12 + 12 : hours12;
+                        var minutes = parseInt(this.peerReviewOpenMinute);
+                        date = moment(this.selectedPeerReviewOpenDate)
+                            .hours(hours24)
+                            .minutes(minutes)
+                            .toDate();
+                    }
                 }
+                return date;
             }
         },
         methods: {
