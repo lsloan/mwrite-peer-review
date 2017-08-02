@@ -217,6 +217,7 @@
                             setTimeout(function() { window.location.href = '/'; }, 4000);
                         },
                         function() {
+                            // TODO be more specific in certain cases e.g. 403 (session probably expired)
                             vm.$root.$emit('notification', {
                                 message: 'An error occurred.  Please try again later.'
                             });
@@ -227,7 +228,9 @@
                     );
                 }
                 else {
-                    this.$root.$emit('notification', 'This rubric is not valid.  Double check that you have selected a writing prompt, added a description, and created criteria.');
+                    this.$root.$emit('notification', {
+                        message: 'This rubric is not valid.  Double check that you have selected a writing prompt, added a description, and created criteria.'
+                    });
                 }
             }
         }
