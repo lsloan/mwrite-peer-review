@@ -6,9 +6,8 @@ from toolz.functoolz import thread_last
 from toolz.itertoolz import unique, remove
 from django.db import transaction
 from django.conf import settings
-from django.core.files import File
 from django.utils.dateparse import parse_datetime
-from peer_review.util import utc_to_timezone, to_camel_case
+from peer_review.util import to_camel_case
 from peer_review.canvas import retrieve
 from peer_review.models import CanvasAssignment, CanvasSection, CanvasStudent, CanvasCourse, CanvasSubmission
 
@@ -20,8 +19,7 @@ class AssignmentValidation:
         self.submission_upload_type = kwargs.get('submission_upload_type')
         self.allowed_submission_file_extensions = kwargs.get('allowed_extensions')
         if kwargs.get('due_date_utc') is not None:
-            local_due_date_dt = utc_to_timezone(kwargs.get('due_date_utc'), settings.TIME_ZONE)
-            self.local_due_date = local_due_date_dt.strftime(settings.TIME_OUTPUT_FORMAT)
+            self.due_date_utc = kwargs.get('due_date_utc').isoformat()
         else:
             self.local_due_date = None
         self.number_of_due_dates = kwargs.get('number_of_due_dates')

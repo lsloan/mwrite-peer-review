@@ -32,6 +32,8 @@
               data-existing-rubric-description="{{ existing_rubric.description }}"
               data-existing-prompt-id="{% if existing_prompt %}{{ existing_prompt.id }}{% else %}null{% endif %}"
               data-existing-revision-id="{% if existing_revision %}{{ existing_revision.id }}{% else %}null{% endif %}"
+              data-peer-review-open-date="{% if existing_rubric and existing_rubric.peer_review_open_date %}{{ existing_rubric.peer_review_open_date }}{% else %}null{% endif %}"
+              data-peer-review-open-date-is-prompt-due-date={% if existing_rubric and not existing_rubric.peer_review_open_date_is_prompt_due_date %}false{% else %}true{% endif %}
               data-existing-criteria="{{ criteria }}"
               data-review-is-in-progress={% if review_is_in_progress %}true{% else %}false{% endif %}>
 
