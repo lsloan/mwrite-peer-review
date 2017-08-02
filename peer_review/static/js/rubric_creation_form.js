@@ -130,7 +130,7 @@
                 var noAssignmentIssuesExist = _.every(this.promptIssues.concat(this.revisionIssues), function(issue) {
                     return !issue.fatal;
                 });
-                return this.selectedPrompt && this.rubricDescription &&  criteriaAreValid && noAssignmentIssuesExist;
+                return this.selectedPrompt && this.rubricDescription && criteriaAreValid && noAssignmentIssuesExist && this.peerReviewOpenDateIsValid;
             },
             peerReviewOpenDisabledDates: function() {
                 var dates = {};
@@ -156,6 +156,14 @@
                     }
                 }
                 return date;
+            },
+            peerReviewOpenDateIsValid: function() {
+                if(!this.peerReviewOpenDate) {
+                    return false;
+                }
+                var peerReviewOpenDate = moment(this.peerReviewOpenDate);
+                var promptDueDate = moment(this.promptDueDate, localDateFormat);
+                return peerReviewOpenDate.isSameOrAfter(promptDueDate);
             }
         },
         watch: {
@@ -230,7 +238,7 @@
                 else {
                     // TODO not bad to have a guard, but this should be unreachable, so we need another way to tell the user what to do / what not do
                     this.$root.$emit('notification', {
-                        message: 'This rubric is not valid.  Double check that you have selected a writing prompt, added a description, and created criteria.'
+                        message: 'This rubric is not valid.  Double check that you have selected a writing prompt, added a description, created criteria, and configured a peer review open date no sooner than the prompt\'s open date.'
                     });
                 }
             }

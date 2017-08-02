@@ -141,13 +141,14 @@
                                 </div>
                             </div>
                             <div class="mdl-card__supporting-text">
-                                <p>
+                                <p v-if="peerReviewOpenDateIsValid">
                                     Peer reviews will be distributed at
                                     <span v-if="peerReviewOpenDateIsPromptDueDate">{{ promptDueDate }}</span>
                                     <span v-else>CHANGEME/whatever_user_selects</span>.  Students who have not completed
                                     the writing prompt assignment in Canvas by this date will be unable to
                                     participate in peer review.
                                 </p>
+                                <p v-else>The peer review open date must not be before the prompt assignments's due date.</p>
                             </div>
 
                         </div>
