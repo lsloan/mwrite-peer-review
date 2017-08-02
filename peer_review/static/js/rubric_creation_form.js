@@ -211,13 +211,13 @@
                         document.querySelector('#rubric-form').getAttribute('action'),
                         data,
                         function() {
-                            vm.$root.$emit('rubricSubmitted', {
+                            vm.$root.$emit('notification', {
                                 message: 'The rubric was successfully created.  You will be returned to the dashboard.'
                             });
                             setTimeout(function() { window.location.href = '/'; }, 4000);
                         },
                         function() {
-                            vm.$root.$emit('rubricSubmitted', {
+                            vm.$root.$emit('notification', {
                                 message: 'An error occurred.  Please try again later.'
                             });
                         },
@@ -227,7 +227,7 @@
                     );
                 }
                 else {
-                    this.$root.$emit('rubricSubmitted', 'This rubric is not valid.  Double check that you have selected a writing prompt, added a description, and created criteria.');
+                    this.$root.$emit('notification', 'This rubric is not valid.  Double check that you have selected a writing prompt, added a description, and created criteria.');
                 }
             }
         }
