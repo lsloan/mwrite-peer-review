@@ -218,6 +218,7 @@
                         revisionId: this.selectedRevision.value || null,
                         description: _.trim(this.rubricDescription) || null,
                         criteria: _.map(this.criteria, function(c) { return _.trim(c.description) || null; }),
+                        peerReviewOpenDateIsPromptDueDate: this.peerReviewOpenDateIsPromptDueDate,
                         peerReviewOpenDate: this.peerReviewOpenDate
                     };
 

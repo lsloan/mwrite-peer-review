@@ -106,10 +106,13 @@ class Rubric(models.Model):
                                                null=True,
                                                related_name='rubric_for_revision')
     revision_fetch_complete = models.BooleanField(default=False)
+    peer_review_open_date_is_prompt_due_date = models.BooleanField(default=True)
+    peer_review_open_date = models.DateTimeField(blank=True, null=True)
 
     @property
     def num_criteria(self):
         return Criterion.objects.filter(rubric=self).count()
+
 
 # noinspection PyClassHasNoInit
 class Criterion(models.Model):

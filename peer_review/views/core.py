@@ -1,4 +1,6 @@
+import io
 import os
+import csv
 import json
 import logging
 import mimetypes
@@ -6,6 +8,7 @@ from collections import OrderedDict
 from datetime import datetime
 from itertools import chain
 
+import dateutil.parser
 from django.conf import settings
 from django.db import transaction
 from django.db.models import Q, F, Count, Case, When, Value, BooleanField, Max
@@ -22,8 +25,6 @@ from peer_review.etl import persist_assignments, AssignmentValidation
 from peer_review.models import Rubric, Criterion, CanvasAssignment, PeerReviewDistribution, CanvasSubmission, \
     PeerReview, PeerReviewComment, CanvasStudent
 from peer_review.util import parse_json_body, some
-from django.shortcuts import render
-import csv, io
 
 logger = logging.getLogger(__name__)
 
@@ -126,6 +127,18 @@ class RubricCreationFormView(HasRoleMixin, TemplateView):
         else:
             criteria = [Criterion(description=criterion) for criterion in params['criteria']]
 
+        if 'peer_review_open_date' not in params or not params['peer_review_open_date'].strip():
+            return HttpResponse('Missing peer review open date.', status=400)
+        else:
+            peer_review_open_date = dateutil.parser.parse(params['peer_review_open_date'])
+
+        if 'peer_review_open_date_is_prompt_due_date' not in params:
+            return HttpResponse('Missing peer review open date is prompt due date flag.', status=400)
+        else:
+            peer_review_open_date_is_prompt_due_date = params['peer_review_open_date_is_prompt_due_date']
+
+        logger.info('peer review open date = %s' % peer_review_open_date)
+
         try:
             with transaction.atomic():
                 prompt_assignment = CanvasAssignment.objects.get(id=prompt_assignment_id)
@@ -134,11 +147,16 @@ class RubricCreationFormView(HasRoleMixin, TemplateView):
                     revision_assignment = CanvasAssignment.objects.get(id=revision_assignment_id)
                 else:
                     revision_assignment = None
+                rubric_defaults = {
+                    'description': rubric_description,
+                    'reviewed_assignment': prompt_assignment,
+                    'passback_assignment': passback_assignment,
+                    'revision_assignment': revision_assignment,
+                    'peer_review_open_date': peer_review_open_date,
+                    'peer_review_open_date_is_prompt_due_date': peer_review_open_date_is_prompt_due_date
+                }
                 rubric, created = Rubric.objects.update_or_create(reviewed_assignment=prompt_assignment_id,
-                                                                  defaults={'description': rubric_description,
-                                                                            'reviewed_assignment': prompt_assignment,
-                                                                            'passback_assignment': passback_assignment,
-                                                                            'revision_assignment': revision_assignment})
+                                                                  defaults=rubric_defaults)
                 if not created:
                     try:
                         if PeerReviewDistribution.objects.get(rubric_id=rubric.id).is_distribution_complete:
