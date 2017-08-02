@@ -217,7 +217,8 @@
                         promptId: this.selectedPrompt.value || null,
                         revisionId: this.selectedRevision.value || null,
                         description: _.trim(this.rubricDescription) || null,
-                        criteria: _.map(this.criteria, function(c) { return _.trim(c.description) || null; })
+                        criteria: _.map(this.criteria, function(c) { return _.trim(c.description) || null; }),
+                        peerReviewOpenDate: this.peerReviewOpenDate
                     };
 
                     this.submissionInProgress = true;
