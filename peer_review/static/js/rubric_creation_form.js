@@ -233,8 +233,11 @@
                 return peerReviewOpenDate.isSameOrAfter(promptDueDate);
             }
         },
+        // TODO this didn't work, but I'm leaving it here in case it can be modified in the future when we have more
+        // TODO time.  the problem is that watchers fire even after data fields are modified during the mounted()
+        // TODO handler, which overwrites any *pre-existing* date. this is a problem for edit mode that I'm going
+        // TODO to solve by just adding a label to the date and not using a default.
         //watch: {
-        //    // TODO is there a better (i.e. declarative) way to do this?
         //    selectedPrompt: {
         //        immediate: true,
         //        handler: function(newPromptDueDate, oldPromptDueDate) {

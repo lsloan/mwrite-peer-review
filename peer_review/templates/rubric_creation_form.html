@@ -110,6 +110,7 @@
                                 </mdl-switch>
                             </div>
                             <div v-if="!peerReviewOpenDateIsPromptDueDate" class="mdl-card__supporting-text datetime-container">
+                                <p>Enter a custom date:</p>
                                 <div>
                                     <datepicker
                                             format="MMM d yyyy"
@@ -142,6 +143,7 @@
                                             :options="peerReviewOpenAMPMChoices">
                                     </mdl-select>
                                 </div>
+
                             </div>
                             <div class="mdl-card__supporting-text">
                                 <p v-if="peerReviewOpenDateIsValid">
@@ -149,9 +151,10 @@
                                     not completed the writing prompt assignment in Canvas by this date will be unable
                                     to participate in peer review.
                                 </p>
-                                <p v-else>The peer review open date must not be before the prompt assignments's due date.</p>
+                                <p v-else-if="!peerReviewOpenDateIsPromptDueDate">
+                                    The peer review open date must not be before the prompt assignments's due date.
+                                </p>
                             </div>
-
                         </div>
                     </mdl-card>
 
