@@ -81,3 +81,19 @@ button[type="submit"] {
 #rubric-form textarea[disabled], #rubric-form button[disabled][type=button] {
     color: inherit;
 }
+
+.vdp-datepicker input[type="text"] {
+    font-size: 14px;
+    padding: 1%;
+    max-width: 120px;
+}
+
+.datetime-container > div, .datetime-container .vdp-datepicker, .datetime-container .vdp-datepicker div {
+    display: inline;
+}
+
+.datetime-container .mdl-textfield {
+    width: 80px;
+    margin-left: 3px;
+    margin-right: 3px;
+}

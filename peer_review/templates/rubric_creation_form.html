@@ -5,9 +5,12 @@
     <link rel="stylesheet" href="{% static 'css/common.css' %}" />
     <link rel="stylesheet" href="{% static 'css/rubric_creation_form.css' %}"/>
 
+    <script defer src="{% static 'js/lib/momentjs/moment.min.js' %}"></script>
+
     <script defer src="{% static 'js/lib/vue/vue.js' %}"></script>
     <script defer src="{% static 'js/lib/vue-mdl/vue-mdl.js' %}"></script>
 
+    <script defer src="{% static 'js/lib/vuejs-datepicker/build.js' %}"></script>
     <script defer src="{% static 'js/lib/autoresize/autosize.min.js' %}"></script>
     <script defer src="{% static 'js/components/autosize_textarea.js' %}"></script>
     <script defer src="{% static 'js/components/dropdown.js' %}"></script>
@@ -29,6 +32,8 @@
               data-existing-rubric-description="{{ existing_rubric.description }}"
               data-existing-prompt-id="{% if existing_prompt %}{{ existing_prompt.id }}{% else %}null{% endif %}"
               data-existing-revision-id="{% if existing_revision %}{{ existing_revision.id }}{% else %}null{% endif %}"
+              data-peer-review-open-date="{% if existing_rubric and existing_rubric.peer_review_open_date %}{{ existing_rubric.peer_review_open_date|date:"c" }}{% else %}null{% endif %}"
+              data-peer-review-open-date-is-prompt-due-date={% if existing_rubric and not existing_rubric.peer_review_open_date_is_prompt_due_date %}false{% else %}true{% endif %}
               data-existing-criteria="{{ criteria }}"
               data-review-is-in-progress={% if review_is_in_progress %}true{% else %}false{% endif %}>
 
@@ -67,7 +72,9 @@
                                         :disabled="reviewIsInProgress"
                                         empty-caption="Select an assignment">
                                 </dropdown>
-                                <p v-if="promptInfo" class="assignment-info">{{ promptInfo }}</p>
+                                <p v-if="promptSection && promptDueDate" class="assignment-info">
+                                    This prompt is assigned to {{ promptSection }} and is due {{ promptDueDate }}.
+                                </p>
                             </div>
 
                             <!-- TODO this could be abstracted into its own component -->
@@ -83,6 +90,71 @@
                                 </ul>
                             </div>
 
+                        </div>
+                    </mdl-card>
+
+                    <div class="mdl-cell mdl-cell--3-col mdl-cell--1-col-tablet mdl-cell-1-col-phone"></div>
+                </div>
+
+                <div class="mdl-grid">
+                    <div class="mdl-cell mdl-cell--3-col mdl-cell--1-col-tablet mdl-cell-1-col-phone"></div>
+
+                    <mdl-card
+                            class="mdl-card mdl-shadow--2dp mdl-cell mdl-cell--6-col mdl-cell--6-col-tablet mdl-cell-2-col-phone"
+                            title="Peer Review"
+                            supporting-text="slot">
+                        <div slot="supporting-text">
+                            <div class="mdl-card__supporting-text">
+                                <mdl-switch v-model="peerReviewOpenDateIsPromptDueDate">
+                                    Use the writing prompt's due date as the peer review open date
+                                </mdl-switch>
+                            </div>
+                            <div v-if="!peerReviewOpenDateIsPromptDueDate" class="mdl-card__supporting-text datetime-container">
+                                <p>Enter a custom date:</p>
+                                <div>
+                                    <datepicker
+                                            format="MMM d yyyy"
+                                            placeholder="Day"
+                                            :disabled="peerReviewOpenDisabledDates"
+                                            v-model="selectedPeerReviewOpenDate">
+                                    </datepicker>
+                                </div>
+                                <div>
+                                    <mdl-select
+                                            id="peer-review-open-hour-select"
+                                            label="Hour"
+                                            v-model="peerReviewOpenHour"
+                                            :options="peerReviewOpenHourChoices">
+                                    </mdl-select>
+                                </div>
+                                <div>
+                                    <mdl-select
+                                            id="peer-review-open-minute-select"
+                                            label="Minute"
+                                            v-model="peerReviewOpenMinute"
+                                            :options="peerReviewOpenMinuteChoices">
+                                    </mdl-select>
+                                </div>
+                                <div>
+                                    <mdl-select
+                                            id="peer-review-open-ampm-select"
+                                            label="AM / PM"
+                                            v-model="peerReviewOpenAMPM"
+                                            :options="peerReviewOpenAMPMChoices">
+                                    </mdl-select>
+                                </div>
+
+                            </div>
+                            <div class="mdl-card__supporting-text">
+                                <p v-if="peerReviewOpenDateIsValid">
+                                    Peer reviews will be distributed at {{ peerReviewOpenDateStr }}.  Students who have
+                                    not completed the writing prompt assignment in Canvas by this date will be unable
+                                    to participate in peer review.
+                                </p>
+                                <p v-else-if="!peerReviewOpenDateIsPromptDueDate">
+                                    The peer review open date must not be before the prompt assignments's due date.
+                                </p>
+                            </div>
                         </div>
                     </mdl-card>
 
@@ -108,7 +180,9 @@
                                             :options="revisionChoices"
                                             :disabled="reviewIsInProgress">
                                     </dropdown>
-                                    <p v-if="revisionInfo" class="assignment-info">{{ revisionInfo }}</p>
+                                    <p v-if="revisionSection && revisionDueDate" class="assignment-info">
+                                        This revision is assigned to {{ revisionSection }} and is due {{ revisionDueDate }}.
+                                    </p>
                                 </div>
 
                                 <!-- TODO this could be abstracted into its own component -->
@@ -201,7 +275,7 @@
                     <div class="mdl-grid">
                         <div class="mdl-cell mdl-cell--3-col mdl-cell--1-col-tablet mdl-cell-1-col-phone"></div>
                         <div class="mdl-cell mdl-cell--6-col mdl-cell--6-col-tablet mdl-cell-2-col-phone">
-                            <mdl-snackbar display-on="rubricSubmitted"></mdl-snackbar>
+                            <mdl-snackbar display-on="notification"></mdl-snackbar>
                         </div>
                         <div class="mdl-cell mdl-cell--3-col mdl-cell--1-col-tablet mdl-cell-1-col-phone"></div>
                     </div>
