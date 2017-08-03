@@ -1,25 +1,41 @@
 (function() {
     var noRevisionOption = {value: null, name: 'No revision'};
-    var displayDateFormat = 'MMM D h:mm A';
+    var displayDateFormat = 'MMM D YYYY h:mm A';
 
-    var updatePromptDueDate = function(newPromptDueDateLocal) {
+    var updatePeerReviewOpenDate = function(newPromptDueDateLocal) {
         if(newPromptDueDateLocal) {
             var date = moment(newPromptDueDateLocal, displayDateFormat);
-            var meridian = 'AM';
-            var hour = date.hour();
-            if(hour > 12) {
-                hour -= 12;
-                meridian = 'PM';
-            }
+
             var minute = date.minute();
             // TODO the following could be replaced with _.flow(), but only if we use lodash.fp which will be much easier w/ ES6
             var closestMinuteChoice = _(this.peerReviewOpenMinuteChoices)
                 .filter(function (choice) {
-                    return parseInt(choice) > minute;
+                    return parseInt(choice) >= minute;
                 })
                 .minBy(function (choice) {
                     return Math.abs(minute - parseInt(choice));
                 });
+
+            if(!closestMinuteChoice) {
+                var minutesToHour = 60 - minute;
+                date.add(minutesToHour, 'minutes');
+                closestMinuteChoice = '00';
+            }
+
+            var meridian = 'AM';
+            var hour = date.hour();
+            if(hour === 0) {
+                hour = 12;
+            }
+            else {
+                if(hour >= 12) {
+                    meridian = 'PM';
+                    if(hour > 12) {
+                        hour -= 12;
+                    }
+                }
+            }
+
 
             this.peerReviewOpenHour = hour.toString();
             this.peerReviewOpenMinute = closestMinuteChoice;
@@ -70,9 +86,11 @@
 
             this.peerReviewOpenDateIsPromptDueDate = JSON.parse(data['peerReviewOpenDateIsPromptDueDate']);
             if(!this.peerReviewOpenDateIsPromptDueDate) {
-                // TODO need to convert to local
-                updatePromptDueDate(this, moment(data['peerReviewOpenDate'], displayDateFormat));
+                var dateStr = moment(data['peerReviewOpenDate']).format(displayDateFormat);
+                updatePeerReviewOpenDate.call(this, dateStr);
             }
+
+            console.log('mounted');
         },
         data: {
             assignments: null,
@@ -215,10 +233,16 @@
                 return peerReviewOpenDate.isSameOrAfter(promptDueDate);
             }
         },
-        watch: {
-            // TODO is there a better (i.e. declarative) way to do this?
-            promptDueDate: updatePromptDueDate
-        },
+        //watch: {
+        //    // TODO is there a better (i.e. declarative) way to do this?
+        //    selectedPrompt: {
+        //        immediate: true,
+        //        handler: function(newPromptDueDate, oldPromptDueDate) {
+        //            console.log('hello from watch');
+        //            updatePeerReviewOpenDate.call(this, newPromptDueDate);
+        //        }
+        //    }
+        //},
         methods: {
             addCriterion: function() {
                 this.criteria.push({id: _.uniqueId('criterion'), description: ''});
