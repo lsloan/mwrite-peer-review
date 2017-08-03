@@ -9,7 +9,7 @@ from django.conf import settings
 from django.utils.dateparse import parse_datetime
 from peer_review.util import to_camel_case
 from peer_review.canvas import retrieve
-from peer_review.models import CanvasAssignment, CanvasSection, CanvasStudent, CanvasCourse, CanvasSubmission
+from peer_review.models import CanvasAssignment, CanvasSection, CanvasStudent, CanvasCourse, CanvasSubmission, Rubric
 
 log = logging.getLogger(__name__)
 
@@ -89,6 +89,26 @@ def persist_assignments(course_id):
     canvas_assignments = retrieve('assignments', course_id)
     assignments = [_convert_assignment(canvas_assignment) for canvas_assignment in canvas_assignments]
     for assignment in assignments:
+        if not assignment.is_peer_review_assignment:
+            try:
+                rubric = CanvasAssignment.objects.get(id=assignment.id).rubric_for_prompt
+                if rubric.peer_review_open_date_is_prompt_due_date:
+                    if assignment.due_date_utc:
+                        rubric.peer_review_open_date = assignment.due_date_utc
+                        rubric.save()
+                    else:
+                        log.error(
+                            'Rubric %d has peer review open date set to prompt %d due date, but this prompt has'
+                            'no due date!' % (rubric.id, assignment.id)
+                        )
+                else:
+                    if rubric.peer_review_open_date < assignment.due_date_utc:
+                        log.warning('Prompt %d has a due date later than rubric %d\'s peer review open date' %
+                                    (assignment.id, rubric.id))
+            except CanvasAssignment.DoesNotExist:
+                pass
+            except Rubric.DoesNotExist:
+                pass
         assignment.save()
     return assignments
 
