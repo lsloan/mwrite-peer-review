@@ -1,4 +1,5 @@
 import logging
+from collections import OrderedDict
 
 from toolz.itertoolz import unique
 
@@ -8,6 +9,25 @@ from peer_review.etl import persist_students, persist_sections, persist_submissi
 from peer_review.models import CanvasAssignment
 
 log = logging.getLogger(__name__)
+
+
+def make_distribution(students, submissions, n=3):
+    submissions_by_id = {submission.id: submission for submission in submissions}
+
+    submissions_to_review_by_student = {student.id: set() for student in students}
+    review_count_by_submission = {submission.id: 0 for submission in submissions}
+
+    for student in students:
+        while len(submissions_to_review_by_student[student.id]) < n:
+            review_count_by_submission = OrderedDict(sorted(review_count_by_submission.items(), key=lambda t: t[1]))
+            for submission_id, _ in review_count_by_submission.items():
+                if submissions_by_id[submission_id].author_id != student.id \
+                        and submission_id not in submissions_to_review_by_student[student.id]:
+                    review_count_by_submission[submission_id] += 1
+                    submissions_to_review_by_student[student.id].add(submission_id)
+                    break
+
+    return submissions_to_review_by_student, review_count_by_submission
 
 
 def distribute_reviews(prompt_id):

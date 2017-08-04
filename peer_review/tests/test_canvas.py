@@ -70,7 +70,7 @@ def submit_for_assignments(course_id, assignments, users):
             submit_file(user['token'], course_id, assignment['id'], filename, contents)
 
 
-def test_flow(course_id):
+def no_test_flow(course_id):
     delete_all_assignments(course_id)
     pairings = create_test_assignments(course_id)
     persist_course(course_id)
