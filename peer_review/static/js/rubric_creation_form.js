@@ -90,6 +90,11 @@
                 updatePeerReviewOpenDate.call(this, dateStr);
             }
 
+            var existingDistributePeerReviewsForSections = JSON.parse(data['distributePeerReviewsForSections']);
+            if(existingDistributePeerReviewsForSections !== null) {
+                this.distributePeerReviewsForSections = existingDistributePeerReviewsForSections;
+            }
+
             console.log('mounted');
         },
         data: {
