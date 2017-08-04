@@ -13,7 +13,7 @@ class CanvasCourse(models.Model):
 class CanvasSection(models.Model):
 
     id = models.IntegerField(primary_key=True)
-    course = models.ForeignKey(CanvasCourse, models.CASCADE)
+    course = models.ForeignKey(CanvasCourse, on_delete=models.CASCADE)
     name = models.TextField()
 
     class Meta:
@@ -24,7 +24,7 @@ class CanvasAssignment(models.Model):
 
     id = models.IntegerField(primary_key=True)
     title = models.TextField()
-    course = models.ForeignKey(CanvasCourse, models.CASCADE)
+    course = models.ForeignKey(CanvasCourse, on_delete=models.CASCADE)
     due_date_utc = models.DateTimeField(blank=True, null=True)
     is_peer_review_assignment = models.BooleanField(default=False)
 
@@ -55,8 +55,8 @@ class CanvasStudent(models.Model):
 class CanvasSubmission(models.Model):
 
     id = models.IntegerField(primary_key=True)
-    author = models.ForeignKey(CanvasStudent, models.DO_NOTHING)
-    assignment = models.ForeignKey(CanvasAssignment, models.DO_NOTHING, related_name='canvas_submission_set')
+    author = models.ForeignKey(CanvasStudent, on_delete=models.DO_NOTHING)
+    assignment = models.ForeignKey(CanvasAssignment, on_delete=models.DO_NOTHING, related_name='canvas_submission_set')
     filename = models.CharField(unique=True, max_length=255)
     
     @property
@@ -87,17 +87,17 @@ class Rubric(models.Model):
     id = models.AutoField(primary_key=True)
     description = models.TextField()
     reviewed_assignment = models.OneToOneField(CanvasAssignment,
-                                               models.DO_NOTHING,
+                                               on_delete=models.DO_NOTHING,
                                                unique=True,
                                                blank=True,
                                                null=True,
                                                related_name='rubric_for_prompt')
     passback_assignment = models.OneToOneField(CanvasAssignment,
-                                               models.DO_NOTHING,
+                                               on_delete=models.DO_NOTHING,
                                                unique=True,
                                                related_name='rubric_for_review')
     revision_assignment = models.OneToOneField(CanvasAssignment,
-                                               models.DO_NOTHING,
+                                               on_delete=models.DO_NOTHING,
                                                unique=True,
                                                blank=True,
                                                null=True,
@@ -119,7 +119,7 @@ class Criterion(models.Model):
 
     id = models.AutoField(primary_key=True)
     description = models.TextField()
-    rubric = models.ForeignKey(Rubric, models.DO_NOTHING, related_name='criteria')
+    rubric = models.ForeignKey(Rubric, on_delete=models.DO_NOTHING, related_name='criteria')
 
     def __str__(self):
         return self.description
@@ -132,8 +132,10 @@ class Criterion(models.Model):
 class PeerReview(models.Model):
 
     id = models.AutoField(primary_key=True)
-    student = models.ForeignKey(CanvasStudent, models.DO_NOTHING, related_name='peer_reviews_for_student')
-    submission = models.ForeignKey(CanvasSubmission, models.DO_NOTHING, related_name='peer_reviews_for_submission')
+    student = models.ForeignKey(CanvasStudent, on_delete=models.DO_NOTHING,
+                                related_name='peer_reviews_for_student')
+    submission = models.ForeignKey(CanvasSubmission, on_delete=models.DO_NOTHING,
+                                   related_name='peer_reviews_for_submission')
 
     class Meta:
         db_table = 'peer_reviews'
@@ -144,8 +146,8 @@ class PeerReview(models.Model):
 class PeerReviewComment(models.Model):
 
     id = models.AutoField(primary_key=True)
-    criterion = models.ForeignKey(Criterion, models.DO_NOTHING)
-    peer_review = models.ForeignKey(PeerReview, models.DO_NOTHING, related_name='comments')
+    criterion = models.ForeignKey(Criterion, on_delete=models.DO_NOTHING)
+    peer_review = models.ForeignKey(PeerReview, on_delete=models.DO_NOTHING, related_name='comments')
     comment = models.TextField()
     commented_at_utc = models.DateTimeField(blank=True, null=True)
 
@@ -158,7 +160,7 @@ class PeerReviewComment(models.Model):
 class PeerReviewDistribution(models.Model):
 
     id = models.AutoField(primary_key=True)
-    rubric = models.OneToOneField(Rubric, models.DO_NOTHING, related_name='peer_review_distribution')
+    rubric = models.OneToOneField(Rubric, on_delete=models.DO_NOTHING, related_name='peer_review_distribution')
     is_distribution_complete = models.BooleanField(default=False)
     distributed_at_utc = models.DateTimeField(blank=True, null=True)
 
