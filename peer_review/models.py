@@ -3,27 +3,24 @@ from django.db import models
 
 class CanvasCourse(models.Model):
 
-    class Meta:
-        db_table = 'canvas_courses'
-
     id = models.IntegerField(primary_key=True)
     name = models.TextField()
 
+    class Meta:
+        db_table = 'canvas_courses'
+
 
 class CanvasSection(models.Model):
-
-    class Meta:
-        db_table = 'canvas_section'
 
     id = models.IntegerField(primary_key=True)
     course = models.ForeignKey(CanvasCourse, models.CASCADE)
     name = models.TextField()
 
+    class Meta:
+        db_table = 'canvas_section'
+
 
 class CanvasAssignment(models.Model):
-
-    class Meta:
-        db_table = 'canvas_assignments'
 
     id = models.IntegerField(primary_key=True)
     title = models.TextField()
@@ -37,12 +34,12 @@ class CanvasAssignment(models.Model):
             del kwargs['validation']
         super(CanvasAssignment, self).__init__(*args, **kwargs)
 
+    class Meta:
+        db_table = 'canvas_assignments'
+
 
 # noinspection PyClassHasNoInit
 class CanvasStudent(models.Model):
-
-    class Meta:
-        db_table = 'canvas_students'
 
     id = models.IntegerField(primary_key=True)
     sections = models.ManyToManyField(CanvasSection, blank=True)
@@ -50,12 +47,12 @@ class CanvasStudent(models.Model):
     sortable_name = models.TextField()
     username = models.TextField()
 
+    class Meta:
+        db_table = 'canvas_students'
+
 
 # noinspection PyClassHasNoInit
 class CanvasSubmission(models.Model):
-
-    class Meta:
-        db_table = 'canvas_submissions'
 
     id = models.IntegerField(primary_key=True)
     author = models.ForeignKey(CanvasStudent, models.DO_NOTHING)
@@ -80,12 +77,12 @@ class CanvasSubmission(models.Model):
         return PeerReview.objects.filter(submission=self) \
                                  .annotate(received=models.Count('comments', distinct=True))
 
+    class Meta:
+        db_table = 'canvas_submissions'
+
 
 # noinspection PyClassHasNoInit
 class Rubric(models.Model):
-
-    class Meta:
-        db_table = 'rubrics'
 
     id = models.AutoField(primary_key=True)
     description = models.TextField()
@@ -113,12 +110,12 @@ class Rubric(models.Model):
     def num_criteria(self):
         return Criterion.objects.filter(rubric=self).count()
 
+    class Meta:
+        db_table = 'rubrics'
+
 
 # noinspection PyClassHasNoInit
 class Criterion(models.Model):
-
-    class Meta:
-        db_table = 'criteria'
 
     id = models.AutoField(primary_key=True)
     description = models.TextField()
@@ -127,25 +124,24 @@ class Criterion(models.Model):
     def __str__(self):
         return self.description
 
+    class Meta:
+        db_table = 'criteria'
+
 
 # noinspection PyClassHasNoInit
 class PeerReview(models.Model):
-
-    class Meta:
-        db_table = 'peer_reviews'
-        unique_together = (('student', 'submission'),)
 
     id = models.AutoField(primary_key=True)
     student = models.ForeignKey(CanvasStudent, models.DO_NOTHING, related_name='peer_reviews_for_student')
     submission = models.ForeignKey(CanvasSubmission, models.DO_NOTHING, related_name='peer_reviews_for_submission')
 
+    class Meta:
+        db_table = 'peer_reviews'
+        unique_together = (('student', 'submission'),)
+
 
 # noinspection PyClassHasNoInit
 class PeerReviewComment(models.Model):
-
-    class Meta:
-        db_table = 'peer_review_comments'
-        unique_together = (('criterion', 'peer_review'),)
 
     id = models.AutoField(primary_key=True)
     criterion = models.ForeignKey(Criterion, models.DO_NOTHING)
@@ -153,14 +149,18 @@ class PeerReviewComment(models.Model):
     comment = models.TextField()
     commented_at_utc = models.DateTimeField(blank=True, null=True)
 
+    class Meta:
+        db_table = 'peer_review_comments'
+        unique_together = (('criterion', 'peer_review'),)
+
 
 # noinspection PyClassHasNoInit
 class PeerReviewDistribution(models.Model):
-
-    class Meta:
-        db_table = 'peer_review_distributions'
 
     id = models.AutoField(primary_key=True)
     rubric = models.OneToOneField(Rubric, models.DO_NOTHING, related_name='peer_review_distribution')
     is_distribution_complete = models.BooleanField(default=False)
     distributed_at_utc = models.DateTimeField(blank=True, null=True)
+
+    class Meta:
+        db_table = 'peer_review_distributions'
