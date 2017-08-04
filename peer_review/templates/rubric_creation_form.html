@@ -105,6 +105,11 @@
                             supporting-text="slot">
                         <div slot="supporting-text">
                             <div class="mdl-card__supporting-text">
+                                <mdl-switch v-model="distributePeerReviewsForSections">
+                                    Distribute peer reviews only to students in the same section
+                                </mdl-switch>
+                            </div>
+                            <div class="mdl-card__supporting-text">
                                 <mdl-switch v-model="peerReviewOpenDateIsPromptDueDate">
                                     Use the writing prompt's due date as the peer review open date
                                 </mdl-switch>

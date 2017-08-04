@@ -101,6 +101,7 @@
             rubricDescription: null,
             criteria: [{id: _.uniqueId('criterion'), description: ''}],
             submissionInProgress: false,
+            distributePeerReviewsForSections: true,
             selectedPeerReviewOpenDate: null,
             peerReviewOpenDateIsPromptDueDate: true,
             peerReviewOpenHourChoices: _.map(_.range(1, 13), function(i) { return i.toString(); }),
@@ -264,7 +265,8 @@
                         description: _.trim(this.rubricDescription) || null,
                         criteria: _.map(this.criteria, function(c) { return _.trim(c.description) || null; }),
                         peerReviewOpenDateIsPromptDueDate: this.peerReviewOpenDateIsPromptDueDate,
-                        peerReviewOpenDate: moment(this.peerReviewOpenDate).utc().format()
+                        peerReviewOpenDate: moment(this.peerReviewOpenDate).utc().format(),
+                        distributePeerReviewsForSections: this.distributePeerReviewsForSections
                     };
 
                     this.submissionInProgress = true;
