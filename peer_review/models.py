@@ -42,7 +42,7 @@ class CanvasAssignment(models.Model):
 class CanvasStudent(models.Model):
 
     id = models.IntegerField(primary_key=True)
-    sections = models.ManyToManyField(CanvasSection, blank=True)
+    sections = models.ManyToManyField(CanvasSection, blank=True, related_name='students')
     full_name = models.TextField()
     sortable_name = models.TextField()
     username = models.TextField()

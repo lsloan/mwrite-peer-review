@@ -1,14 +1,22 @@
 import logging
+from functools import partial
 from collections import OrderedDict
 
 from toolz.itertoolz import unique
+from toolz.dicttoolz import merge_with
 
 from django.db import transaction
 
 from peer_review.etl import persist_students, persist_sections, persist_submissions
-from peer_review.models import CanvasAssignment
+from peer_review.models import CanvasAssignment, PeerReview
 
 log = logging.getLogger(__name__)
+
+
+def _throw_on_duplicates(section, vals):
+    msg = 'Duplicate students found when distributing for section %d' % section.id
+    log.error(msg)
+    raise RuntimeError(msg)
 
 
 def make_distribution(students, submissions, n=3):
@@ -18,6 +26,7 @@ def make_distribution(students, submissions, n=3):
     review_count_by_submission = {submission.id: 0 for submission in submissions}
 
     for student in students:
+        # TODO careful... this may not terminate. probably an issue when len(students) < n
         while len(submissions_to_review_by_student[student.id]) < n:
             review_count_by_submission = OrderedDict(sorted(review_count_by_submission.items(), key=lambda t: t[1]))
             for submission_id, _ in review_count_by_submission.items():
@@ -30,8 +39,29 @@ def make_distribution(students, submissions, n=3):
     return submissions_to_review_by_student, review_count_by_submission
 
 
-def distribute_reviews(prompt_id):
-    log.info('would have distributed reviews for %d' % prompt_id)
+def distribute_reviews(rubric):
+    log.info('Beginning review distribution for rubric %d' % rubric.id)
+
+    if rubric.distribute_peer_reviews_for_sections:
+        log.info('Submissions for prompt %d will be distributed only within sections' % rubric.prompt.id)
+        reviews = {}
+        for section in rubric.sections:
+            log.info('Distributing reviews for section %d' % section.id)
+            submissions = rubric.reviewed_assignment.canvas_submission_set.filter(sections__in=[section])
+            students = submissions.values('author')
+            reviews_for_section, _ = make_distribution(students, submissions)
+            reviews = merge_with(partial(_throw_on_duplicates, section), reviews, reviews_for_section)
+    else:
+        log.info('Submissions for prompt %d will be distributed across all sections' % rubric.prompt.id)
+        submissions = rubric.reviewed_assignment.canvas_submission_set
+        students = submissions.values('author')
+        reviews, _ = make_distribution(students, submissions)
+
+    peer_reviews = [PeerReview(student_id=student_id, submission_id=submission_id)
+                    for student_id, submission_ids in reviews.items()
+                    for submission_id in submission_ids]
+    log.info('Persisting %d peer reviews pairings for rubric %d' % (len(peer_reviews), rubric.id))
+    PeerReview.objects.bulk_create(peer_reviews)
 
 
 # TODO think about how multiple instances may react to each other trying to do this -- wrap in transactions, locks, etc.
@@ -66,8 +96,9 @@ def review_distribution_task(utc_timestamp):
 
                     log.debug('Distributing for prompt %d for review...' % prompt.id)
                     with transaction.atomic():
-                        distribute_reviews(prompt.id)
-                        distribution = prompt.rubric_for_prompt.peer_review_distribution
+                        rubric = prompt.rubric_for_prompt
+                        distribute_reviews(rubric)
+                        distribution = rubric.peer_review_distribution
                         distribution.is_distribution_complete = True
                         distribution.distributed_at_utc = utc_timestamp  # TODO correct?
                         distribution.save()
