@@ -13,7 +13,7 @@ class CanvasCourse(models.Model):
 class CanvasSection(models.Model):
 
     id = models.IntegerField(primary_key=True)
-    course = models.ForeignKey(CanvasCourse, on_delete=models.CASCADE)
+    course = models.ForeignKey(CanvasCourse, on_delete=models.CASCADE, related_name='sections')
     name = models.TextField()
 
     class Meta:
