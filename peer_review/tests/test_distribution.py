@@ -1,4 +1,5 @@
 import string
+from functools import partial
 from statistics import mean, stdev
 
 from hypothesis import given
@@ -40,27 +41,29 @@ def db_id():
 def name():
     return text(alphabet=alphabet, min_size=3, max_size=15)
 
+_c = CanvasCourse(id=2000, name='foobar test course')
+_c.save()
+
+
+def canvas_section(course):
+    return models(CanvasSection, id=db_id(), name=name(), course=just(course))
+
+
+def _add_section_to_student(section, student):
+    student.sections.add(section)
+    return just(student)
+
+
+def canvas_student(section):
+    return models(CanvasStudent,
+                  id=db_id(),
+                  username=name(),
+                  full_name=name(),
+                  sortable_name=name())\
+        .flatmap(partial(_add_section_to_student, section))
+
 
 def generate_students_for_section(section):
-    return lists(models(CanvasStudent,
-                        id=db_id(),
-                        full_name=name(),
-                        sortable_name=name(),
-                        username=name()),
-                 min_size=4,
-                 max_size=2000) \
-        .map(lambda ss: list(map(lambda s: s.sections.add(section), ss)))
+    return lists(canvas_student(section), min_size=4, max_size=30).map(lambda _: section)
 
-
-def make_section_with_students(course):
-    return models(CanvasSection,
-                  id=db_id(),
-                  name=name(),
-                  course=just(course)) \
-        .flatmap(generate_students_for_section)
-
-
-def generate_sections_for_course(course):
-    return lists(make_section_with_students(course), min_size=1, max_size=10).map(lambda _: course)
-
-complete_course = models(CanvasCourse, id=db_id(), name=name()).flatmap(generate_sections_for_course)
+complete_section = canvas_section(_c).flatmap(generate_students_for_section)
