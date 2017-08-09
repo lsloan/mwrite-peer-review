@@ -131,4 +131,10 @@ def generate_sections_for_course(course):
 def canvas_course():
     return models(CanvasCourse, id=db_id(), name=name())
 
-complete_course = canvas_course().flatmap(generate_sections_for_course)
+
+@composite
+def complete_course(draw):
+    _course_with_sections_and_students_strategy = canvas_course().flatmap(generate_sections_for_course)
+    _course = draw(_course_with_sections_and_students_strategy)
+    draw(complete_rubric(_course))
+    return _course
