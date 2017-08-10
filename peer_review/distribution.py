@@ -1,4 +1,5 @@
 import logging
+from datetime import datetime
 from functools import partial
 from collections import OrderedDict
 
@@ -40,12 +41,20 @@ def make_distribution(students, submissions, n=3):
 
 
 def distribute_reviews(rubric):
+
+    # TODO need this safety check?
+    rubric_tz = rubric.peer_review_open_date.tzinfo
+    if rubric.peer_review_open_date > datetime.now(rubric_tz):
+        args = (rubric.id, rubric.peer_review_open_date)
+        log.error('Tried to distribute peer reviews before rubric %d\'s peer review open date (which is %s)' % args)
+        return
+
     log.info('Beginning review distribution for rubric %d' % rubric.id)
 
     if rubric.distribute_peer_reviews_for_sections:
-        log.info('Submissions for prompt %d will be distributed only within sections' % rubric.prompt.id)
+        log.info('Submissions for prompt %d will be distributed only within sections' % rubric.reviewed_assignment.id)
         reviews = {}
-        for section in rubric.sections:
+        for section in rubric.sections.all():
             log.info('Distributing reviews for section %d' % section.id)
             submissions = rubric.reviewed_assignment.canvas_submission_set.filter(sections__in=[section])
             students = submissions.values('author')

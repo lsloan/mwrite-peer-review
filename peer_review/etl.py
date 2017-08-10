@@ -117,8 +117,8 @@ def _convert_section(section):
     return CanvasSection(id=section['id'], name=section['name'], course_id=section['course_id'])
 
 
-def persist_sections(course):
-    raw_sections = retrieve('sections', course.id)
+def persist_sections(course_id):
+    raw_sections = retrieve('sections', course_id)
     sections = list(map(_convert_section, raw_sections))
     with transaction.atomic():
         for section in sections:
