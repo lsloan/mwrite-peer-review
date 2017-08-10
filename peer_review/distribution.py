@@ -32,11 +32,11 @@ def make_distribution(students, submissions, n=3):
     return submissions_to_review_by_student, review_count_by_submission
 
 
-def distribute_reviews(rubric):
+def distribute_reviews(rubric, force_distribution=False):
 
     # TODO need this safety check?
     rubric_tz = rubric.peer_review_open_date.tzinfo
-    if rubric.peer_review_open_date > datetime.now(rubric_tz):
+    if rubric.peer_review_open_date > datetime.now(rubric_tz) and not force_distribution:
         args = (rubric.id, rubric.peer_review_open_date)
         log.error('Tried to distribute peer reviews before rubric %d\'s peer review open date (which is %s)' % args)
         return
