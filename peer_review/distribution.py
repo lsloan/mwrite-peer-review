@@ -90,10 +90,10 @@ def review_distribution_task(utc_timestamp):
             courses = unique(map(lambda a: a.course, prompts_for_distribution))
             for course in courses:
                 log.info('Persisting sections for course %d' % course.id)
-                persist_sections(course)
+                persist_sections(course.id)
 
                 log.info('Persisting students for course %d' % course.id)
-                persist_students(course)
+                persist_students(course.id)
 
             for prompt in prompts_for_distribution:
                 log.info('Distributing reviews for prompt %d...' % prompt.id)

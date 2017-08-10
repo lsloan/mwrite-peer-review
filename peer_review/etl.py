@@ -132,8 +132,8 @@ def _convert_student(raw_student):
                          sortable_name=raw_student['sortable_name'])
 
 
-def persist_students(course):
-    raw_students = retrieve('students', course.id)
+def persist_students(course_id):
+    raw_students = retrieve('students', course_id)
     enrollments_by_student_id = {s['id']: s['enrollments'] for s in raw_students}
     students = list(map(_convert_student, raw_students))
 
