@@ -1,23 +1,15 @@
 import logging
 from datetime import datetime
-from functools import partial
 from collections import OrderedDict
 
 from toolz.itertoolz import unique
-from toolz.dicttoolz import merge_with
 
 from django.db import transaction
 
 from peer_review.etl import persist_students, persist_sections, persist_submissions
-from peer_review.models import CanvasAssignment, PeerReview
+from peer_review.models import CanvasStudent, CanvasAssignment, PeerReview
 
 log = logging.getLogger(__name__)
-
-
-def _throw_on_duplicates(section, vals):
-    msg = 'Duplicate students found when distributing for section %d' % section.id
-    log.error(msg)
-    raise RuntimeError(msg)
 
 
 def make_distribution(students, submissions, n=3):
@@ -56,10 +48,18 @@ def distribute_reviews(rubric):
         reviews = {}
         for section in rubric.sections.all():
             log.info('Distributing reviews for section %d' % section.id)
-            submissions = rubric.reviewed_assignment.canvas_submission_set.filter(sections__in=[section])
-            students = submissions.values('author')
+            submissions = rubric.reviewed_assignment.canvas_submission_set.filter(author__in=section.students.all())
+            author_ids = submissions.values_list('author', flat=True)
+            students = CanvasStudent.objects.filter(id__in=author_ids)
             reviews_for_section, _ = make_distribution(students, submissions)
-            reviews = merge_with(partial(_throw_on_duplicates, section), reviews, reviews_for_section)
+
+            for student_id in reviews_for_section.keys():
+                if student_id in reviews:
+                    msg = 'Duplicate students found when distributing for section %d' % section.id
+                    log.error(msg)
+                    raise RuntimeError(msg)
+
+            reviews.update(reviews_for_section)
     else:
         log.info('Submissions for prompt %d will be distributed across all sections' % rubric.prompt.id)
         submissions = rubric.reviewed_assignment.canvas_submission_set
