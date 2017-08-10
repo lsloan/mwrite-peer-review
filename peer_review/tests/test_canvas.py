@@ -33,6 +33,18 @@ def create_test_user(account_id, index, email_base, password_base):
     return create('users', account_id, data=test_user_details)
 
 
+def enroll_test_user_in_section(course_id, user_id, section_id):
+    enrollment_details = {
+        'enrollment': {
+            'user_id': user_id,
+            'type': 'StudentEnrollment',
+            'enrollment_state': 'active',
+            'course_section_id': section_id
+        }
+    }
+    return create('enrollments', course_id, data=enrollment_details)
+
+
 def delete_all_assignments(course_id):
     assignments = retrieve('assignments', course_id)
     for assignment in assignments:

@@ -16,6 +16,7 @@ _routes = {
     'account':              {'route': 'accounts/%s'},
     'sub_accounts':         {'route': 'accounts/%s/sub_accounts'},
     'users':                {'route': 'accounts/%s/users'},
+    'enrollments':          {'route': 'courses/%s/enrollments'},
 
     'course':               {'route': 'courses/%s'},
     'assignments':          {'route': 'courses/%s/assignments'},
