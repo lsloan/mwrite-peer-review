@@ -12,6 +12,11 @@ _page_regex = re.compile('<(?P<page_url>.*)>.*rel="(?P<page_key>.*)"')
 
 # TODO would be nice to have a mechanism for declaring with HTTP verbs each resource supports
 _routes = {
+    'accounts':             {'route': 'course_accounts'},
+    'account':              {'route': 'accounts/%s'},
+    'sub_accounts':         {'route': 'accounts/%s/sub_accounts'},
+    'users':                {'route': 'accounts/%s/users'},
+
     'course':               {'route': 'courses/%s'},
     'assignments':          {'route': 'courses/%s/assignments'},
     'assignment':           {'route': 'courses/%s/assignments/%s'},

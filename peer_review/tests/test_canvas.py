@@ -7,6 +7,32 @@ from peer_review.models import Criterion, Rubric
 from peer_review.canvas import retrieve, create, delete, submit_file
 
 
+def make_test_user_details(index, email_base, password_base):
+    email = email_base % index
+    return {
+        'user': {
+            'name': 'MWrite Test User %d' % index,
+            'short_name': 'MWrite %d' % index,
+            'sortable_name': '%d, MWrite Test User' % index,
+            'skip_registration': True
+        },
+        'pseudonym': {
+            'unique_id': email,
+            'password': password_base % index,
+            'send_confirmation': False
+        },
+        'communication_channel': {
+            'type': 'email',
+            'address': email
+        }
+    }
+
+
+def create_test_user(account_id, index, email_base, password_base):
+    test_user_details = make_test_user_details(index, email_base, password_base)
+    return create('users', account_id, data=test_user_details)
+
+
 def delete_all_assignments(course_id):
     assignments = retrieve('assignments', course_id)
     for assignment in assignments:
