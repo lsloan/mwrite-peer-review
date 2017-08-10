@@ -3,7 +3,7 @@ from functools import partial
 from datetime import datetime
 from statistics import mean, stdev
 
-from hypothesis import given
+from hypothesis import given, assume
 from hypothesis.extra.django.models import models
 from hypothesis.strategies import composite, sets, integers, lists, just, text
 from dateutil.relativedelta import relativedelta
@@ -33,6 +33,9 @@ def test_make_distribution(sns, n):
     s = stdev(counts.values(), m)
     assert s < 0.25
 
+# IMPORTANT everything below is broken / useless. Hypothesis seems very much built to assume that strategies are
+# idempotent and Django model creation is anything but
+
 alphabet = string.ascii_lowercase + string.ascii_uppercase
 
 
@@ -46,10 +49,13 @@ def name():
 
 @composite
 def canvas_assignment(draw, course_strategy, due_date_utc_strategy, is_peer_review_assignment_strategy):
+    _id = draw(db_id())
+    assume(not CanvasAssignment.objects.filter(id=_id).exists())
+
     _course = draw(course_strategy)
     _due_date_utc = draw(due_date_utc_strategy)
     _is_peer_review_assignment = draw(is_peer_review_assignment_strategy)
-    _id = draw(db_id())
+
     _title = draw(name())
     assignment = CanvasAssignment(id=_id,
                                   title=_title,
@@ -68,12 +74,15 @@ def _add_sections_to_rubric(sections, _rubric):
 
 @composite
 def rubric(draw, prompt_strategy, peer_review_strategy, sections):
-    _peer_review = draw(peer_review_strategy)
-    _rubric = Rubric(id=draw(db_id()),
+    _id = draw(db_id())
+    assume(not Rubric.objects.filter(id=_id).exists())
+
+    _prompt = draw(prompt_strategy)
+    _rubric = Rubric(id=_id,
                      description=draw(name()),
-                     reviewed_assignment=draw(prompt_strategy),
-                     passback_assignment=_peer_review,
-                     peer_review_open_date=_peer_review.due_date_utc,
+                     reviewed_assignment=_prompt,
+                     passback_assignment=draw(peer_review_strategy),
+                     peer_review_open_date=_prompt.due_date_utc,
                      distribute_peer_reviews_for_sections=True)
     _rubric.save()
     for section in sections:
