@@ -36,10 +36,15 @@ def distribute_reviews(rubric, utc_timestamp, force_distribution=False):
 
     # TODO need this safety check?
     rubric_tz = rubric.peer_review_open_date.tzinfo
-    if rubric.peer_review_open_date > datetime.now(rubric_tz) and not force_distribution:
+    if rubric.peer_review_open_date > datetime.now(rubric_tz):
         args = (rubric.id, rubric.peer_review_open_date)
-        log.error('Tried to distribute peer reviews before rubric %d\'s peer review open date (which is %s)' % args)
-        return
+        msg = 'peer reviews before rubric %d\'s peer review open date (which is %s)' % args
+        if not force_distribution:
+            msg = 'Tried to distribute %s' % msg
+            log.error(msg)
+            raise RuntimeError(msg)
+        else:
+            log.warning('Forcing distribution of %s' % msg)
 
     log.info('Beginning review distribution for rubric %d' % rubric.id)
 
