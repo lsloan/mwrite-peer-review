@@ -77,15 +77,14 @@ def distribute_reviews(rubric, utc_timestamp, force_distribution=False):
                                           distributed_at_utc=utc_timestamp)
 
 
-# TODO think about how multiple instances may react to each other trying to do this -- wrap in transactions, locks, etc.
+# TODO this isn't concurrency safe.  we're going to get around this for now by just using a single instance per course
 def review_distribution_task(utc_timestamp):
     log.info('Starting review distribution at %s' % utc_timestamp.isoformat())
 
     try:
-        # TODO remove assignments with no due date
         prompts_for_distribution = CanvasAssignment.objects.filter(
             rubric_for_prompt__peer_review_distribution=None,
-            rubric_for_prompt__reviewed_assignment__due_date_utc__lt=utc_timestamp   # TODO not sure if correct...
+            rubric_for_prompt__peer_review_open_date__lt=utc_timestamp
         )
 
         if not prompts_for_distribution:
