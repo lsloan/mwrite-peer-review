@@ -7,7 +7,7 @@ from toolz.itertoolz import unique
 from django.db import transaction
 
 from peer_review.etl import persist_students, persist_sections, persist_submissions
-from peer_review.models import CanvasStudent, CanvasAssignment, PeerReview
+from peer_review.models import CanvasStudent, CanvasAssignment, PeerReview, PeerReviewDistribution
 
 log = logging.getLogger(__name__)
 
@@ -32,7 +32,7 @@ def make_distribution(students, submissions, n=3):
     return submissions_to_review_by_student, review_count_by_submission
 
 
-def distribute_reviews(rubric, force_distribution=False):
+def distribute_reviews(rubric, utc_timestamp, force_distribution=False):
 
     # TODO need this safety check?
     rubric_tz = rubric.peer_review_open_date.tzinfo
@@ -72,6 +72,10 @@ def distribute_reviews(rubric, force_distribution=False):
     log.info('Persisting %d peer reviews pairings for rubric %d' % (len(peer_reviews), rubric.id))
     PeerReview.objects.bulk_create(peer_reviews)
 
+    PeerReviewDistribution.objects.create(rubric=rubric,
+                                          is_distribution_complete=True,
+                                          distributed_at_utc=utc_timestamp)
+
 
 # TODO think about how multiple instances may react to each other trying to do this -- wrap in transactions, locks, etc.
 def review_distribution_task(utc_timestamp):
@@ -81,7 +85,7 @@ def review_distribution_task(utc_timestamp):
         # TODO remove assignments with no due date
         prompts_for_distribution = CanvasAssignment.objects.filter(
             rubric_for_prompt__peer_review_distribution=None,
-            rubric_for_prompt__reviewed_assignment__due_date_utc__lt=utc_timestamp
+            rubric_for_prompt__reviewed_assignment__due_date_utc__lt=utc_timestamp   # TODO not sure if correct...
         )
 
         if not prompts_for_distribution:
@@ -105,12 +109,7 @@ def review_distribution_task(utc_timestamp):
 
                     log.debug('Distributing for prompt %d for review...' % prompt.id)
                     with transaction.atomic():
-                        rubric = prompt.rubric_for_prompt
-                        distribute_reviews(rubric)
-                        distribution = rubric.peer_review_distribution
-                        distribution.is_distribution_complete = True
-                        distribution.distributed_at_utc = utc_timestamp  # TODO correct?
-                        distribution.save()
+                        distribute_reviews(prompt.rubric_for_prompt, utc_timestamp)
                     log.debug('Finished review distribution for prompt %d' % prompt.id)
 
                 except Exception as ex:
