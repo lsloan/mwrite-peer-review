@@ -2,6 +2,7 @@ import os
 import shutil
 import logging
 import requests
+from toolz.dicttoolz import dissoc
 from toolz.functoolz import thread_last
 from toolz.itertoolz import unique, remove
 from django.db import transaction
@@ -117,8 +118,8 @@ def _convert_section(section):
     return CanvasSection(id=section['id'], name=section['name'], course_id=section['course_id'])
 
 
-def persist_sections(course):
-    raw_sections = retrieve('sections', course.id)
+def persist_sections(course_id):
+    raw_sections = retrieve('sections', course_id)
     sections = list(map(_convert_section, raw_sections))
     with transaction.atomic():
         for section in sections:
@@ -132,8 +133,8 @@ def _convert_student(raw_student):
                          sortable_name=raw_student['sortable_name'])
 
 
-def persist_students(course):
-    raw_students = retrieve('students', course.id)
+def persist_students(course_id):
+    raw_students = retrieve('students', course_id)
     enrollments_by_student_id = {s['id']: s['enrollments'] for s in raw_students}
     students = list(map(_convert_student, raw_students))
 
@@ -167,10 +168,12 @@ def _download_multiple_attachments(destination, submission):
 
 
 def _convert_submission(raw_submission, filename):
-    return CanvasSubmission(id=raw_submission['id'],
-                            author_id=raw_submission['user_id'],
-                            assignment_id=raw_submission['assignment_id'],
-                            filename=filename)
+    return {
+        'id': raw_submission['id'],
+        'author_id': raw_submission['user_id'],
+        'assignment_id': raw_submission['assignment_id'],
+        'filename': filename
+    }
 
 
 def _download_submission(raw_submission):
@@ -189,5 +192,5 @@ def persist_submissions(assignment):
                 (remove, lambda s: s['workflow_state'] == 'unsubmitted'),
                 (remove, lambda s: s.get('attachments') is None),
                 (map, lambda s: _download_submission(s)),
-                list,
-                CanvasSubmission.objects.bulk_create)
+                (map, lambda s: CanvasSubmission.objects.update_or_create(id=s['id'], defaults=dissoc(s, 'id'))),
+                list)

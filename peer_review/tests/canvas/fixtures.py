@@ -2,9 +2,47 @@ import json
 from io import StringIO
 from datetime import datetime, timedelta
 from django.db import transaction
-from peer_review.etl import persist_course, persist_assignments
-from peer_review.models import Criterion, Rubric
+from peer_review.etl import persist_course, persist_assignments, persist_sections
+from peer_review.models import Criterion, Rubric, CanvasSection
 from peer_review.canvas import retrieve, create, delete, submit_file
+
+
+def make_test_user_details(index, email_base, password_base):
+    email = email_base % index
+    return {
+        'user': {
+            'name': 'MWrite Test User %d' % index,
+            'short_name': 'MWrite %d' % index,
+            'sortable_name': '%d, MWrite Test User' % index,
+            'skip_registration': True
+        },
+        'pseudonym': {
+            'unique_id': email,
+            'password': password_base % index,
+            'send_confirmation': False
+        },
+        'communication_channel': {
+            'type': 'email',
+            'address': email
+        }
+    }
+
+
+def create_test_user(account_id, index, email_base, password_base):
+    test_user_details = make_test_user_details(index, email_base, password_base)
+    return create('users', account_id, data=test_user_details)
+
+
+def enroll_test_user_in_section(course_id, user_id, section_id):
+    enrollment_details = {
+        'enrollment': {
+            'user_id': user_id,
+            'type': 'StudentEnrollment',
+            'enrollment_state': 'active',
+            'course_section_id': section_id
+        }
+    }
+    return create('enrollments', course_id, data=enrollment_details)
 
 
 def delete_all_assignments(course_id):
@@ -40,25 +78,33 @@ def create_test_assignments(course_id, num_pairs=1):
         peer_review_template['name'] = 'Test Peer Review %s' % i
         created_peer_review = create('assignments', course_id, data={'assignment': peer_review_template})
 
-        pairings.append((created_assignment['id'], created_peer_review['id']))
+        pairings.append((created_assignment, created_peer_review))
 
     return pairings
 
 
-def create_test_rubrics(course_id, pairings, num_criteria=3):
+def create_test_rubrics(course_id, pairings, section_ids, num_criteria=3):
     persist_assignments(course_id)
+    rubrics = []
     for i, pairing in enumerate(pairings, 1):
-        prompt_id, peer_review_id = pairing
+        prompt, peer_review = pairing
         with transaction.atomic():
             rubric, _ = Rubric.objects.get_or_create(defaults={
                 'description': 'This is test rubric #%d.' % i,
-                'reviewed_assignment_id': prompt_id,
-                'passback_assignment_id': peer_review_id
+                'reviewed_assignment_id': prompt['id'],
+                'passback_assignment_id': peer_review['id'],
+                'peer_review_open_date': prompt['due_at'],
+                'distribute_peer_reviews_for_sections': True
             })
+            for section_id in section_ids:
+                section = CanvasSection.objects.get(id=section_id)
+                rubric.sections.add(section)
             criteria = [Criterion(description='This is test criterion %d for test rubric %d.' % (j, i),
                                   rubric=rubric)
                         for j in range(1, num_criteria+1)]
             Criterion.objects.bulk_create(criteria)
+            rubrics.append(rubric)
+    return rubrics
 
 
 def submit_for_assignments(course_id, assignments, users):
@@ -70,14 +116,16 @@ def submit_for_assignments(course_id, assignments, users):
             submit_file(user['token'], course_id, assignment['id'], filename, contents)
 
 
-def test_flow(course_id):
+def canvas_integration_course(course_id, section_ids):
     delete_all_assignments(course_id)
     pairings = create_test_assignments(course_id)
     persist_course(course_id)
+    persist_sections(course_id)
     persist_assignments(course_id)
-    create_test_rubrics(course_id, pairings)
+    rubrics = create_test_rubrics(course_id, pairings, section_ids)
     with open('config/local/test_users.json') as test_users_file:
         users = json.loads(test_users_file.read())
 
-    # TODO fix this -- can't do all because of peer review assignments
-    submit_for_assignments(course_id, retrieve('assignments', course_id), users)
+    prompts = list(map(lambda p: retrieve('assignment', course_id, p[0]['id']), pairings))
+    submit_for_assignments(course_id, prompts, users)
+    return rubrics

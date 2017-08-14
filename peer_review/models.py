@@ -13,7 +13,7 @@ class CanvasCourse(models.Model):
 class CanvasSection(models.Model):
 
     id = models.IntegerField(primary_key=True)
-    course = models.ForeignKey(CanvasCourse, on_delete=models.CASCADE)
+    course = models.ForeignKey(CanvasCourse, on_delete=models.CASCADE, related_name='sections')
     name = models.TextField()
 
     class Meta:
@@ -42,7 +42,7 @@ class CanvasAssignment(models.Model):
 class CanvasStudent(models.Model):
 
     id = models.IntegerField(primary_key=True)
-    sections = models.ManyToManyField(CanvasSection, blank=True)
+    sections = models.ManyToManyField(CanvasSection, blank=True, related_name='students')
     full_name = models.TextField()
     sortable_name = models.TextField()
     username = models.TextField()
@@ -105,6 +105,8 @@ class Rubric(models.Model):
     revision_fetch_complete = models.BooleanField(default=False)
     peer_review_open_date_is_prompt_due_date = models.BooleanField(default=True)
     peer_review_open_date = models.DateTimeField(blank=True, null=True)
+    distribute_peer_reviews_for_sections = models.BooleanField(default=False)
+    sections = models.ManyToManyField(CanvasSection, blank=True)
 
     @property
     def num_criteria(self):
