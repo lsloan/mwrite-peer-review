@@ -44,8 +44,13 @@ class LtiBackend(ModelBackend):
             role = 'student'
         return role
 
-    def authenticate(self, request, lti_launch_request):
+    def authenticate(self, request, lti_launch_request, url_course_id):
         validator = LtiRequestValidator()
+        if url_course_id != lti_launch_request.launch_params['custom_canvas_course_id']:
+            logger.warning('Tried to launch for course %d but LTI params specify course %d' %
+                           (url_course_id, lti_launch_request.launch_params['custom_canvas_course_id']))
+            logger.debug('LTI launch params: %s' % lti_launch_request.to_params())
+            raise PermissionDenied
         if not lti_launch_request.is_valid_request(validator):
             logger.warning(
                 ('LTI launch request is invalid (oauth_consumer_key: "%s")' %

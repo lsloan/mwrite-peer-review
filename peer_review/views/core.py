@@ -23,7 +23,7 @@ from toolz.itertoolz import unique
 
 from peer_review.etl import persist_assignments, AssignmentValidation
 from peer_review.models import Rubric, Criterion, CanvasAssignment, PeerReviewDistribution, CanvasSubmission, \
-    PeerReview, PeerReviewComment, CanvasStudent
+    PeerReview, PeerReviewComment, CanvasStudent, CanvasCourse
 from peer_review.util import parse_json_body, some
 
 logger = logging.getLogger(__name__)
@@ -39,13 +39,20 @@ class IndexView(HasRoleMixin, View):
 
     # noinspection PyMethodMayBeStatic
     def get(self, request, *args, **kwargs):
+        course_id = int(self.request.session['lti_launch_params']['custom_canvas_course_id'])
+        course_title = self.request.session['lti_launch_params']['context_title']
+
+        CanvasCourse.objects.update_or_create(id=course_id, name=course_title)
+
+        url_pattern = '/course/%d/dashboard/%s'
         if has_role(request.user, 'instructor'):
-            response = redirect('/dashboard/instructor')
+            role = 'instructor'
         elif has_role(request.user, 'student'):
-            response = redirect('/dashboard/student')
+            role = 'student'
         else:
             raise RuntimeError('Unrecognized role for user %s' % request.user)
-        return response
+
+        return redirect(url_pattern % (course_id, role))
 
 
 class RubricCreationFormView(HasRoleMixin, TemplateView):
@@ -265,7 +272,7 @@ class InstructorDashboardView(HasRoleMixin, TemplateView):
         return rubric
 
     def get_context_data(self, **kwargs):
-        course_id = self.request.session['lti_launch_params']['custom_canvas_course_id']
+        course_id = int(self.request.session['lti_launch_params']['custom_canvas_course_id'])
         fetched_assignments = {a.id: a for a in persist_assignments(course_id)}
         peer_review_assignments = CanvasAssignment.objects.filter(id__in=fetched_assignments.keys(),
                                                                   is_peer_review_assignment=True) \
