@@ -11,8 +11,8 @@ def not_found(request):
     raise Http404
 
 urlpatterns = [
-    url(r'^course/(?P<course_id>[0-9]+)', include([
-        url(r'^$', IndexView.as_view()),
+    url(r'^$', IndexView.as_view()),
+    url(r'^course/(?P<course_id>[0-9]+)/', include([
         url(r'^favicon.ico$', not_found),
         url(r'^launch$', djangolti.views.LaunchView.as_view(), name='launch'),
         url(r'^dashboard/instructor$', InstructorDashboardView.as_view()),

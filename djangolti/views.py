@@ -53,7 +53,7 @@ class LaunchView(View):
                        'Must login by connecting from course site')
         return render(request, 'djangolti/index.html', status=400)
 
-    def post(self, request):
+    def post(self, request, **kwargs):
         if request.user.is_authenticated:
             # end any existing session
             auth.logout(request)
@@ -62,7 +62,8 @@ class LaunchView(View):
             request=request)
 
         user = auth.authenticate(request=request,
-                                 lti_launch_request=launch_request)
+                                 lti_launch_request=launch_request,
+                                 url_course_id=kwargs['course_id'])
 
         if hasattr(settings, 'LTI_APP_REDIRECT'):
             app_redirect = settings.LTI_APP_REDIRECT
