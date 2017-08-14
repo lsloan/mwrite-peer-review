@@ -83,7 +83,7 @@ def distribute_reviews(rubric, utc_timestamp, force_distribution=False):
 
 
 # TODO this isn't concurrency safe.  we're going to get around this for now by just using a single instance per course
-def review_distribution_task(utc_timestamp):
+def review_distribution_task(utc_timestamp, force_distribution=False):
     log.info('Starting review distribution at %s' % utc_timestamp.isoformat())
 
     try:
@@ -113,7 +113,7 @@ def review_distribution_task(utc_timestamp):
 
                     log.info('Distributing for prompt %d for review...' % prompt.id)
                     with transaction.atomic():
-                        distribute_reviews(prompt.rubric_for_prompt, utc_timestamp)
+                        distribute_reviews(prompt.rubric_for_prompt, utc_timestamp, force_distribution)
                     log.info('Finished review distribution for prompt %d' % prompt.id)
 
                 except Exception as ex:
