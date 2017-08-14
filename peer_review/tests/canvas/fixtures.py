@@ -85,6 +85,7 @@ def create_test_assignments(course_id, num_pairs=1):
 
 def create_test_rubrics(course_id, pairings, section_ids, num_criteria=3):
     persist_assignments(course_id)
+    rubrics = []
     for i, pairing in enumerate(pairings, 1):
         prompt, peer_review = pairing
         with transaction.atomic():
@@ -102,7 +103,8 @@ def create_test_rubrics(course_id, pairings, section_ids, num_criteria=3):
                                   rubric=rubric)
                         for j in range(1, num_criteria+1)]
             Criterion.objects.bulk_create(criteria)
-            print('rubric %d created' % rubric.id)
+            rubrics.append(rubric)
+    return rubrics
 
 
 def submit_for_assignments(course_id, assignments, users):
@@ -114,15 +116,16 @@ def submit_for_assignments(course_id, assignments, users):
             submit_file(user['token'], course_id, assignment['id'], filename, contents)
 
 
-def no_test_flow(course_id, section_ids):
+def canvas_integration_course(course_id, section_ids):
     delete_all_assignments(course_id)
     pairings = create_test_assignments(course_id)
     persist_course(course_id)
     persist_sections(course_id)
     persist_assignments(course_id)
-    create_test_rubrics(course_id, pairings, section_ids)
+    rubrics = create_test_rubrics(course_id, pairings, section_ids)
     with open('config/local/test_users.json') as test_users_file:
         users = json.loads(test_users_file.read())
 
     prompts = list(map(lambda p: retrieve('assignment', course_id, p[0]['id']), pairings))
     submit_for_assignments(course_id, prompts, users)
+    return rubrics
