@@ -4,7 +4,7 @@ from django.conf.urls import url, include
 
 import djangolti.views
 from peer_review.views.core import *
-from peer_review.views.special import FixedHttpProxy, LtiProxyView, DebugLtiParamsView, SafariLaunchPopup
+from peer_review.views.special import DebugLtiParamsView, SafariLaunchPopup
 
 
 def not_found(request):
@@ -30,8 +30,6 @@ urlpatterns = [
         url(r'^review/student/(?P<student_id>[0-9]+)/rubric/(?P<rubric_id>[0-9]+)/download$',
             ReviewsDownload.as_view()),
         url(r'^safari$', SafariLaunchPopup.as_view()),
-        url(r'^(?P<url>health)$', FixedHttpProxy.as_view(base_url=settings.MWRITE_PEER_REVIEW_LEGACY_URL)),
-        url(r'^(?P<url>.*)$', LtiProxyView.as_view(base_url=settings.MWRITE_PEER_REVIEW_LEGACY_URL))
     ]))
 ]
 
