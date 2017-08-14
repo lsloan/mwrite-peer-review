@@ -39,13 +39,15 @@ class IndexView(HasRoleMixin, View):
 
     # noinspection PyMethodMayBeStatic
     def get(self, request, *args, **kwargs):
+        course_id = int(self.request.session['lti_launch_params']['custom_canvas_course_id'])
+        url_pattern = '/course/%d/dashboard/%s'
         if has_role(request.user, 'instructor'):
-            response = redirect('/dashboard/instructor')
+            role = 'instructor'
         elif has_role(request.user, 'student'):
-            response = redirect('/dashboard/student')
+            role = 'student'
         else:
             raise RuntimeError('Unrecognized role for user %s' % request.user)
-        return response
+        return redirect(url_pattern % (course_id, role))
 
 
 class RubricCreationFormView(HasRoleMixin, TemplateView):
