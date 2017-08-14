@@ -40,16 +40,43 @@ def test_distribution_task(canvas_integration_rubrics):
 
     assert test_rubric.peer_review_distribution.is_distribution_complete
 
-    # each submission should have at least one review
+    # each submission should have at least one reviewer
     submissions = CanvasSubmission.objects.filter(
         id__in=test_rubric.reviewed_assignment.canvas_submission_set.values_list('id', flat=True)
     )
     for submission in submissions:
         assert PeerReview.objects.filter(submission_id=submission.id).exists()
 
-    # each student should have at least one review
     authors = CanvasStudent.objects.filter(
         id__in=submissions.values_list('author_id', flat=True)
     )
     for author in authors:
-        assert PeerReview.objects.filter(student_id=author.id).exists()
+        # each student should have at least one review for the prompt
+        submissions_for_prompt = CanvasSubmission.objects.filter(assignment_id=test_rubric.reviewed_assignment)
+        submission_ids_for_prompt = submissions_for_prompt.values_list('id', flat=True)
+        peer_reviews_for_student = PeerReview.objects.filter(
+            student=author,
+            submission_id__in=submission_ids_for_prompt
+        )
+        assert peer_reviews_for_student.exists()
+
+        # each review should be for a distinct submission
+        submission_ids_for_peer_review = peer_reviews_for_student.values_list('submission_id')
+        assert peer_reviews_for_student.count() == submission_ids_for_peer_review.count()
+
+        # students should not be reviewing their own submission
+        own_submission = CanvasSubmission.objects.get(assignment=test_rubric.reviewed_assignment, author=author)
+        assert own_submission.id not in submission_ids_for_peer_review
+
+        # each student should only be reviewing submissions from his/her section
+        author_sections = author.sections.filter(id__in=test_rubric.sections.values_list('id', flat=True))
+        assert len(author_sections) == 1
+        other_section_ids = test_rubric.sections.exclude(id=author_sections[0].id).values_list('id', flat=True)
+        other_section_student_ids = CanvasStudent.objects.filter(sections__id__in=other_section_ids) \
+            .values_list('id', flat=True)
+        submissions_not_to_review = submissions_for_prompt.filter(author_id__in=other_section_student_ids)
+        erroneous_peer_reviews = PeerReview.objects.filter(
+            student=author,
+            submission_id__in=submissions_not_to_review.values_list('id', flat=True)
+        )
+        assert not erroneous_peer_reviews.exists()
