@@ -42,7 +42,7 @@ class CourseIndexView(HasRoleMixin, View):
         course_id = int(self.request.session['lti_launch_params']['custom_canvas_course_id'])
         course_title = self.request.session['lti_launch_params']['context_title']
 
-        CanvasCourse.objects.update_or_create(id=course_id, name=course_title)
+        CanvasCourse.objects.update_or_create(id=course_id, defaults={'name': course_title})
 
         url_pattern = '/course/%d/dashboard/%s'
         if has_role(request.user, 'instructor'):
