@@ -77,6 +77,12 @@ class RubricCreationFormView(HasRoleMixin, TemplateView):
     def get_context_data(self, **kwargs):
         course_id = int(kwargs['course_id'])
         passback_assignment_id = int(kwargs['assignment_id'])
+
+        try:
+            CanvasAssignment.objects.get(id=passback_assignment_id)
+        except CanvasAssignment.DoesNotExist:
+            raise Http404
+
         try:
             existing_rubric = Rubric.objects.get(passback_assignment_id=passback_assignment_id)
         except Rubric.DoesNotExist:
