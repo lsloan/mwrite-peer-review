@@ -26,7 +26,7 @@
     <div id="vue-root">
         <form id="rubric-form"
               @submit.prevent
-              action="/rubric/course/{{ course_id }}/assignment/{{ passback_assignment_id }}"
+              action="/course/{{ course_id }}//rubric/assignment/{{ passback_assignment_id }}"
               data-assignments="{{ potential_prompts_and_rubrics }}"
               data-validation-info="{{ validations }}"
               data-existing-rubric-description="{{ existing_rubric.description }}"
