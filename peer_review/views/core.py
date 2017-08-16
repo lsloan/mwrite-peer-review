@@ -34,7 +34,7 @@ class UnauthorizedView(TemplateView):
 
 
 # TODO needs to handle assignment level launches
-class IndexView(HasRoleMixin, View):
+class CourseIndexView(HasRoleMixin, View):
     allowed_roles = ['instructor', 'student']
 
     # noinspection PyMethodMayBeStatic

@@ -50,7 +50,7 @@ MEDIA_ROOT = os.environ['MWRITE_PEER_REVIEW_SUBMISSIONS_PATH']
 
 # LTI configuration
 LTI_CONSUMER_SECRETS = json.loads(read_file_from_env('MWRITE_PEER_REVIEW_LTI_CREDENTIALS_PATH'))
-LTI_APP_REDIRECT = '/'
+LTI_APP_REDIRECT = os.environ['MWRITE_PEER_REVIEW_LANDING_ROUTE']
 LTI_ENFORCE_SSL = False  # TODO want this to be True in prod; add config for X-Forwarded etc.
 
 # Canvas API configuration
