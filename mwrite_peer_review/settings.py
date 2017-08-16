@@ -68,7 +68,6 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'rolepermissions',
     'djangolti',
-    'httpproxy',
     'peer_review'
 ]
 
