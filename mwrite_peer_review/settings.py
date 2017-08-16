@@ -168,7 +168,8 @@ TIME_OUTPUT_FORMAT = '%b %-d %-I:%M %p'  # if running on Windows, replace - with
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/1.10/howto/static-files/
 
-STATIC_URL = LTI_APP_REDIRECT
+# TODO hacky. separate static files into their own artifact
+STATIC_URL = LTI_APP_REDIRECT if LTI_APP_REDIRECT[-1] == '/' else LTI_APP_REDIRECT + '/'
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
