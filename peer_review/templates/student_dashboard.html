@@ -56,7 +56,7 @@
                                                 </div>
                                             {% else %}
                                                 <a class="mdl-button mdl-button--colored mdl-js-button mdl-js-ripple-effect"
-                                                   href="/review/submission/{{ submission.id }}">
+                                                   href="/course/{{ course_id }}/review/submission/{{ submission.id }}">
                                                     Start Review
                                                 </a>
                                             {% endif %}
@@ -88,7 +88,7 @@
                                     <span>{{ submission.assignment.title }}</span>
                                 </span>
                                 <a class="mdl-list__item-secondary-action mdl-button mdl-button--colored mdl-js-button mdl-js-ripple-effect"
-                                   href="/review/submission/{{ submission.id }}/completed">
+                                   href="/course/{{ course_id }}/review/submission/{{ submission.id }}/completed">
                                     View {{ number_of_reviews }} Review{% if number_of_reviews > 1 %}s{% endif %}
                                 </a>
                             </div>
