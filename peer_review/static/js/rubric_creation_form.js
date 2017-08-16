@@ -95,9 +95,10 @@
                 this.distributePeerReviewsForSections = existingDistributePeerReviewsForSections;
             }
 
-            console.log('mounted');
+            this.courseId = JSON.parse(document.querySelector('#main-container').dataset['courseId']);
         },
         data: {
+            courseId: null,
             assignments: null,
             validations: null,
             reviewIsInProgress: null,
@@ -283,7 +284,7 @@
                             vm.$root.$emit('notification', {
                                 message: 'The rubric was successfully created.  You will be returned to the dashboard.'
                             });
-                            setTimeout(function() { window.location.href = '/'; }, 4000);
+                            setTimeout(function() { window.location.href = '/course/' + vm.courseId; }, 4000);
                         },
                         function() {
                             // TODO be more specific in certain cases e.g. 403 (session probably expired)

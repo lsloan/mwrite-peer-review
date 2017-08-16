@@ -11,9 +11,9 @@
 
 {% block content %}
     <div class="dashboard_links">
-        <a href="/review/students" class="link_for_nav is_students">Students</a>
+        <a href="/course/{{ course_id }}/review/students" class="link_for_nav is_students">Students</a>
         <p class="slash_between">/</p>
-        <a href="/review/student/{{student_id}}" class="link_for_nav student_link" data-student-id={{student_id}}>{{student_name}}</a>
+        <a href="/course/{{ course_id }}/review/student/{{student_id}}" class="link_for_nav student_link" data-student-id={{student_id}}>{{student_name}}</a>
         <p class="slash_between">/</p>
         <p class="text_on_nav" data-rubric-id={{rubric_id}}>{{prompt_title}}</p>
     </div>
@@ -50,7 +50,7 @@
                     <div class="mdl-card__actions mdl-card--border">
                     {% if not review.completed %}
                         <a class='mdl-button mdl-js-button mdl-js-ripple-effect review_link' href="mailto:{{student_email}}">Email {{student_first_name}}</a> 
-                        <a class='mdl-button mdl-js-button mdl-js-ripple-effect review_link' href="/submissions/{{submission.id}}/download">See {{review.student_first_name}}'s submission</a>
+                        <a class='mdl-button mdl-js-button mdl-js-ripple-effect review_link' href="/course/{{ course_id }}/submissions/{{submission.id}}/download">See {{review.student_first_name}}'s submission</a>
                     {% else %}
                         <a class='mdl-button mdl-js-button mdl-js-ripple-effect review_link' href="#">See review</a>
                     {% endif %}
@@ -88,7 +88,7 @@
                     <div class="mdl-card__actions mdl-card--border">
                     {% if not review.received %}
                         <a class='mdl-button mdl-js-button mdl-js-ripple-effect review_link' href="mailto:{{student_email}}">Email {{review.student_first_name}}</a> 
-                        <a class='mdl-button mdl-js-button mdl-js-ripple-effect review_link' href="/submissions/{{submission.id}}/download">See {{student_first_name}}'s submission</a>
+                        <a class='mdl-button mdl-js-button mdl-js-ripple-effect review_link' href="/course/{{ course_id }}/submissions/{{submission.id}}/download">See {{student_first_name}}'s submission</a>
                     {% else %}
                         <a class='mdl-button mdl-js-button mdl-js-ripple-effect review_link' href="#">See review</a>
                     {% endif %}

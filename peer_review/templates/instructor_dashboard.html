@@ -11,7 +11,7 @@
 
 {% block content %}
     <div class="dashboard_links">
-        <a href="/dashboard/instructor" class="link_for_nav is_peer_review">Peer Review</a>
+        <a href="/course/{{ course_id }}/dashboard/instructor" class="link_for_nav is_peer_review">Peer Review</a>
     </div>
     <div class="mdl-grid" data-validations-info="{{ validation_info }}">
         {% for review in reviews %}

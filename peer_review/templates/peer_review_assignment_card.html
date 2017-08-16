@@ -54,7 +54,7 @@
 
     <div class="mdl-card__actions mdl-card--border">
         <a class="mdl-button mdl-button--colored mdl-js-button mdl-js-ripple-effect rubric_link_left"
-           href="/rubric/course/{{ course_id }}/assignment/{{ review.assignment.id }}">
+           href="/course/{{ course_id }}/rubric/assignment/{{ review.assignment.id }}">
             {% if review.assignment.rubric_for_review %}
                 {% if review.assignment.rubric_for_review.peer_review_distribution.is_distribution_complete %}
                     View
@@ -67,7 +67,7 @@
         </a>
         {% if review.assignment.rubric_for_review.peer_review_distribution.is_distribution_complete %}
             <a class="mdl-button mdl-button--colored mdl-js-button mdl-js-ripple-effect review_link"
-               href="/status/rubric/{{ review.assignment.rubric_for_review.id }}/all">
+               href="/course/{{ course_id }}/status/rubric/{{ review.assignment.rubric_for_review.id }}/all">
                 View Reviews
             </a>
         {% endif %}

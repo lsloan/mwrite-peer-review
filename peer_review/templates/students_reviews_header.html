@@ -10,7 +10,7 @@
     <div class="each_review"><a class="each_review_link" href="/review/student/{{student_id}}">Overview</a></div>
     {% for review in reviews %}
         <div class="each_review">
-            <a class="each_review_link" href="/review/student/{{student_id}}/rubric/{{review.rubric_id}}">{{review.title}}</a>
+            <a class="each_review_link" href="/course/{{ course_id }}/review/student/{{student_id}}/rubric/{{review.rubric_id}}">{{review.title}}</a>
         </div>
     {% endfor %}
 </div>

@@ -42,17 +42,24 @@ class CourseIndexView(HasRoleMixin, View):
         course_id = int(self.request.session['lti_launch_params']['custom_canvas_course_id'])
         course_title = self.request.session['lti_launch_params']['context_title']
 
-        CanvasCourse.objects.update_or_create(id=course_id, name=course_title)
+        CanvasCourse.objects.update_or_create(id=course_id, defaults={'name': course_title})
 
-        url_pattern = '/course/%d/dashboard/%s'
+        route_params = [course_id]
+
+        url_pattern = '/course/%s/dashboard/%s'
         if has_role(request.user, 'instructor'):
-            role = 'instructor'
+            assignment_id = self.request.session['lti_launch_params'].get('custom_canvas_assignment_id')
+            if assignment_id and assignment_id.strip():
+                route_params.append(int(assignment_id))
+                url_pattern = '/course/%d/rubric/assignment/%d'
+            else:
+                route_params.append('instructor')
         elif has_role(request.user, 'student'):
-            role = 'student'
+            route_params.append('student')
         else:
             raise RuntimeError('Unrecognized role for user %s' % request.user)
 
-        return redirect(url_pattern % (course_id, role))
+        return redirect(url_pattern % tuple(route_params))
 
 
 class RubricCreationFormView(HasRoleMixin, TemplateView):
@@ -77,6 +84,14 @@ class RubricCreationFormView(HasRoleMixin, TemplateView):
     def get_context_data(self, **kwargs):
         course_id = int(kwargs['course_id'])
         passback_assignment_id = int(kwargs['assignment_id'])
+
+        fetched_assignments = persist_assignments(course_id)
+
+        try:
+            CanvasAssignment.objects.get(id=passback_assignment_id)
+        except CanvasAssignment.DoesNotExist:
+            raise Http404
+
         try:
             existing_rubric = Rubric.objects.get(passback_assignment_id=passback_assignment_id)
         except Rubric.DoesNotExist:
@@ -91,7 +106,6 @@ class RubricCreationFormView(HasRoleMixin, TemplateView):
             review_is_in_progress = False
         existing_prompt = existing_rubric.reviewed_assignment if existing_rubric else None
         existing_revision = existing_rubric.revision_assignment if existing_rubric else None
-        fetched_assignments = persist_assignments(course_id)
         assignments = list(self._get_unclaimed_assignments(course_id))
         if existing_prompt:
             assignments.insert(0, existing_prompt)
