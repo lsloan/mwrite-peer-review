@@ -575,13 +575,13 @@ class OverviewForAStudent(HasRoleMixin, TemplateView):
             submission = rubric.reviewed_assignment.canvas_submission_set.get(author__id=student_id)
 
             total_completed = CanvasSubmission.total_completed_by_a_student.__get__(submission)
-            peer_reviews_completed = CanvasSubmission.num_comments_each_review_per_studetn.__get__(submission)\
-                                            .filter(completed__gte = number_of_criteria)
+            peer_reviews_completed = CanvasSubmission.num_comments_each_review_per_student.__get__(submission) \
+                                                     .filter(completed__gte=number_of_criteria)
             completed_reviews = len(peer_reviews_completed)
 
             total_received = CanvasSubmission.total_received_of_a_student.__get__(submission)
-            peer_reviews_received = CanvasSubmission.num_comments_each_review_per_submission.__get__(submission)\
-                                                    .filter(received__gte = number_of_criteria)
+            peer_reviews_received = CanvasSubmission.num_comments_each_review_per_submission.__get__(submission) \
+                                                    .filter(received__gte=number_of_criteria)
             received_reviews = len(peer_reviews_received)
 
             reviews.append({
@@ -593,7 +593,10 @@ class OverviewForAStudent(HasRoleMixin, TemplateView):
                 'received': received_reviews,
             })
 
-        return {'title': self.request.session['lti_launch_params']['context_title'],
+        course = CanvasCourse.objects.get(id=int(kwargs['course_id']))
+
+        return {'title': course.name,
+                'course_id': course.id,
                 'student_id': student_id,
                 'student_name': student.full_name,
                 'student_first_name': student.full_name.split()[0],
