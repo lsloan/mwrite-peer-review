@@ -432,7 +432,9 @@ class AssignmentStatus(HasRoleMixin, TemplateView):
 
         sections.sort(key=lambda s: s.name)
 
-        return {'title': CanvasCourse.objects.get(id=kwargs['course_id']).name,
+        course = CanvasCourse.objects.get(id=int(kwargs['course_id']))
+        return {'course_id': course.id,
+                'title': course.name,
                 'reviews': reviews,
                 'rubric': rubric,
                 'sections': sections}
