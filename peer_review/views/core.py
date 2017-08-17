@@ -458,7 +458,7 @@ class ReviewsOfMyWorkView(HasRoleMixin, TemplateView):
         if student_id != submission.author_id:
             raise PermissionDenied
 
-        peer_review_ids = PeerReview.objects.filter(submission=submission).values_list('id')
+        peer_review_ids = PeerReview.objects.filter(submission=submission).values_list('id', flat=True)
         rubric = submission.assignment.rubric_for_prompt
         details = [(criterion,
                     PeerReviewComment.objects.filter(criterion=criterion, peer_review_id__in=peer_review_ids)
