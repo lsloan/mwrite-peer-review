@@ -11,12 +11,12 @@ $(function() {
         var entry_with_zero = "entry_with_zero";
         var zero_completed_or_received = "zero_completed_or_received";
 
-        if (completed == '0') {
+        if(completed === '0') {
             $(this).addClass(entry_with_zero);
             $(this).find(student_completed).addClass(zero_completed_or_received);
         }
 
-        if (received == '0') {
+        if(received === '0') {
             $(this).addClass(entry_with_zero);
             $(this).find(student_received).addClass(zero_completed_or_received);
         }
@@ -33,7 +33,7 @@ $(function() {
     });
 
     $(document).on("click", function(e) {
-        if(e.target.className != 'dropbtn' && e.target.className !='dropdown-title' && e.target.className != 'material-icons dropdown-icon' && e.target.className != 'dropdown-link') {
+        if(e.target.className !== 'dropbtn' && e.target.className !== 'dropdown-title' && e.target.className !== 'material-icons dropdown-icon' && e.target.className !== 'dropdown-link') {
             $('.dropdown-content').hide();
         }
     });
@@ -43,9 +43,9 @@ $(function() {
         var student_entry = ".student_entry";
         var student_section = ".student_section";
 
-        if (section != "All Sections") {
+        if(section !== "All Sections") {
             $(student_entry).each(function() {
-                if($(this).find(student_section).text() == section) {
+                if($(this).find(student_section).text() === section) {
                     $(this).show();
                 } else {
                     $(this).hide();
