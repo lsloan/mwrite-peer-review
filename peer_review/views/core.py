@@ -521,11 +521,17 @@ class ReviewsForAStudentView(HasRoleMixin, TemplateView):
                 'submit_time': submit_time
             })
 
+        if '@' in student.username:
+            student_email = student.username
+        else:
+            student_email = '%s@umich.edu' % student.username
+
+        course = CanvasCourse.objects.get(id=int(kwargs['course_id']))
         return {'prompt_title': rubric.reviewed_assignment.title,
                 'rubric_id': rubric.id,
                 'student_id': student.id,
                 'student_name': student.full_name,
-                'student_email': 'yuant@umich.edu',
+                'student_email': student_email,
                 'student_first_name': student.full_name.split()[0],
                 'reviews': reviews,
                 'total_completed': len(total_completed),
@@ -535,7 +541,8 @@ class ReviewsForAStudentView(HasRoleMixin, TemplateView):
                 'received_num': received_num,
                 'received': received,
                 'submission': submission,
-                }
+                'title': course.name,
+                'course_id': course.id}
 
 
 class AllStudentsReviews(HasRoleMixin, TemplateView):
