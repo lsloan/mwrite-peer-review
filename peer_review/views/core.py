@@ -341,18 +341,18 @@ class StudentDashboardView(HasRoleMixin, TemplateView):
                                 .order_by('reviewed_assignment__due_date_utc')
         reviews = OrderedDict()
         for rubric in rubrics:
+            submissions = rubric.reviewed_assignment.canvas_submission_set  \
+                .filter(peer_reviews_for_submission__student_id=student_id) \
+                .annotate(Count('peer_reviews_for_submission__comments'))   \
+                .annotate(peer_review_complete=Case(
+                    When(peer_reviews_for_submission__comments__count__gte=rubric.criteria.count(), then=Value(True)),
+                    default=Value(False),
+                    output_field=BooleanField()
+                ))
             details = {
                 'title': rubric.reviewed_assignment.title,
                 'due_date': rubric.passback_assignment.due_date_utc,
-                'submissions': rubric.reviewed_assignment.canvas_submission_set
-                    .filter(peerreview__student_id=student_id)
-                    .annotate(Count('peerreview__comments'))
-                    .annotate(peer_review_complete=Case(
-                        When(peerreview__comments__count__gte=rubric.criteria.count(), then=Value(True)),
-                        default=Value(False),
-                        output_field=BooleanField()
-                    )
-                )
+                'submissions': submissions
             }
             if some(lambda s: not s.peer_review_complete, details['submissions']):
                 reviews[rubric.reviewed_assignment_id] = details
