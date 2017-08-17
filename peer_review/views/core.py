@@ -405,17 +405,21 @@ class AssignmentStatus(HasRoleMixin, TemplateView):
         sections = []
         for submission in submissions:
             total_completed_num = len(CanvasSubmission.total_completed_by_a_student.__get__(submission))
-            peer_reviews_completed = CanvasSubmission.num_comments_each_review_per_studetn.__get__(submission)\
-                                            .filter(completed__gte = number_of_criteria)
+            peer_reviews_completed = CanvasSubmission.num_comments_each_review_per_student.__get__(submission) \
+                                                     .filter(completed__gte=number_of_criteria)
+
             completed_reviews = len(peer_reviews_completed)
 
             total_received_num = len(CanvasSubmission.total_received_of_a_student.__get__(submission))
-            peer_reviews_received = CanvasSubmission.num_comments_each_review_per_submission.__get__(submission)\
-                                                    .filter(received__gte = number_of_criteria)
+            peer_reviews_received = CanvasSubmission.num_comments_each_review_per_submission.__get__(submission) \
+                                                    .filter(received__gte=number_of_criteria)
             received_reviews = len(peer_reviews_received)
 
-            if submission.author.section not in sections:
-                sections.append(submission.author.section)
+            author_sections = submission.author.sections.filter(id__in=rubric.sections.values_list('id', flat=True))
+            for section in author_sections:
+                # TODO might be more efficient (but less explicit) to use a set here. potential optimization
+                if section not in sections:
+                    sections.append(section)
 
             reviews.append({
                 'author': submission.author,
@@ -423,11 +427,14 @@ class AssignmentStatus(HasRoleMixin, TemplateView):
                 'completed': completed_reviews,
                 'total_received': total_received_num,
                 'received': received_reviews,
+                'section': author_sections[0] if len(author_sections) == 1 else {'name': 'Multiple sections'}
             })
 
-        sections.sort()
+        sections.sort(key=lambda s: s.name)
 
-        return {'title': self.request.session['lti_launch_params']['context_title'],
+        course = CanvasCourse.objects.get(id=int(kwargs['course_id']))
+        return {'course_id': course.id,
+                'title': course.name,
                 'reviews': reviews,
                 'rubric': rubric,
                 'sections': sections}

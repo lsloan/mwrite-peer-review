@@ -1,9 +1,13 @@
 $(function() {
+
+    var courseId = $('#main-container').data('course-id');
+    var studentEntrySelector = ".student_entry";
+
     $('.sortable').tablesorter({
         sortList:[[0,0], [1,0], [2,0], [3,0]]
     });
 
-    $(".student_entry").each(function() {
+    $(studentEntrySelector).each(function() {
         var student_completed = ".student_completed";
         var student_received = ".student_received";
         var completed = $(this).find(student_completed).text().split(/ +/)[0];
@@ -11,12 +15,12 @@ $(function() {
         var entry_with_zero = "entry_with_zero";
         var zero_completed_or_received = "zero_completed_or_received";
 
-        if (completed == '0') {
+        if(completed === '0') {
             $(this).addClass(entry_with_zero);
             $(this).find(student_completed).addClass(zero_completed_or_received);
         }
 
-        if (received == '0') {
+        if(received === '0') {
             $(this).addClass(entry_with_zero);
             $(this).find(student_received).addClass(zero_completed_or_received);
         }
@@ -33,26 +37,25 @@ $(function() {
     });
 
     $(document).on("click", function(e) {
-        if(e.target.className != 'dropbtn' && e.target.className !='dropdown-title' && e.target.className != 'material-icons dropdown-icon' && e.target.className != 'dropdown-link') {
+        if(e.target.className !== 'dropbtn' && e.target.className !== 'dropdown-title' && e.target.className !== 'material-icons dropdown-icon' && e.target.className !== 'dropdown-link') {
             $('.dropdown-content').hide();
         }
     });
 
     $('.dropdown-link').on('click', function() {
         var section = $(this).text();
-        var student_entry = ".student_entry";
         var student_section = ".student_section";
 
-        if (section != "All Sections") {
-            $(student_entry).each(function() {
-                if($(this).find(student_section).text() == section) {
+        if(section !== "All Sections") {
+            $(studentEntrySelector).each(function() {
+                if($(this).find(student_section).text() === section) {
                     $(this).show();
                 } else {
                     $(this).hide();
                 }
             });
         } else {
-            $(student_entry).each(function() {
+            $(studentEntrySelector).each(function() {
                 $(this).show();
             });
         }
@@ -68,9 +71,9 @@ $(function() {
         } 
     });
 
-    $(".student_entry").on("click", function() {
-        var student_id = $(this).attr('data-student-id');
-        var rubric_id = $(this).attr('data-rubric-id');
-        window.location = "/review/student/" + student_id + "/rubric/" + rubric_id;
+    $(studentEntrySelector).click(function() {
+        var studentId = $(this).attr('data-student-id');
+        var rubricId = $(this).attr('data-rubric-id');
+        window.location = '/course/' + courseId + '/review/student/' + studentId + '/rubric/' + rubricId;
     });
 });
