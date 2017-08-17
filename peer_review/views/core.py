@@ -405,13 +405,14 @@ class AssignmentStatus(HasRoleMixin, TemplateView):
         sections = []
         for submission in submissions:
             total_completed_num = len(CanvasSubmission.total_completed_by_a_student.__get__(submission))
-            peer_reviews_completed = CanvasSubmission.num_comments_each_review_per_studetn.__get__(submission)\
-                                            .filter(completed__gte = number_of_criteria)
+            peer_reviews_completed = CanvasSubmission.num_comments_each_review_per_student.__get__(submission) \
+                                                     .filter(completed__gte=number_of_criteria)
+
             completed_reviews = len(peer_reviews_completed)
 
             total_received_num = len(CanvasSubmission.total_received_of_a_student.__get__(submission))
-            peer_reviews_received = CanvasSubmission.num_comments_each_review_per_submission.__get__(submission)\
-                                                    .filter(received__gte = number_of_criteria)
+            peer_reviews_received = CanvasSubmission.num_comments_each_review_per_submission.__get__(submission) \
+                                                    .filter(received__gte=number_of_criteria)
             received_reviews = len(peer_reviews_received)
 
             if submission.author.section not in sections:

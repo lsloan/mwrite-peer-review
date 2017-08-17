@@ -68,7 +68,7 @@ class CanvasSubmission(models.Model):
         return PeerReview.objects.filter(submission=self)
 
     @property
-    def num_comments_each_review_per_studetn(self):
+    def num_comments_each_review_per_student(self):
         return PeerReview.objects.filter(student=self.author, submission__assignment=self.assignment) \
                                  .annotate(completed=models.Count('comments', distinct=True))
 
