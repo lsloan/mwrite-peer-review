@@ -402,7 +402,7 @@ class AssignmentStatus(HasRoleMixin, TemplateView):
         submissions = rubric.reviewed_assignment.canvas_submission_set.all()
 
         reviews = []
-        sections = set()
+        sections = []
         for submission in submissions:
             total_completed_num = len(CanvasSubmission.total_completed_by_a_student.__get__(submission))
             peer_reviews_completed = CanvasSubmission.num_comments_each_review_per_student.__get__(submission) \
@@ -416,7 +416,9 @@ class AssignmentStatus(HasRoleMixin, TemplateView):
             received_reviews = len(peer_reviews_received)
 
             for section in submission.author.sections.filter(id__in=rubric.sections.values_list('id', flat=True)):
-                sections.add(section)
+                # TODO might be more efficient (but less explicit) to use a set here. potential optimization
+                if section not in sections:
+                    sections.append(section)
 
             reviews.append({
                 'author': submission.author,
@@ -426,7 +428,6 @@ class AssignmentStatus(HasRoleMixin, TemplateView):
                 'received': received_reviews,
             })
 
-        sections = list(sections)
         sections.sort(key=lambda s: s.name)
 
         return {'title': CanvasCourse.objects.get(id=kwargs['course_id']).name,
