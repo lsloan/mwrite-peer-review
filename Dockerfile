@@ -2,7 +2,7 @@ FROM python:3.6
 
 RUN apt-get update && \
     apt-get --no-install-recommends upgrade --yes && \
-    apt-get install mysql-client
+    apt-get --no-install-recommends install mysql-client --yes
 
 RUN mkdir -p /tmp/mwrite-peer-review-build
 WORKDIR /tmp/mwrite-peer-review-build
