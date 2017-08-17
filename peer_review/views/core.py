@@ -402,7 +402,7 @@ class AssignmentStatus(HasRoleMixin, TemplateView):
         submissions = rubric.reviewed_assignment.canvas_submission_set.all()
 
         reviews = []
-        sections = []
+        sections = set()
         for submission in submissions:
             total_completed_num = len(CanvasSubmission.total_completed_by_a_student.__get__(submission))
             peer_reviews_completed = CanvasSubmission.num_comments_each_review_per_student.__get__(submission) \
@@ -415,8 +415,8 @@ class AssignmentStatus(HasRoleMixin, TemplateView):
                                                     .filter(received__gte=number_of_criteria)
             received_reviews = len(peer_reviews_received)
 
-            if submission.author.section not in sections:
-                sections.append(submission.author.section)
+            for section in submission.author.sections.filter(id__in=rubric.sections.values_list('id', flat=True)):
+                sections.add(section)
 
             reviews.append({
                 'author': submission.author,
@@ -426,9 +426,10 @@ class AssignmentStatus(HasRoleMixin, TemplateView):
                 'received': received_reviews,
             })
 
-        sections.sort()
+        sections = list(sections)
+        sections.sort(key=lambda s: s.name)
 
-        return {'title': self.request.session['lti_launch_params']['context_title'],
+        return {'title': CanvasCourse.objects.get(id=kwargs['course_id']).name,
                 'reviews': reviews,
                 'rubric': rubric,
                 'sections': sections}
