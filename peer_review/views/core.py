@@ -415,7 +415,8 @@ class AssignmentStatus(HasRoleMixin, TemplateView):
                                                     .filter(received__gte=number_of_criteria)
             received_reviews = len(peer_reviews_received)
 
-            for section in submission.author.sections.filter(id__in=rubric.sections.values_list('id', flat=True)):
+            author_sections = submission.author.sections.filter(id__in=rubric.sections.values_list('id', flat=True))
+            for section in author_sections:
                 # TODO might be more efficient (but less explicit) to use a set here. potential optimization
                 if section not in sections:
                     sections.append(section)
@@ -426,6 +427,7 @@ class AssignmentStatus(HasRoleMixin, TemplateView):
                 'completed': completed_reviews,
                 'total_received': total_received_num,
                 'received': received_reviews,
+                'section': author_sections[0] if len(author_sections) == 1 else {'name': 'Multiple sections'}
             })
 
         sections.sort(key=lambda s: s.name)
