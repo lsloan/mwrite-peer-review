@@ -219,10 +219,13 @@ class PeerReviewView(HasRoleMixin, TemplateView):
             raise Http404
         rubric = Rubric.objects.get(reviewed_assignment=submission.assignment)
         criteria = Criterion.objects.filter(rubric=rubric)
+        course = CanvasCourse.objects.get(id=int(kwargs['course_id']))
         return {
             'submission': submission,
             'rubric': rubric,
-            'criteria': criteria
+            'criteria': criteria,
+            'title': course.name,
+            'course_id': course.id
         }
 
     # noinspection PyMethodMayBeStatic
@@ -384,9 +387,13 @@ class StudentDashboardView(HasRoleMixin, TemplateView):
         reviews_received = [(CanvasSubmission.objects.get(id=submission_id), number_of_reviews)
                             for submission_id, number_of_reviews in review_submission_counts.items()]
 
+        course = CanvasCourse.objects.get(id=int(kwargs['course_id']))
+
         return {'reviews_to_complete': reviews.values(),
                 'reviews_received': reviews_received,
-                'finished_prompt': finished_prompt}
+                'finished_prompt': finished_prompt,
+                'title': course.name,
+                'course_id': course.id}
 
 
 class AssignmentStatus(HasRoleMixin, TemplateView):
