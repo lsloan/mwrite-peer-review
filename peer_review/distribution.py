@@ -74,12 +74,15 @@ def distribute_reviews(rubric, utc_timestamp, force_distribution=False):
     peer_reviews = [PeerReview(student_id=student_id, submission_id=submission_id)
                     for student_id, submission_ids in reviews.items()
                     for submission_id in submission_ids]
-    log.info('Persisting %d peer reviews pairings for rubric %d' % (len(peer_reviews), rubric.id))
-    PeerReview.objects.bulk_create(peer_reviews)
 
-    PeerReviewDistribution.objects.create(rubric=rubric,
-                                          is_distribution_complete=True,
-                                          distributed_at_utc=utc_timestamp)
+    if len(peer_reviews) > 0:
+        log.info('Persisting %d peer reviews pairings for rubric %d' % (len(peer_reviews), rubric.id))
+        PeerReview.objects.bulk_create(peer_reviews)
+        PeerReviewDistribution.objects.create(rubric=rubric,
+                                              is_distribution_complete=True,
+                                              distributed_at_utc=utc_timestamp)
+    else:
+        log.error('No peer reviews were created for rubric %d' % rubric.id)
 
 
 # TODO this isn't concurrency safe.  we're going to get around this for now by just using a single instance per course
