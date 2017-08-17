@@ -30,7 +30,7 @@
     <div class="mdl-grid">
         <div class="mdl-cell mdl-cell--2-col mdl-cell--2-col-tablet mdl-cell-1-col-phone"></div>
         <div class="mdl-card mdl-shadow--2dp mdl-cell mdl-cell--8-col mdl-cell--6-col-tablet mdl-cell-2-col-phone">
-            <form action="/review/submission/{{ submission.id }}" data-prompt-id="{{ submission.assignment.id }}">
+            <form action="/course/{{ course_id }}/review/submission/{{ submission.id }}" data-prompt-id="{{ submission.assignment.id }}">
                 {% csrf_token %}
                 <div class="mdl-card__title">
                     <h1 class="mdl-card__title-text">Submit Your Review</h1>

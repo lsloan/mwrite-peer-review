@@ -27,7 +27,8 @@
                 endpoint,
                 comments,
                 function () {
-                    window.location.replace('/dashboard/student?finished=' + promptId);
+                    var courseId = $('#main-container').data('course-id');
+                    window.location.replace('/course/' + courseId + '/dashboard/student?finished=' + promptId);
                 },
                 function () {
                     showToast('An error occurred.  Please try again later.');

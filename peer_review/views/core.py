@@ -361,7 +361,7 @@ class StudentDashboardView(HasRoleMixin, TemplateView):
                 reviews[rubric.reviewed_assignment_id] = details
 
         finished_prompt_id = self.request.GET.get('finished')
-        if finished_prompt_id and finished_prompt_id not in reviews:
+        if finished_prompt_id and len(reviews) == 0:
             finished_prompt = CanvasAssignment.objects.get(id=int(finished_prompt_id))
         else:
             finished_prompt = None
