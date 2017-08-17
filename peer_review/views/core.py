@@ -679,9 +679,10 @@ class SubmissionDownloadView(HasRoleMixin, View):
 
         if not has_role(request.user, 'instructor'):
             student_id = int(self.request.session['lti_launch_params']['custom_canvas_user_id'])
-            submissions_for_review = PeerReview.objects.filter(student_id=student_id).values_list('id', flat=True)
+            submission_ids_for_review = PeerReview.objects.filter(student_id=student_id).values_list('submission_id',
+                                                                                                     flat=True)
             submissions_by_author = CanvasSubmission.objects.filter(author_id=student_id).values_list('id', flat=True)
-            if submission_id not in submissions_for_review and submission_id not in submissions_by_author:
+            if submission_id not in submission_ids_for_review and submission_id not in submissions_by_author:
                 raise PermissionDenied
 
         try:
