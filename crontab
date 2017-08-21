@@ -1,0 +1,1 @@
+*/15 * * * * python /usr/src/app/manage.py distribute_reviews
