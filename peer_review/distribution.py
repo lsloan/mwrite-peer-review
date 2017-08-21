@@ -6,8 +6,8 @@ from toolz.itertoolz import unique
 
 from django.db import transaction
 
-from peer_review.etl import persist_students, persist_sections, persist_submissions
-from peer_review.models import CanvasStudent, CanvasAssignment, PeerReview, PeerReviewDistribution
+from peer_review.etl import persist_students, persist_sections, persist_submissions, persist_assignments
+from peer_review.models import CanvasCourse, CanvasStudent, CanvasAssignment, PeerReview, PeerReviewDistribution
 
 log = logging.getLogger(__name__)
 
@@ -88,6 +88,11 @@ def distribute_reviews(rubric, utc_timestamp, force_distribution=False):
 # TODO this isn't concurrency safe.  we're going to get around this for now by just using a single instance per course
 def review_distribution_task(utc_timestamp, force_distribution=False):
     log.info('Starting review distribution at %s' % utc_timestamp.isoformat())
+
+    log.info('Persisting assignments for all courses')
+    for course in CanvasCourse.objects.all():
+        log.debug('Persisting assignments for course %d' % course.id)
+        persist_assignments(course.id)
 
     try:
         prompts_for_distribution = CanvasAssignment.objects.filter(
