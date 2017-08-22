@@ -4,6 +4,7 @@
 {% block header %}
     <link rel="stylesheet" href="{% static 'css/common.css' %}" />
     <link rel="stylesheet" href="{% static 'css/assignment_status.css' %}" />
+    <script src="{% static 'js/lib/momentjs/moment.min.js' %}"></script>
     <script src="{% static 'js/lib/jquery.tablesorter.min.js' %}" ></script>
     <script src="{% static 'js/assignment_status.js' %}" ></script>
     <script src="{% static 'js/common.js' %}" ></script>
@@ -31,7 +32,7 @@
         </div>
     </div>
 
-    <table class="sortable">
+    <table id="assignment-status-table" class="sortable" data-peer-review-due-date="{{ rubric.passback_assignment.due_date_utc|date:"c" }}">
         <thead>
             <tr>
                 <th>Student Name</th>
