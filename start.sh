@@ -3,7 +3,7 @@
 GUNICORN_WORKERS=1
 GUNICORN_PORT=8000
 
-printenv > /root/mwrite-peer-review-env.sh
+printenv >> /etc/environment
 
 set -x
 
