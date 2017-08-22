@@ -3,9 +3,11 @@
 GUNICORN_WORKERS=1
 GUNICORN_PORT=8000
 
-env > /root/mwrite-peer-review-env.sh
+printenv > /root/mwrite-peer-review-env.sh
 
 set -x
+
+cron
 
 gunicorn \
     --workers="$GUNICORN_WORKERS" \
