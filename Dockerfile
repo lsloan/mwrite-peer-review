@@ -4,7 +4,6 @@ RUN apt-get update && \
     apt-get --no-install-recommends upgrade --yes && \
     apt-get --no-install-recommends install mysql-client cron --yes
 
-RUN env > /root/mwrite-peer-review-env.sh
 ADD crontab /etc/cron.d/mwrite-peer-review
 RUN chmod 0644 /etc/cron.d/mwrite-peer-review
 

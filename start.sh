@@ -3,6 +3,8 @@
 GUNICORN_WORKERS=1
 GUNICORN_PORT=8000
 
+env > /root/mwrite-peer-review-env.sh
+
 set -x
 
 gunicorn \
