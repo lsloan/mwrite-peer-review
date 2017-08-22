@@ -15,16 +15,21 @@ $(function() {
         var entry_with_zero = "entry_with_zero";
         var zero_completed_or_received = "zero_completed_or_received";
 
-        if(completed === '0') {
-            $(this).addClass(entry_with_zero);
-            $(this).find(student_completed).addClass(zero_completed_or_received);
-        }
+        var peerReviewDueDate = moment($('#assignment-status-table').attr('data-peer-review-due-date'));
+        var now = moment();
 
-        if(received === '0') {
-            $(this).addClass(entry_with_zero);
-            $(this).find(student_received).addClass(zero_completed_or_received);
+        if(now > peerReviewDueDate) {
+            if(completed === '0') {
+                $(this).addClass(entry_with_zero);
+                $(this).find(student_completed).addClass(zero_completed_or_received);
+            }
+
+            if(received === '0') {
+                $(this).addClass(entry_with_zero);
+                $(this).find(student_received).addClass(zero_completed_or_received);
+            }
         }
-    })
+    });
 
     $(".dropbtn").on("click",function(){
         var dropdown_content = ".dropdown-content";
