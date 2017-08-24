@@ -261,10 +261,9 @@ class PeerReviewView(HasRoleMixin, TemplateView):
             logger.warning('Somehow %d has only %d out of %d comments for %d!!!',
                            student_id, existing_comments.count(), rubric.criteria.count(), submission_id)
 
-        commented_at_utc = datetime.utcnow()
         comments = [PeerReviewComment(criterion=Criterion.objects.get(id=c['criterion_id']),
                                       comment=c['comment'],
-                                      commented_at_utc=commented_at_utc,
+                                      commented_at_utc=datetime.now(tzutc()),
                                       peer_review=peer_review)
                     for c in user_comments]
 
