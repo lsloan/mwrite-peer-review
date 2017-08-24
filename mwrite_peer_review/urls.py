@@ -23,7 +23,7 @@ urlpatterns = [
         url(r'^rubric/assignment/(?P<assignment_id>[0-9]+)$', RubricCreationFormView.as_view()),
         url(r'^submissions/(?P<submission_id>[0-9]+)/download$', SubmissionDownloadView.as_view()),
         url(r'^review/submission/(?P<submission_id>[0-9]+)$', PeerReviewView.as_view()),
-        url(r'^review/submission/(?P<submission_id>[0-9]+)/completed$', ReviewsOfMyWorkView.as_view()),
+        url(r'^review/submission/(?P<submission_id>[0-9]+)/completed$', SingleReviewDetailView.as_view()),
         url(r'^review/students$', AllStudentsReviews.as_view()),
         url(r'^review/student/(?P<student_id>[0-9]+)$', OverviewForAStudent.as_view()),
         url(r'^review/student/(?P<student_id>[0-9]+)/download$', OverviewDownload.as_view()),

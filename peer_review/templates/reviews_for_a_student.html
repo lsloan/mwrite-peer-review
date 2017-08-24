@@ -47,7 +47,7 @@
                         <a class='mdl-button mdl-js-button mdl-js-ripple-effect review_link' href="mailto:{{student_email}}">Email {{student_first_name}}</a> 
                         <a class='mdl-button mdl-js-button mdl-js-ripple-effect review_link' href="/course/{{ course_id }}/submissions/{{submission.id}}/download">See {{review.student_first_name}}'s submission</a>
                     {% else %}
-                        <a class='mdl-button mdl-js-button mdl-js-ripple-effect review_link' href="#">See review</a>
+                        <a class='mdl-button mdl-js-button mdl-js-ripple-effect review_link' href="/course/{{ course_id }}/review/submission/{{ review.submission.id }}/completed">See review</a>
                     {% endif %}
                     </div>
                 </div>
@@ -80,7 +80,7 @@
                             <a class='mdl-button mdl-js-button mdl-js-ripple-effect review_link' href="mailto:{{student_email}}">Email {{review.student_first_name}}</a>
                             <a class='mdl-button mdl-js-button mdl-js-ripple-effect review_link' href="/course/{{ course_id }}/submissions/{{submission.id}}/download">See {{student_first_name}}'s submission</a>
                         {% else %}
-                            <a class='mdl-button mdl-js-button mdl-js-ripple-effect review_link' href="#">See review</a>
+                            <a class='mdl-button mdl-js-button mdl-js-ripple-effect review_link' href="/course/{{ course_id }}/review/submission/{{ submission.id }}/completed">See review</a>
                         {% endif %}
                     </div>
                 </div>
