@@ -447,15 +447,17 @@ class AssignmentStatus(HasRoleMixin, TemplateView):
                 'sections': sections}
         
 
-class ReviewsOfMyWorkView(HasRoleMixin, TemplateView):
-    allowed_roles = 'student'
-    template_name = 'reviews_of_my_work.html'
+class SingleReviewDetailView(HasRoleMixin, TemplateView):
+    allowed_roles = ['student', 'instructor']
+    template_name = 'single_review_details.html'
 
     def get_context_data(self, **kwargs):
 
-        student_id = int(self.request.session['lti_launch_params']['custom_canvas_user_id'])
+        user_id = int(self.request.session['lti_launch_params']['custom_canvas_user_id'])
+        user_is_instructor = has_role(self.request.user, 'instructor')
+
         submission = CanvasSubmission.objects.get(id=kwargs['submission_id'])
-        if student_id != submission.author_id:
+        if not user_is_instructor and user_id != submission.author_id:
             raise PermissionDenied
 
         peer_review_ids = PeerReview.objects.filter(submission=submission).values_list('id', flat=True)
@@ -465,6 +467,7 @@ class ReviewsOfMyWorkView(HasRoleMixin, TemplateView):
                                              .order_by('peer_review__submission__author_id'))
                    for criterion in rubric.criteria.all()]
         return {'prompt_title': submission.assignment.title,
+                'user_is_instructor': user_is_instructor,
                 'review': details}
 
 
@@ -506,6 +509,7 @@ class ReviewsForAStudentView(HasRoleMixin, TemplateView):
                 'student': peer_review.submission.author,
                 'student_first_name': peer_review.submission.author.full_name.split()[0],
                 'completed': completed_review,
+                'submission': peer_review.submission,
                 'submit_time': submit_time
             })
 

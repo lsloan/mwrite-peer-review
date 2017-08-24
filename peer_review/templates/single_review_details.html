@@ -21,7 +21,7 @@
                                 {% for comment in comments %}
                                     <div class="mdl-list__item">
                                         <span class="mdl-list__item-primary-content">
-                                            <span><b>Anonymous {{ forloop.counter }} said</b> "{{ comment.comment }}"</span>
+                                            <span><b>{% if user_is_instructor %}{{ comment.peer_review.student.full_name }}{% else %}Anonymous {{ forloop.counter }}{% endif %} said</b> "{{ comment.comment }}"</span>
                                         </span>
                                     </div>
                                 {% endfor %}
