@@ -9,6 +9,7 @@ from datetime import datetime
 from itertools import chain
 
 import dateutil.parser
+from dateutil.tz import tzutc
 from django.conf import settings
 from django.db import transaction
 from django.db.models import Q, F, Count, Case, When, Value, BooleanField, Max
@@ -531,7 +532,7 @@ class ReviewsForAStudentView(HasRoleMixin, TemplateView):
         if '@' in student.username:
             student_email = student.username
         else:
-            student_email = '%s@umich.edu' % student.username
+            student_email = '%s@umich.edu' % student.usernames
 
         course = CanvasCourse.objects.get(id=int(kwargs['course_id']))
         return {'prompt_title': rubric.reviewed_assignment.title,
@@ -549,7 +550,8 @@ class ReviewsForAStudentView(HasRoleMixin, TemplateView):
                 'received': received,
                 'submission': submission,
                 'title': course.name,
-                'course_id': course.id}
+                'course_id': course.id,
+                'due_date_passed': datetime.now(tzutc()) > rubric.passback_assignment.due_date_utc}
 
 
 class AllStudentsReviews(HasRoleMixin, TemplateView):
