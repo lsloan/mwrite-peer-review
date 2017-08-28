@@ -10,9 +10,15 @@
 {% endblock %}
 
 {% block subcontent %}
-    <div class="overview_title">{{student_first_name}}'s Peer Review Activity</div>
 
     <div class="mdl-grid">
+        <div class="mdl-cell mdl-cell--12-col overview_title">
+            <span>{{student_first_name}}'s Peer Review Activity</span>
+        </div>
+    </div>
+
+    <div class="mdl-grid">
+        {# TODO needs mdl-cell divs here... #}
         {% for review in reviews %}
             {% include 'peer_review_card_for_student.html' with review=review %}
         {% endfor %}
