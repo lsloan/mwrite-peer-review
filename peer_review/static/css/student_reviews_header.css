@@ -65,3 +65,30 @@
     font-weight: 400;
     color: #535353;
 }
+
+div.nav-grid, div.nav-grid > .mdl-cell {
+    margin: 0;
+    padding: 0;
+    width: 100%;
+}
+
+.review-link-container {
+    background-color: #F8F8F8;
+    width: 100%;
+    height: 50px;
+    line-height: 50px;
+    padding-left: 20px;
+}
+
+.review-link-anchor {
+    text-decoration: none;
+    color: #56C1F2;
+}
+
+.review-link-text {
+    color: #B2B2B2;
+}
+
+div.mdl-grid {
+    margin-top: 0;
+}

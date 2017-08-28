@@ -56,12 +56,10 @@
     margin-right: 5px;
 }
 
-/*.review_done { */
 .review-status-ok {
     background-color: #1EAAF0;
 }
 
-/*.review_in_progress {*/
 .review-status-incomplete {
     background-color: #DD5465;
 }

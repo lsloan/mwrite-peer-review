@@ -1,12 +1,16 @@
 {% extends 'base_mdl.html' %}
 
 {% block content %}
-    <div class="dashboard_links">
-        <a href="/course/{{ course_id }}/review/students" class="link_for_nav is_students">Students</a>
-        <p class="slash_between">/</p>
-        <a href="/course/{{ course_id }}/review/student/{{student_id}}" class="link_for_nav student_link" data-student-id={{student_id}}>{{student_name}}</a>
-        <p class="slash_between">/</p>
-        <p class="text_on_nav" data-rubric-id={{rubric_id}}>{{prompt_title}}</p>
+    <div class="mdl-grid nav-grid">
+        <div class="mdl-cell mdl-cell--12-col">
+            <div class="review-link-container">
+                <a class="review-link-anchor is_students" href="/course/{{ course_id }}/review/students">Students</a>
+                <span class="review-link-text">/</span>
+                <a class="review-link-anchor student_link" href="/course/{{ course_id }}/review/student/{{student_id}}" data-student-id={{student_id}}>{{student_name}}</a>
+                <span class="review-link-text">/</span>
+                <span class="review-link-text" data-rubric-id={{rubric_id}}>{{prompt_title}}</span>
+            </div>
+        </div>
     </div>
 
     <div class="mdl-grid">
