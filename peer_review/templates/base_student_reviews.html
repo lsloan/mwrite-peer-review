@@ -7,8 +7,10 @@
                 <a class="review-link-anchor is_students" href="/course/{{ course_id }}/review/students">Students</a>
                 <span class="review-link-text">/</span>
                 <a class="review-link-anchor student_link" href="/course/{{ course_id }}/review/student/{{student_id}}" data-student-id={{student_id}}>{{student_name}}</a>
-                <span class="review-link-text">/</span>
-                <span class="review-link-text" data-rubric-id={{rubric_id}}>{{prompt_title}}</span>
+                {% if rubric_id and prompt_title %}
+                    <span class="review-link-text">/</span>
+                    <span class="review-link-text" data-rubric-id={{rubric_id}}>{{prompt_title}}</span>
+                {% endif %}
             </div>
         </div>
     </div>
