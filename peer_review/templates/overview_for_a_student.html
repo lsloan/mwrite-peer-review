@@ -13,7 +13,8 @@
     <div class="overview_title">{{student_first_name}}'s Peer Review Activity</div>
 
     <div class="mdl-grid">
-    {% for review in reviews %}
-        {% include 'peer_review_card_for_student.html' with review=review %}
-    {% endfor %}
+        {% for review in reviews %}
+            {% include 'peer_review_card_for_student.html' with review=review %}
+        {% endfor %}
+    </div>
 {% endblock %}
