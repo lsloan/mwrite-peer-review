@@ -4,9 +4,9 @@ import csv
 import json
 import logging
 import mimetypes
-from collections import OrderedDict
 from datetime import datetime
-from itertools import chain
+from itertools import chain, zip_longest
+from collections import OrderedDict
 
 import dateutil.parser
 from dateutil.tz import tzutc
@@ -547,10 +547,9 @@ class ReviewsForAStudentView(HasRoleMixin, TemplateView):
                 'reviews': reviews,
                 'total_completed': len(total_completed),
                 'completed_num': completed_num,
-                'completed': completed,
                 'total_received': len(total_received),
                 'received_num': received_num,
-                'received': received,
+                'completed_and_received_reviews': zip_longest(completed, received),
                 'submission': submission,
                 'title': course.name,
                 'course_id': course.id,

@@ -5,16 +5,11 @@
     justify-content: space-between;
 }
 
-.student_name {
-    margin-left: 20px;
+.student-name {
     font-size: 20px;
-    font-weight: 400;
-    color: #535353;
 }
 
-.download {
-    position: relative;
-    left: -3%;
+.download-button {
     width: 160px;
     height: 30px;
     background-color: white;
@@ -35,9 +30,6 @@
 }
 
 .reviews {
-    position: relative;
-    top: 80px;
-    margin-left: 20px;
     display: flex;
     border-bottom: 1px solid #909090;
     width: 97%;
@@ -64,4 +56,31 @@
 .change_link_style {
     font-weight: 400;
     color: #535353;
+}
+
+div.nav-grid, div.nav-grid > .mdl-cell {
+    margin: 0;
+    padding: 0;
+    width: 100%;
+}
+
+.review-link-container {
+    background-color: #F8F8F8;
+    width: 100%;
+    height: 50px;
+    line-height: 50px;
+    padding-left: 20px;
+}
+
+.review-link-anchor {
+    text-decoration: none;
+    color: #56C1F2;
+}
+
+.review-link-text {
+    color: #B2B2B2;
+}
+
+div.mdl-grid {
+    margin-top: 0;
 }

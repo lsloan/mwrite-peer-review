@@ -1,4 +1,4 @@
-{% extends 'base_mdl.html' %}
+{% extends 'base_student_reviews.html' %}
 {% load static %}
 
 {% block header %}
@@ -9,82 +9,95 @@
     <script src="{% static 'js/student_reviews_header.js' %}" ></script>
 {% endblock %}
 
-{% block content %}
-    <div class="dashboard_links">
-        <a href="/course/{{ course_id }}/review/students" class="link_for_nav is_students">Students</a>
-        <p class="slash_between">/</p>
-        <a href="/course/{{ course_id }}/review/student/{{student_id}}" class="link_for_nav student_link" data-student-id={{student_id}}>{{student_name}}</a>
-        <p class="slash_between">/</p>
-        <p class="text_on_nav" data-rubric-id={{rubric_id}}>{{prompt_title}}</p>
-    </div>
+{% block download_suffix %}/rubric/{{ rubric_id }}{% endblock %}
 
-    {% include 'students_reviews_header.html' %}
+{% block subcontent %}
 
     <div class="mdl-grid">
         <div class="mdl-cell mdl-cell--4-col">
             <p class="completed_received_title">{{student_first_name}} completed {{completed_num}}/{{total_completed}} peer reviews</p>
-            {% for review in completed %}
-                <div class="mdl-card mdl-shadow--2dp">
-
-                    <div class="mdl-card__title {% if not review.completed and due_date_passed %}review-status-incomplete{% else %}review-status-ok{% endif %}">
-                        <h2 class="mdl-card__title-text">To {{review.student.full_name}}</h2>
-                    </div>
-
-                    <div class="mdl-card__supporting-text">
-                        <div class="icon-container validation-container">
-                        {% if review.completed %}
-                            <i class="material-icons icon-24px">done</i>
-                            <span class="icon-caption">Submitted On Time ({{review.submit_time|date:"n/j/y g:iA"}})</span>
-                        {% else %}
-                            <i class="material-icons icon-24px">info_outline</i>
-                            <span class="icon-caption">{{student_first_name}} did not submit a peer review for {{review.student_first_name}}</span>
-                        {% endif %}
-                        </div>
-                    </div>
-
-                    <div class="mdl-card__actions mdl-card--border">
-                    {% if not review.completed %}
-                        <a class='mdl-button mdl-js-button mdl-js-ripple-effect review_link' href="mailto:{{student_email}}">Email {{student_first_name}}</a> 
-                        <a class='mdl-button mdl-js-button mdl-js-ripple-effect review_link' href="/course/{{ course_id }}/submissions/{{submission.id}}/download">See {{review.student_first_name}}'s submission</a>
-                    {% else %}
-                        <a class='mdl-button mdl-js-button mdl-js-ripple-effect review_link' href="/course/{{ course_id }}/review/submission/{{ review.submission.id }}/completed">See review</a>
-                    {% endif %}
-                    </div>
-                </div>
-            {% endfor %}
         </div>
-
         <div class="mdl-cell mdl-cell--4-col">
             <p class="completed_received_title">{{student_first_name}} received {{received_num}}/{{total_received}} peer reviews</p>
-            {% for review in received %}
-                <div class="mdl-card mdl-shadow--2dp">
+        </div>
+        <div class="mdl-cell mdl-cell--4-col"></div>
+    </div>
 
-                    <div class="mdl-card__title {% if not review.received and due_date_passed %}review-status-incomplete{% else %}review-status-ok{% endif %}">
-                        <h2 class="mdl-card__title-text">From {{review.student.full_name}}</h2>
-                    </div>
+    {% for review_to_complete, review_to_receive in completed_and_received_reviews %}
+        <div class="mdl-grid">
+            <div class="mdl-cell mdl-cell--4-col mdl-cell--4-col-tablet">
+                {% if review_to_complete %}
+                    <div class="mdl-card mdl-shadow--2dp">
+                        <div class="mdl-card__title {% if not review_to_complete.completed and due_date_passed %}review-status-incomplete{% else %}review-status-ok{% endif %}">
+                            <h2 class="mdl-card__title-text">To {{ review_to_complete.student.full_name }}</h2>
+                        </div>
 
-                    <div class="mdl-card__supporting-text">
-                        <div class="icon-container validation-container">
-                            {% if review.received %}
-                                <i class="material-icons icon-24px">done</i>
-                                <span class="icon-caption">Submitted On Time ({{review.submit_time|date:"n/j/y g:iA"}})</span>
+                        <div class="mdl-card__supporting-text">
+                            <div class="icon-container validation-container">
+                                {% if review_to_complete.completed %}
+                                    <i class="material-icons icon-24px">done</i>
+                                    <span class="icon-caption">Submitted On Time ({{ review_to_complete.submit_time|date:"n/j/y g:iA" }})</span>
+                                {% else %}
+                                    <i class="material-icons icon-24px">info_outline</i>
+                                    <span class="icon-caption">{{ student_first_name }} did not submit a peer review for {{ review_to_complete.student_first_name }}</span>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <div class="mdl-card__actions mdl-card--border">
+                            {% if not review_to_complete.completed %}
+                                <a class='mdl-button mdl-js-button mdl-js-ripple-effect review_link' href="mailto:{{ student_email }}">
+                                    Email {{ student_first_name }}
+                                </a>
+                                <a class='mdl-button mdl-js-button mdl-js-ripple-effect review_link' href="/course/{{ course_id }}/submissions/{{ submission.id }}/download">
+                                    See {{ review_to_complete.student_first_name }}'s submission
+                                </a>
                             {% else %}
-                                <i class="material-icons icon-24px">info_outline</i>
-                                <span class="icon-caption">{{student_first_name}} did not receive a peer review from {{review.student_first_name}}</span>
+                                <a class='mdl-button mdl-js-button mdl-js-ripple-effect review_link' href="/course/{{ course_id }}/review/submission/{{ review_to_complete.submission.id }}/completed">
+                                    See review
+                                </a>
                             {% endif %}
                         </div>
                     </div>
+                {% endif %}
+            </div>
+            <div class="mdl-cell mdl-cell--4-col mdl-cell--4-col-tablet">
+                {% if review_to_receive %}
+                    <div class="mdl-card mdl-shadow--2dp">
+                        <div class="mdl-card__title {% if not review_to_receive.received and due_date_passed %}review-status-incomplete{% else %}review-status-ok{% endif %}">
+                            <h2 class="mdl-card__title-text">From {{ review_to_receive.student.full_name }}</h2>
+                        </div>
 
-                    <div class="mdl-card__actions mdl-card--border">
-                        {% if not review.received %}
-                            <a class='mdl-button mdl-js-button mdl-js-ripple-effect review_link' href="mailto:{{student_email}}">Email {{review.student_first_name}}</a>
-                            <a class='mdl-button mdl-js-button mdl-js-ripple-effect review_link' href="/course/{{ course_id }}/submissions/{{submission.id}}/download">See {{student_first_name}}'s submission</a>
-                        {% else %}
-                            <a class='mdl-button mdl-js-button mdl-js-ripple-effect review_link' href="/course/{{ course_id }}/review/submission/{{ submission.id }}/completed">See review</a>
-                        {% endif %}
+                        <div class="mdl-card__supporting-text">
+                            <div class="icon-container validation-container">
+                                {% if review_to_receive.received %}
+                                    <i class="material-icons icon-24px">done</i>
+                                    <span class="icon-caption">Submitted On Time ({{ review_to_receive.submit_time|date:"n/j/y g:iA" }})</span>
+                                {% else %}
+                                    <i class="material-icons icon-24px">info_outline</i>
+                                    <span class="icon-caption">{{ student_first_name }} did not receive a peer review from {{ review_to_receive.student_first_name }}</span>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <div class="mdl-card__actions mdl-card--border">
+                            {% if not review_to_receive.received %}
+                                <a class='mdl-button mdl-js-button mdl-js-ripple-effect review_link' href="mailto:{{ student_email }}">
+                                    Email {{ review_to_receive.student_first_name }}
+                                </a>
+                                <a class='mdl-button mdl-js-button mdl-js-ripple-effect review_link' href="/course/{{ course_id }}/submissions/{{ submission.id }}/download">
+                                    See {{ student_first_name }}'s submission
+                                </a>
+                            {% else %}
+                                <a class='mdl-button mdl-js-button mdl-js-ripple-effect review_link' href="/course/{{ course_id }}/review/submission/{{ submission.id }}/completed">
+                                    See review
+                                </a>
+                            {% endif %}
+                        </div>
                     </div>
-                </div>
-            {% endfor %}
+                {% endif %}
+            </div>
+            <div class="mdl-cell mdl-cell--4-col"></div>
         </div>
-    </div>
+    {% endfor %}
 {% endblock %}

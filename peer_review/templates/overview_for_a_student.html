@@ -1,4 +1,4 @@
-{% extends 'base_mdl.html' %}
+{% extends 'base_student_reviews.html' %}
 {% load static %}
 
 {% block header %}
@@ -9,21 +9,20 @@
     <script src="{% static 'js/student_reviews_header.js' %}" ></script>
 {% endblock %}
 
-{% block content %}
-    <div class="dashboard_links">
-        <a href="/course/{{ course_id }}/review/students" class="link_for_nav is_students">Students</a>
-        <p class="slash_between">/</p>
-        <a href="/course/{{ course_id }}/review/student/{{student_id}}" class="link_for_nav student_link" data-student-id={{student_id}}>{{student_name}}</a>
-        <p class="slash_between">/</p>
-        <p class="text_on_nav">Overview</p>
-    </div>
+{% block download_suffix %}{% endblock %}
 
-    {% include 'students_reviews_header.html' %}
-
-    <div class="overview_title">{{student_first_name}}'s Peer Review Activity</div>
+{% block subcontent %}
 
     <div class="mdl-grid">
-    {% for review in reviews %}
-        {% include 'peer_review_card_for_student.html' with review=review %}
-    {% endfor %}
+        <div class="mdl-cell mdl-cell--12-col overview_title">
+            <span>{{student_first_name}}'s Peer Review Activity</span>
+        </div>
+    </div>
+
+    <div class="mdl-grid">
+        {# TODO needs mdl-cell divs here... #}
+        {% for review in reviews %}
+            {% include 'peer_review_card_for_student.html' with review=review %}
+        {% endfor %}
+    </div>
 {% endblock %}

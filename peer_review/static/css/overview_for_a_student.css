@@ -1,18 +1,8 @@
 .overview_title {
-    position: relative;
-    top: 120px;
     margin-left: 20px;
-    font-size: 18px;
-    font-weight: 500;
+    font-size: 20px;
     color: #535353;
 }
 
-.mdl-grid {
-    position: relative;
-    top: 125px;
-}
-
 .student_link {
-    pointer-events: none;
-    cursor: default;
 }
