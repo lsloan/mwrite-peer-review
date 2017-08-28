@@ -64,6 +64,11 @@
     background-color: #DD5465;
 }
 
+.tabs-container {
+    width: 100%;
+    display: inline-block;
+}
+
 .review_title {
     color: white;
     font-size: 18px;
