@@ -23,7 +23,7 @@
 
     {% for review_to_complete, review_to_receive in completed_and_received_reviews %}
         <div class="mdl-grid">
-            <div class="mdl-cell mdl-cell--4-col">
+            <div class="mdl-cell mdl-cell--4-col mdl-cell--4-col-tablet">
                 {% if review_to_complete %}
                     <div class="mdl-card mdl-shadow--2dp">
                         <div class="mdl-card__title {% if not review_to_complete.completed and due_date_passed %}review-status-incomplete{% else %}review-status-ok{% endif %}">
@@ -59,7 +59,7 @@
                     </div>
                 {% endif %}
             </div>
-            <div class="mdl-cell mdl-cell--4-col">
+            <div class="mdl-cell mdl-cell--4-col mdl-cell--4-col-tablet">
                 {% if review_to_receive %}
                     <div class="mdl-card mdl-shadow--2dp">
                         <div class="mdl-card__title {% if not review_to_receive.received and due_date_passed %}review-status-incomplete{% else %}review-status-ok{% endif %}">
