@@ -1,0 +1,35 @@
+{% extends 'base_mdl.html' %}
+
+{% block content %}
+    <div class="dashboard_links">
+        <a href="/course/{{ course_id }}/review/students" class="link_for_nav is_students">Students</a>
+        <p class="slash_between">/</p>
+        <a href="/course/{{ course_id }}/review/student/{{student_id}}" class="link_for_nav student_link" data-student-id={{student_id}}>{{student_name}}</a>
+        <p class="slash_between">/</p>
+        <p class="text_on_nav" data-rubric-id={{rubric_id}}>{{prompt_title}}</p>
+    </div>
+
+    <div class="mdl-grid">
+        <div class="mdl-cell mdl-cell--12-col">
+            <div class="name_and_download">
+                <p class="student_name">{{student_name}}</p>
+                <button class="download">
+                    <i class="material-icons download_icon" style="font-size: 15px;">file_download</i>
+                    <p class="download_title" style="font-size: 13px;">Download All Data</p>
+                </button>
+            </div>
+
+            <div class="reviews">
+                <div class="each_review"><a class="each_review_link" href="/course/{{ course_id }}/review/student/{{student_id}}">Overview</a></div>
+                {% for review in reviews %}
+                    <div class="each_review">
+                        <a class="each_review_link" href="/course/{{ course_id }}/review/student/{{student_id}}/rubric/{{review.rubric_id}}">{{review.title}}</a>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+
+    {% block subcontent %}{% endblock %}
+
+{% endblock %}
