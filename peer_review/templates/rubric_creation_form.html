@@ -107,12 +107,12 @@
                             supporting-text="slot">
                         <div slot="supporting-text">
                             <div class="mdl-card__supporting-text">
-                                <mdl-switch v-model="distributePeerReviewsForSections">
+                                <mdl-switch v-model="distributePeerReviewsForSections" :disabled="reviewIsInProgress">
                                     Distribute peer reviews only to students in the same section
                                 </mdl-switch>
                             </div>
                             <div class="mdl-card__supporting-text">
-                                <mdl-switch v-model="peerReviewOpenDateIsPromptDueDate">
+                                <mdl-switch v-model="peerReviewOpenDateIsPromptDueDate" :disabled="reviewIsInProgress">
                                     Use the writing prompt's due date as the peer review open date
                                 </mdl-switch>
                             </div>
@@ -123,6 +123,7 @@
                                             format="MMM d yyyy"
                                             placeholder="Day"
                                             :disabled="peerReviewOpenDisabledDates"
+                                            :disabled-picker="reviewIsInProgress"
                                             v-model="selectedPeerReviewOpenDate">
                                     </datepicker>
                                 </div>
@@ -131,6 +132,7 @@
                                             id="peer-review-open-hour-select"
                                             label="Hour"
                                             v-model="peerReviewOpenHour"
+                                            :disabled="reviewIsInProgress"
                                             :options="peerReviewOpenHourChoices">
                                     </mdl-select>
                                 </div>
@@ -139,6 +141,7 @@
                                             id="peer-review-open-minute-select"
                                             label="Minute"
                                             v-model="peerReviewOpenMinute"
+                                            :disabled="reviewIsInProgress"
                                             :options="peerReviewOpenMinuteChoices">
                                     </mdl-select>
                                 </div>
@@ -147,6 +150,7 @@
                                             id="peer-review-open-ampm-select"
                                             label="AM / PM"
                                             v-model="peerReviewOpenAMPM"
+                                            :disabled="reviewIsInProgress"
                                             :options="peerReviewOpenAMPMChoices">
                                     </mdl-select>
                                 </div>
