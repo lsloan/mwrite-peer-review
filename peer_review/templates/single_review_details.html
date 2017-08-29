@@ -5,6 +5,15 @@
     <link rel="stylesheet" href="{% static 'css/reviews_of_my_work.css' %}" />
 {% endblock %}
 
+{% block nav_links %}
+    {% if user_is_instructor %}
+        <nav class="mdl-navigation">
+            <a class="mdl-navigation__link peer_review" href="/course/{{ course_id }}/dashboard/instructor">PEER REVIEW</a>
+            <a class="mdl-navigation__link students" href="/course/{{ course_id }}/review/students">STUDENTS</a>
+        </nav>
+    {% endif %}
+{% endblock %}
+
 {% block content %}
     <div class="mdl-grid">
         <div class="mdl-cell mdl-cell--2-col mdl-cell--2-col-tablet mdl-cell-1-col-phone"></div>
