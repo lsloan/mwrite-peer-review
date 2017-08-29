@@ -32,6 +32,7 @@
               data-existing-rubric-description="{{ existing_rubric.description }}"
               data-existing-prompt-id="{% if existing_prompt %}{{ existing_prompt.id }}{% else %}null{% endif %}"
               data-existing-revision-id="{% if existing_revision %}{{ existing_revision.id }}{% else %}null{% endif %}"
+              data-peer-review-due-date="{% if existing_rubric and existing_rubric.passback_assignment.due_date_utc %}{{ existing_rubric.passback_assignment.due_date_utc|date:"c" }}{% endif %}"
               data-peer-review-open-date="{% if existing_rubric and existing_rubric.peer_review_open_date %}{{ existing_rubric.peer_review_open_date|date:"c" }}{% else %}null{% endif %}"
               data-peer-review-open-date-is-prompt-due-date={% if existing_rubric and not existing_rubric.peer_review_open_date_is_prompt_due_date %}false{% else %}true{% endif %}
               data-distribute-peer-reviews-for-sections={% if existing_rubric %}{% if existing_rubric.distribute_peer_reviews_for_sections %}true{% else %}false{% endif %}{% else %}null{% endif %}
@@ -158,7 +159,7 @@
                                     to participate in peer review.
                                 </p>
                                 <p v-else-if="!peerReviewOpenDateIsPromptDueDate">
-                                    The peer review open date must not be before the prompt assignments's due date.
+                                    The peer review open date must be between the prompt assignments's due date and the peer review's due date.
                                 </p>
                             </div>
                         </div>
