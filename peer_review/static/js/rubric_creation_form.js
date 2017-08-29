@@ -90,6 +90,8 @@
                 updatePeerReviewOpenDate.call(this, dateStr);
             }
 
+            this.existingPeerReviewDueDate = data['peerReviewDueDate'];
+
             var existingDistributePeerReviewsForSections = JSON.parse(data['distributePeerReviewsForSections']);
             if(existingDistributePeerReviewsForSections !== null) {
                 this.distributePeerReviewsForSections = existingDistributePeerReviewsForSections;
@@ -109,6 +111,7 @@
             submissionInProgress: false,
             distributePeerReviewsForSections: true,
             selectedPeerReviewOpenDate: null,
+            existingPeerReviewDueDate: null,
             peerReviewOpenDateIsPromptDueDate: true,
             peerReviewOpenHourChoices: _.map(_.range(1, 13), function(i) { return i.toString(); }),
             peerReviewOpenMinuteChoices: ['00', '15', '30', '45'],
@@ -191,8 +194,11 @@
             },
             peerReviewOpenDisabledDates: function() {
                 var dates = {};
-                if(this.promptDueDate) {
-                    dates = {to: moment(this.promptDueDate, displayDateFormat).toDate()};
+                if(this.promptDueDate && this.existingPeerReviewDueDate) {
+                    dates = {
+                        to: moment(this.promptDueDate, displayDateFormat).toDate(),
+                        from: moment(this.existingPeerReviewDueDate).toDate()
+                    };
                 }
                 return dates;
             },
@@ -237,7 +243,8 @@
                 }
                 var peerReviewOpenDate = moment(this.peerReviewOpenDate);
                 var promptDueDate = moment(this.promptDueDate, displayDateFormat);
-                return peerReviewOpenDate.isSameOrAfter(promptDueDate);
+                var peerReviewDueDate = moment(this.existingPeerReviewDueDate);
+                return peerReviewOpenDate.isSameOrAfter(promptDueDate) && peerReviewOpenDate.isSameOrBefore(peerReviewDueDate);
             }
         },
         // TODO this didn't work, but I'm leaving it here in case it can be modified in the future when we have more
