@@ -35,7 +35,7 @@
                         <div class="mdl-card__supporting-text">
                             <div class="icon-container validation-container">
                                 {% if review_to_complete.completed %}
-                                    <i class="material-icons icon-24px">done</i>
+                                    <i class="material-icons icon-24px">{% if review_to_complete.is_late %}report_problem{% else %}done{% endif %}</i>
                                     <span class="icon-caption">Submitted {% if review_to_complete.is_late %}Late{% else %}On Time{% endif %} ({{ review_to_complete.submit_time|date:"n/j/y g:iA" }})</span>
                                 {% else %}
                                     <i class="material-icons icon-24px">info_outline</i>
@@ -71,7 +71,7 @@
                         <div class="mdl-card__supporting-text">
                             <div class="icon-container validation-container">
                                 {% if review_to_receive.received %}
-                                    <i class="material-icons icon-24px">done</i>
+                                    <i class="material-icons icon-24px">{% if review_to_receive.is_late %}report_problem{% else %}done{% endif %}</i>
                                     <span class="icon-caption">Submitted {% if review_to_receive.is_late %}Late{% else %}On Time{% endif %} ({{ review_to_receive.submit_time|date:"n/j/y g:iA" }})</span>
                                 {% else %}
                                     <i class="material-icons icon-24px">info_outline</i>
