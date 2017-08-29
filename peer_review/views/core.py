@@ -494,24 +494,30 @@ class ReviewsForAStudentView(HasRoleMixin, TemplateView):
         number_of_criteria = Rubric.num_criteria.__get__(rubric)
         submission = rubric.reviewed_assignment.canvas_submission_set.get(author__id=student.id)
 
+        due_date_passed = datetime.now(tzutc()) > rubric.passback_assignment.due_date_utc
+
         completed = []
         completed_num = 0
         total_completed = CanvasSubmission.total_completed_by_a_student.__get__(submission)
         for peer_review in total_completed:
             completed_review = False
-            submit_time = ''
+            submit_time = None
             comments = PeerReviewComment.objects.filter(peer_review__id=peer_review.id)
             if comments.count() >= number_of_criteria:
                 submit_time = comments.aggregate(Max('commented_at_utc'))['commented_at_utc__max']
                 completed_review = True
                 completed_num += 1
 
+            is_late = True if submit_time is None else submit_time > rubric.passback_assignment.due_date_utc
+
             completed.append({
                 'student': peer_review.submission.author,
                 'student_first_name': peer_review.submission.author.full_name.split()[0],
                 'completed': completed_review,
                 'submission': peer_review.submission,
-                'submit_time': submit_time
+                'submit_time': submit_time,
+                'is_late': is_late,
+                'review_status_incomplete': not completed_review and due_date_passed
             })
 
         received = []
@@ -519,18 +525,22 @@ class ReviewsForAStudentView(HasRoleMixin, TemplateView):
         total_received = CanvasSubmission.total_received_of_a_student.__get__(submission)
         for peer_review in total_received:
             received_review = False
-            submit_time = ''
+            submit_time = None
             comments = PeerReviewComment.objects.filter(peer_review__id=peer_review.id)
             if comments.count() >= number_of_criteria:
                 submit_time = comments.aggregate(Max('commented_at_utc'))['commented_at_utc__max']
                 received_review = True
                 received_num += 1
 
+            is_late = True if submit_time is None else submit_time > rubric.passback_assignment.due_date_utc
+
             received.append({
                 'student': peer_review.student,
                 'student_first_name': peer_review.student.full_name.split()[0],
                 'received': received_review,
-                'submit_time': submit_time
+                'submit_time': submit_time,
+                'is_late': is_late,
+                'review_status_incomplete': not received_review and due_date_passed
             })
 
         if '@' in student.username:
@@ -554,7 +564,7 @@ class ReviewsForAStudentView(HasRoleMixin, TemplateView):
                 'submission': submission,
                 'title': course.name,
                 'course_id': course.id,
-                'due_date_passed': datetime.now(tzutc()) > rubric.passback_assignment.due_date_utc}
+                'due_date_passed': due_date_passed}
 
 
 class AllStudentsReviews(HasRoleMixin, TemplateView):
