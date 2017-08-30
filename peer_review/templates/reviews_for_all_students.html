@@ -21,9 +21,9 @@
             <i class="material-icons dropdown-icon">arrow_drop_down</i>
         </button>
         <div class="dropdown-content">
-            <a class="dropdown-link" href="#">All Sections</a>
+            <a class="dropdown-link" href="#" data-section-id="all">All Sections</a>
             {% for section in sections %}
-                <a class="dropdown-link" href="#">{{section.name}}</a>
+                <a class="dropdown-link" href="#" data-section-id={{ section.id }}>{{ section.name }}</a>
             {% endfor %}
         </div>
     </div>
@@ -37,7 +37,7 @@
         </thead>
         <tbody>
             {% for student in students %}
-                <tr class="student_entry" data-student-id={{review.author.id}} data-rubric-id={{rubric.id}}>
+                <tr class="student_entry" data-student-id={{ student.id }} data-sections="{{ student.json_sections }}">
                     <td class="student_name">{{ student.name }}</td>
                     <td class="student_section">
                         {% if student.sections.count > 1 %}
@@ -45,7 +45,7 @@
                                 {{ section.name }}{% if forloop.counter < student.sections.count %},{% endif %}
                             {% endfor %}
                         {% else %}
-                            {{ sections.0.name }}
+                            {{ student.sections.0.name }}
                         {% endif %}
                     </td>
                 </tr>

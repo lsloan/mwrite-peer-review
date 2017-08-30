@@ -579,9 +579,12 @@ class AllStudentsReviews(HasRoleMixin, TemplateView):
 
         student_data = []
         for student in canvas_students:
+            sections = student.sections.all()
             student_data.append({
+                'id': student.id,
                 'name': student.sortable_name,
-                'sections': student.sections.all()
+                'sections': sections,
+                'json_sections': json.dumps(list(sections.values_list('id', flat=True)))
             })
 
         return {
