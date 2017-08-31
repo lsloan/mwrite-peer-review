@@ -45,6 +45,8 @@ ALLOWED_HOSTS = getenv_csv('MWRITE_PEER_REVIEW_ALLOWED_HOSTS')
 
 APP_HOST = os.environ['MWRITE_PEER_REVIEW_APP_HOST']
 
+GOOGLE_ANALYTICS_TRACKING_ID = os.environ.get('MWRITE_PEER_REVIEW_GOOGLE_ANALYTICS_TRACKING_ID')
+
 # Storage configuration
 MEDIA_ROOT = os.environ['MWRITE_PEER_REVIEW_SUBMISSIONS_PATH']
 
@@ -119,6 +121,7 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+                'peer_review.context_processors.google_analytics'
             ],
         },
     },
