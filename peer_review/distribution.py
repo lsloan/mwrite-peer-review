@@ -72,7 +72,7 @@ def distribute_reviews(rubric, utc_timestamp, force_distribution=False):
 
             reviews.update(reviews_for_section)
     else:
-        log.info('Submissions for prompt %d will be distributed across all sections' % rubric.prompt.id)
+        log.info('Submissions for prompt %d will be distributed across all sections' % rubric.reviewed_assignment.id)
         submissions = rubric.reviewed_assignment.canvas_submission_set
         students = submissions.values('author')
         reviews, _ = make_distribution(students, submissions)
