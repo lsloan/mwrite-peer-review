@@ -49,6 +49,12 @@ def distribute_reviews(rubric, utc_timestamp, force_distribution=False):
     log.info('Beginning review distribution for rubric %d' % rubric.id)
 
     if rubric.distribute_peer_reviews_for_sections:
+
+        if not rubric.sections.all().exists():
+            msg = 'Rubric %d is setup to distribute within sections, but no sections are configured!'
+            log.error(msg)
+            raise RuntimeError(msg)
+
         log.info('Submissions for prompt %d will be distributed only within sections' % rubric.reviewed_assignment.id)
         reviews = {}
         for section in rubric.sections.all():
