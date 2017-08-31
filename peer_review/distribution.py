@@ -74,7 +74,7 @@ def distribute_reviews(rubric, utc_timestamp, force_distribution=False):
     else:
         log.info('Submissions for prompt %d will be distributed across all sections' % rubric.reviewed_assignment.id)
         submissions = rubric.reviewed_assignment.canvas_submission_set.all()
-        students = submissions.values('author')
+        students = CanvasStudent.objects.filter(id__in=submissions.values_list('author', flat=True))
         reviews, _ = make_distribution(students, submissions)
 
     peer_reviews = [PeerReview(student_id=student_id, submission_id=submission_id)
