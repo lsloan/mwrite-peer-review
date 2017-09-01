@@ -58,11 +58,13 @@ class CanvasSubmission(models.Model):
     author = models.ForeignKey(CanvasStudent, on_delete=models.DO_NOTHING)
     assignment = models.ForeignKey(CanvasAssignment, on_delete=models.DO_NOTHING, related_name='canvas_submission_set')
     filename = models.CharField(unique=True, max_length=255)
-    
+
+    # TODO this needs a better name -- these are just assigned, may not be actually completed
     @property
     def total_completed_by_a_student(self):
         return PeerReview.objects.filter(student=self.author, submission__assignment=self.assignment)
-                            
+
+    # TODO this needs a better name -- these are just assigned, may not be actually received
     @property
     def total_received_of_a_student(self):
         return PeerReview.objects.filter(submission=self)
