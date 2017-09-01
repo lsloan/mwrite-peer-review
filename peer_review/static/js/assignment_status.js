@@ -48,12 +48,12 @@ $(function() {
     });
 
     $('.dropdown-link').on('click', function() {
-        var section = $(this).text();
-        var student_section = ".student_section";
+        var selectedSectionId = $(this).data('section-id');
 
-        if(section !== "All Sections") {
+        if(selectedSectionId !== "all") {
             $(studentEntrySelector).each(function() {
-                if($(this).find(student_section).text() === section) {
+                var studentEntrySections = $(this).data('sections');
+                if($.inArray(selectedSectionId, studentEntrySections) !== -1) {
                     $(this).show();
                 } else {
                     $(this).hide();
@@ -64,6 +64,8 @@ $(function() {
                 $(this).show();
             });
         }
+
+        $('.dropdown-content').hide();
     });
 
     $(".table_header").on("click", function() {
