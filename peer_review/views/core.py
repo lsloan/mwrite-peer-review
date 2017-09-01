@@ -434,7 +434,8 @@ class AssignmentStatus(HasRoleMixin, TemplateView):
                 'completed': completed_reviews,
                 'total_received': total_received_num,
                 'received': received_reviews,
-                'sections': author_sections
+                'sections': author_sections,
+                'json_sections': json.dumps(list(author_sections.values_list('id', flat=True)))
             })
 
         sections.sort(key=lambda s: s.name)
