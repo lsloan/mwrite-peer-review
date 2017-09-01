@@ -70,7 +70,9 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'rolepermissions',
     'djangolti',
-    'peer_review'
+    'peer_review',
+    'health_check',
+    'health_check.db'
 ]
 
 MIDDLEWARE = [
