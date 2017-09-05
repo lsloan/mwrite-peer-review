@@ -1,0 +1,45 @@
+{% extends 'base_mdl.html' %}
+{% load static %}
+
+{% block header %}
+    <link rel="stylesheet" href="{% static 'css/reviews_of_my_work.css' %}" />
+{% endblock %}
+
+{% block nav_links %}
+    {% if user_is_instructor %}
+        <nav class="mdl-navigation">
+            <a class="mdl-navigation__link peer_review" href="/course/{{ course_id }}/dashboard/instructor">PEER REVIEW</a>
+            <a class="mdl-navigation__link students" href="/course/{{ course_id }}/review/students">STUDENTS</a>
+        </nav>
+    {% endif %}
+{% endblock %}
+
+{% block content %}
+    <div class="mdl-grid">
+        <div class="mdl-cell mdl-cell--2-col mdl-cell--2-col-tablet mdl-cell-1-col-phone"></div>
+        <div class="mdl-card mdl-shadow--2dp mdl-cell mdl-cell--8-col mdl-cell--6-col-tablet mdl-cell-2-col-phone">
+            <div class="mdl-card__title">
+                <h1 class="mdl-card__title-text">Comments For {{ prompt_title }}</h1>
+            </div>
+            <div class="mdl-card__supporting-text">
+                {% for criterion, comments in review %}
+                    <div class="mdl-card mdl-shadow--2dp criterion-comments-card">
+                        <div class="mdl-card__supporting-text">
+                            <p>{{ criterion.description }}</p>
+                            <div class="mdl-list">
+                                {% for comment in comments %}
+                                    <div class="mdl-list__item">
+                                        <span class="mdl-list__item-primary-content">
+                                            <span><b>{% if user_is_instructor %}{{ comment.peer_review.student.full_name }}{% else %}Anonymous {{ forloop.counter }}{% endif %} said</b> "{{ comment.comment }}"</span>
+                                        </span>
+                                    </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+        <div class="mdl-cell mdl-cell--2-col mdl-cell--2-col-tablet mdl-cell-1-col-phone"></div>
+    </div>
+{% endblock %}

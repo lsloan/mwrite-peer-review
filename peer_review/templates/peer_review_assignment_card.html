@@ -1,0 +1,75 @@
+<div class="peer-review-assignment-card mdl-card mdl-cell mdl-cell--3-col mdl-shadow--2dp"
+     data-prompt-id="{{ review.assignment.rubric_for_review.reviewed_assignment_id }}"
+     data-revision-id="{{ review.assignment.rubric_for_review.revision_assignment_id }}"
+     data-reviews-in-progress="{% if review.assignment.rubric_for_review.peer_review_distribution.is_distribution_complete %}true{% else %}false{% endif %}">
+    <div class="mdl-card__title mdl-card--expand">
+        <h2 class="mdl-card__title-text">{{ review.assignment.title }}</h2>
+    </div>
+    <div class="mdl-card__supporting-text">
+        <div class="icon-container validation-container">
+            {% if review.assignment.rubric_for_review %}
+                <i class="material-icons icon-24px ok-icon-color">done</i>
+                <span class="icon-caption">Rubric was configured correctly</span>
+            {% else %}
+                <i class="material-icons icon-24px">not_interested</i>
+                <span class="icon-caption">Rubric has not been created</span>
+            {% endif %}
+        </div>
+    </div>
+    {% if review.assignment.rubric_for_review %}
+        <div class="mdl-card__supporting-text">
+            <div class="icon-container">
+                <i class="material-icons icon-24px">date_range</i>
+                <span class="icon-caption">
+                    {% if review.assignment.rubric_for_review.peer_review_distribution.is_distribution_complete %}
+                        Opened
+                    {% else %}
+                        Will open
+                    {% endif %}
+                    {% if review.assignment.rubric_for_review.reviewed_assignment.due_date_utc %}
+                        {{ review.assignment.rubric_for_review.peer_review_open_date | date:'F j g:i A' }}
+                    {% else %}
+                        anytime
+                    {% endif %}
+                </span>
+            </div>
+        </div>
+    {% endif %}
+    
+    <div class="mdl-card__supporting-text">
+        <div class="icon-container">
+            <i class="material-icons icon-24px">query_builder</i>
+            <span class="icon-caption">Due by {% if review.assignment.due_date_utc %}{{ review.assignment.due_date_utc | date:'F j g:i A' }}{% else %}anytime{% endif %}</span>
+        </div>
+    </div>
+
+    <div class="mdl-card__supporting-text">
+        <div class="icon-container">
+            {% if review.assignment.rubric_for_review.peer_review_distribution.is_distribution_complete %}
+                <i class="material-icons icon-24px">trending_up</i>
+                <span class="icon-caption">{{review.received_reviews }} of {{ review.num_reviews }} reviews received</span>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="mdl-card__actions mdl-card--border">
+        <a class="mdl-button mdl-button--colored mdl-js-button mdl-js-ripple-effect rubric_link_left"
+           href="/course/{{ course_id }}/rubric/assignment/{{ review.assignment.id }}">
+            {% if review.assignment.rubric_for_review %}
+                {% if review.assignment.rubric_for_review.peer_review_distribution.is_distribution_complete %}
+                    View
+                {% else %}
+                    Edit
+                {% endif %}
+            {% else %}
+                Create
+            {% endif %} Rubric
+        </a>
+        {% if review.assignment.rubric_for_review.peer_review_distribution.is_distribution_complete %}
+            <a class="mdl-button mdl-button--colored mdl-js-button mdl-js-ripple-effect review_link"
+               href="/course/{{ course_id }}/status/rubric/{{ review.assignment.rubric_for_review.id }}/all">
+                View Reviews
+            </a>
+        {% endif %}
+    </div>
+</div>

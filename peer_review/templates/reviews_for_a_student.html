@@ -1,0 +1,103 @@
+{% extends 'base_student_reviews.html' %}
+{% load static %}
+
+{% block header %}
+    <link rel="stylesheet" href="{% static 'css/common.css' %}" />
+    <link rel="stylesheet" href="{% static 'css/student_reviews_header.css' %}" />
+    <link rel="stylesheet" href="{% static 'css/reviews_for_a_student.css' %}" />
+    <script src="{% static 'js/common.js' %}" ></script>
+    <script src="{% static 'js/student_reviews_header.js' %}" ></script>
+{% endblock %}
+
+{% block download_suffix %}/rubric/{{ rubric_id }}{% endblock %}
+
+{% block subcontent %}
+
+    <div class="mdl-grid">
+        <div class="mdl-cell mdl-cell--4-col">
+            <p class="completed_received_title">{{student_first_name}} completed {{completed_num}}/{{total_completed}} peer reviews</p>
+        </div>
+        <div class="mdl-cell mdl-cell--4-col">
+            <p class="completed_received_title">{{student_first_name}} received {{received_num}}/{{total_received}} peer reviews</p>
+        </div>
+        <div class="mdl-cell mdl-cell--4-col"></div>
+    </div>
+
+    {% for review_to_complete, review_to_receive in completed_and_received_reviews %}
+        <div class="mdl-grid">
+            <div class="mdl-cell mdl-cell--4-col mdl-cell--4-col-tablet">
+                {% if review_to_complete %}
+                    <div class="mdl-card mdl-shadow--2dp">
+                        <div class="mdl-card__title {% if review_to_complete.review_status_incomplete %}review-status-incomplete{% else %}review-status-ok{% endif %}">
+                            <h2 class="mdl-card__title-text">To {{ review_to_complete.student.full_name }}</h2>
+                        </div>
+
+                        <div class="mdl-card__supporting-text">
+                            <div class="icon-container validation-container">
+                                {% if review_to_complete.completed %}
+                                    <i class="material-icons icon-24px">{% if review_to_complete.is_late %}report_problem{% else %}done{% endif %}</i>
+                                    <span class="icon-caption">Submitted {% if review_to_complete.is_late %}Late{% else %}On Time{% endif %} ({{ review_to_complete.submit_time|date:"n/j/y g:iA" }})</span>
+                                {% else %}
+                                    <i class="material-icons icon-24px">info_outline</i>
+                                    <span class="icon-caption">{{ student_first_name }} did not submit a peer review for {{ review_to_complete.student_first_name }}</span>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <div class="mdl-card__actions mdl-card--border">
+                            {% if not review_to_complete.completed %}
+                                <a class='mdl-button mdl-js-button mdl-js-ripple-effect review_link' href="mailto:{{ student_email }}">
+                                    Email {{ student_first_name }}
+                                </a>
+                                <a class='mdl-button mdl-js-button mdl-js-ripple-effect review_link' href="/course/{{ course_id }}/submissions/{{ submission.id }}/download">
+                                    See {{ review_to_complete.student_first_name }}'s submission
+                                </a>
+                            {% else %}
+                                <a class='mdl-button mdl-js-button mdl-js-ripple-effect review_link' href="/course/{{ course_id }}/review/submission/{{ review_to_complete.submission.id }}/completed">
+                                    See review
+                                </a>
+                            {% endif %}
+                        </div>
+                    </div>
+                {% endif %}
+            </div>
+            <div class="mdl-cell mdl-cell--4-col mdl-cell--4-col-tablet">
+                {% if review_to_receive %}
+                    <div class="mdl-card mdl-shadow--2dp">
+                        <div class="mdl-card__title {% if review_to_receive.review_status_incomplete %}review-status-incomplete{% else %}review-status-ok{% endif %}">
+                            <h2 class="mdl-card__title-text">From {{ review_to_receive.student.full_name }}</h2>
+                        </div>
+
+                        <div class="mdl-card__supporting-text">
+                            <div class="icon-container validation-container">
+                                {% if review_to_receive.received %}
+                                    <i class="material-icons icon-24px">{% if review_to_receive.is_late %}report_problem{% else %}done{% endif %}</i>
+                                    <span class="icon-caption">Submitted {% if review_to_receive.is_late %}Late{% else %}On Time{% endif %} ({{ review_to_receive.submit_time|date:"n/j/y g:iA" }})</span>
+                                {% else %}
+                                    <i class="material-icons icon-24px">info_outline</i>
+                                    <span class="icon-caption">{{ student_first_name }} did not receive a peer review from {{ review_to_receive.student_first_name }}</span>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <div class="mdl-card__actions mdl-card--border">
+                            {% if not review_to_receive.received %}
+                                <a class='mdl-button mdl-js-button mdl-js-ripple-effect review_link' href="mailto:{{ student_email }}">
+                                    Email {{ review_to_receive.student_first_name }}
+                                </a>
+                                <a class='mdl-button mdl-js-button mdl-js-ripple-effect review_link' href="/course/{{ course_id }}/submissions/{{ submission.id }}/download">
+                                    See {{ student_first_name }}'s submission
+                                </a>
+                            {% else %}
+                                <a class='mdl-button mdl-js-button mdl-js-ripple-effect review_link' href="/course/{{ course_id }}/review/submission/{{ submission.id }}/completed">
+                                    See review
+                                </a>
+                            {% endif %}
+                        </div>
+                    </div>
+                {% endif %}
+            </div>
+            <div class="mdl-cell mdl-cell--4-col"></div>
+        </div>
+    {% endfor %}
+{% endblock %}

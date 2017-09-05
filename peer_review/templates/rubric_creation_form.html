@@ -1,0 +1,301 @@
+{% extends 'base_instructor.html' %}
+{% load static %}
+
+{% block header %}
+    <link rel="stylesheet" href="{% static 'css/common.css' %}" />
+    <link rel="stylesheet" href="{% static 'css/rubric_creation_form.css' %}"/>
+
+    <script defer src="{% static 'js/lib/momentjs/moment.min.js' %}"></script>
+
+    <script defer src="{% static 'js/lib/vue/vue.js' %}"></script>
+    <script defer src="{% static 'js/lib/vue-mdl/vue-mdl.js' %}"></script>
+
+    <script defer src="{% static 'js/lib/vuejs-datepicker/build.js' %}"></script>
+    <script defer src="{% static 'js/lib/autoresize/autosize.min.js' %}"></script>
+    <script defer src="{% static 'js/components/autosize_textarea.js' %}"></script>
+    <script defer src="{% static 'js/components/dropdown.js' %}"></script>
+
+    <script defer src="{% static 'js/util.js' %}"></script>
+    <script defer src="{% static 'js/validation.js' %}"></script>
+
+    <script defer src="{% static 'js/rubric_creation_form.js' %}"></script>
+{% endblock %}
+
+{% block content %}
+
+    <div id="vue-root">
+        <form id="rubric-form"
+              @submit.prevent
+              action="/course/{{ course_id }}/rubric/assignment/{{ passback_assignment_id }}"
+              data-assignments="{{ potential_prompts_and_rubrics }}"
+              data-validation-info="{{ validations }}"
+              data-existing-rubric-description="{{ existing_rubric.description }}"
+              data-existing-prompt-id="{% if existing_prompt %}{{ existing_prompt.id }}{% else %}null{% endif %}"
+              data-existing-revision-id="{% if existing_revision %}{{ existing_revision.id }}{% else %}null{% endif %}"
+              data-peer-review-due-date="{% if existing_rubric and existing_rubric.passback_assignment.due_date_utc %}{{ existing_rubric.passback_assignment.due_date_utc|date:"c" }}{% endif %}"
+              data-peer-review-open-date="{% if existing_rubric and existing_rubric.peer_review_open_date %}{{ existing_rubric.peer_review_open_date|date:"c" }}{% else %}null{% endif %}"
+              data-peer-review-open-date-is-prompt-due-date={% if existing_rubric and not existing_rubric.peer_review_open_date_is_prompt_due_date %}false{% else %}true{% endif %}
+              data-distribute-peer-reviews-for-sections={% if existing_rubric %}{% if existing_rubric.distribute_peer_reviews_for_sections %}true{% else %}false{% endif %}{% else %}null{% endif %}
+              data-existing-criteria="{{ criteria }}"
+              data-review-is-in-progress={% if review_is_in_progress %}true{% else %}false{% endif %}>
+
+            {% csrf_token %}
+
+            {% verbatim %}
+
+                <template v-if="reviewIsInProgress">
+                    <div class="mdl-grid">
+                        <div class="mdl-cell mdl-cell--1-col mdl-cell--1-col-tablet mdl-cell-1-col-phone"></div>
+                        <mdl-card
+                                class="read-only-rubric-card mdl-shadow--2dp mdl-cell mdl-cell--10-col mdl-cell--6-col-tablet mdl-cell-2-col-phone"
+                                supporting-text="Reviews are in progress, so this rubric is now read-only."></mdl-card>
+                        <div class="mdl-cell mdl-cell--1-col mdl-cell--1-col-tablet mdl-cell-1-col-phone"></div>
+                    </div>
+                </template>
+
+                <div class="mdl-grid">
+                    <div class="mdl-cell mdl-cell--1-col mdl-cell--1-col-tablet mdl-cell-1-col-phone"></div>
+
+                    <!-- TODO pull this out into its own component -->
+                    <!-- TODO double check markup vs the below -->
+                    <mdl-card
+                            id="prompt-card"
+                            class="mdl-shadow--2dp mdl-cell mdl-cell--10-col mdl-cell--6-col-tablet mdl-cell-2-col-phone"
+                            title="Writing Prompt"
+                            supporting-text="slot">
+                        <div slot="supporting-text">
+                            <div class="mdl-card__supporting-text">
+
+                                <dropdown
+                                        id="prompt-menu"
+                                        label="The rubric will be applied to the following assignment:"
+                                        v-model="selectedPrompt"
+                                        :options="promptChoices"
+                                        :disabled="reviewIsInProgress"
+                                        empty-caption="Select an assignment">
+                                </dropdown>
+                                <p v-if="promptSection && promptDueDate" class="assignment-info">
+                                    This prompt is assigned to {{ promptSection }} and is due {{ promptDueDate }}.
+                                </p>
+                            </div>
+
+                            <!-- TODO this could be abstracted into its own component -->
+                            <div v-if="promptIssues.length > 0" class="mdl-card__supporting-text validations-container">
+                                <ul class="mdl-list">
+                                    <li v-for="issue in promptIssues" class="mdl-list__item">
+                                        <span class="mdl-list__item-primary-content">
+                                            <i v-if="issue.fatal" class="material-icons mdl-list__item-icon">warning</i>
+                                            <i v-else class="material-icons mdl-list__item-icon">error_outline</i>
+                                            {{ issue.message }}
+                                        </span>
+                                    </li>
+                                </ul>
+                            </div>
+
+                        </div>
+                    </mdl-card>
+
+                    <div class="mdl-cell mdl-cell--1-col mdl-cell--1-col-tablet mdl-cell-1-col-phone"></div>
+                </div>
+
+                <div class="mdl-grid">
+                    <div class="mdl-cell mdl-cell--1-col mdl-cell--1-col-tablet mdl-cell-1-col-phone"></div>
+
+                    <mdl-card
+                            class="mdl-card mdl-shadow--2dp mdl-cell mdl-cell--10-col mdl-cell--6-col-tablet mdl-cell-2-col-phone"
+                            title="Peer Review"
+                            supporting-text="slot">
+                        <div slot="supporting-text">
+                            <div class="mdl-card__supporting-text">
+                                <mdl-switch v-model="distributePeerReviewsForSections" :disabled="reviewIsInProgress">
+                                    Distribute peer reviews only to students in the same section
+                                </mdl-switch>
+                            </div>
+                            <div class="mdl-card__supporting-text">
+                                <mdl-switch v-model="peerReviewOpenDateIsPromptDueDate" :disabled="reviewIsInProgress">
+                                    Use the writing prompt's due date as the peer review open date
+                                </mdl-switch>
+                            </div>
+                            <div v-if="!peerReviewOpenDateIsPromptDueDate" class="mdl-card__supporting-text datetime-container">
+                                <p>Enter a custom date:</p>
+                                <div>
+                                    <datepicker
+                                            format="MMM d yyyy"
+                                            placeholder="Day"
+                                            :disabled="peerReviewOpenDisabledDates"
+                                            :disabled-picker="reviewIsInProgress"
+                                            v-model="selectedPeerReviewOpenDate">
+                                    </datepicker>
+                                </div>
+                                <div>
+                                    <mdl-select
+                                            id="peer-review-open-hour-select"
+                                            label="Hour"
+                                            v-model="peerReviewOpenHour"
+                                            :disabled="reviewIsInProgress"
+                                            :options="peerReviewOpenHourChoices">
+                                    </mdl-select>
+                                </div>
+                                <div>
+                                    <mdl-select
+                                            id="peer-review-open-minute-select"
+                                            label="Minute"
+                                            v-model="peerReviewOpenMinute"
+                                            :disabled="reviewIsInProgress"
+                                            :options="peerReviewOpenMinuteChoices">
+                                    </mdl-select>
+                                </div>
+                                <div>
+                                    <mdl-select
+                                            id="peer-review-open-ampm-select"
+                                            label="AM / PM"
+                                            v-model="peerReviewOpenAMPM"
+                                            :disabled="reviewIsInProgress"
+                                            :options="peerReviewOpenAMPMChoices">
+                                    </mdl-select>
+                                </div>
+
+                            </div>
+                            <div class="mdl-card__supporting-text">
+                                <p v-if="peerReviewOpenDateIsValid">
+                                    Peer reviews will be distributed at {{ peerReviewOpenDateStr }}.  Students who have
+                                    not completed the writing prompt assignment in Canvas by this date will be unable
+                                    to participate in peer review.
+                                </p>
+                                <p v-else-if="!peerReviewOpenDateIsPromptDueDate">
+                                    The peer review open date must be between the prompt assignments's due date and the peer review's due date.
+                                </p>
+                            </div>
+                        </div>
+                    </mdl-card>
+
+                    <div class="mdl-cell mdl-cell--1-col mdl-cell--1-col-tablet mdl-cell-1-col-phone"></div>
+                </div>
+
+                <template v-if="!(reviewIsInProgress && !selectedRevision.value)">
+                    <div class="mdl-grid">
+                        <div class="mdl-cell mdl-cell--1-col mdl-cell--1-col-tablet mdl-cell-1-col-phone"></div>
+
+                        <!-- TODO pull this out into its own component -->
+                        <!-- TODO double check markup vs the above -->
+                        <mdl-card
+                                class="mdl-card mdl-shadow--2dp mdl-cell mdl-cell--10-col mdl-cell--6-col-tablet mdl-cell-2-col-phone"
+                                title="Revision"
+                                supporting-text="slot">
+                            <div slot="supporting-text">
+                                <div class="mdl-card__supporting-text">
+                                    <dropdown
+                                            id="revision-menu"
+                                            label="If students will be completing a revision, please select the revision assignment here."
+                                            v-model="selectedRevision"
+                                            :options="revisionChoices"
+                                            :disabled="reviewIsInProgress">
+                                    </dropdown>
+                                    <p v-if="revisionSection && revisionDueDate" class="assignment-info">
+                                        This revision is assigned to {{ revisionSection }} and is due {{ revisionDueDate }}.
+                                    </p>
+                                </div>
+
+                                <!-- TODO this could be abstracted into its own component -->
+                                <div v-if="revisionIssues.length > 0" class="mdl-card__supporting-text validations-container">
+                                    <ul class="mdl-list">
+                                        <li v-for="issue in revisionIssues" class="mdl-list__item">
+                                            <span class="mdl-list__item-primary-content">
+                                                <i v-if="issue.fatal" class="material-icons mdl-list__item-icon">warning</i>
+                                                <i v-else class="material-icons mdl-list__item-icon">error_outline</i>
+                                                {{ issue.message }}
+                                            </span>
+                                        </li>
+                                    </ul>
+                                </div>
+
+                            </div>
+                        </mdl-card>
+
+                        <div class="mdl-cell mdl-cell--1-col mdl-cell--1-col-tablet mdl-cell-1-col-phone"></div>
+                    </div>
+                </template>
+
+                <div class="mdl-grid">
+                    <div class="mdl-cell mdl-cell--1-col mdl-cell--1-col-tablet mdl-cell-1-col-phone"></div>
+
+                    <mdl-card
+                            class="mdl-card mdl-shadow--2dp mdl-cell mdl-cell--10-col mdl-cell--6-col-tablet mdl-cell-2-col-phone"
+                            title="Description"
+                            supporting-text="slot">
+                        <div slot="supporting-text" class="mdl-card__supporting-text">
+                            <autosize-textarea v-model="rubricDescription" label="Enter a description for this rubric here." :disabled="reviewIsInProgress"></autosize-textarea>
+                        </div>
+                    </mdl-card>
+
+                    <div class="mdl-cell mdl-cell--1-col mdl-cell--1-col-tablet mdl-cell-1-col-phone"></div>
+                </div>
+
+                <div class="mdl-grid">
+                    <div class="mdl-cell mdl-cell--1-col mdl-cell--1-col-tablet mdl-cell-1-col-phone"></div>
+
+                    <mdl-card
+                            class="mdl-card mdl-shadow--2dp mdl-cell mdl-cell--10-col mdl-cell--6-col-tablet mdl-cell-2-col-phone"
+                            title="Criteria"
+                            supporting-text="slot"
+                            :actions="!reviewIsInProgress ? 'slot' : ''">
+                        <div slot="supporting-text" class="criteria-container mdl-card__supporting-text">
+
+                            <mdl-card v-for="(criterion, index) in criteria" :key="criterion.id" class="criterion-card mdl-shadow--2dp" supporting-text="slot">
+                                <div slot="supporting-text">
+                                    <div v-if="!reviewIsInProgress && index > 0" class="criterion-delete-button-container">
+                                        <button type="button" class="mdl-chip__action" tabindex="-1" @click="removeCriterion(criterion.id)">
+                                            <i class="material-icons">cancel</i>
+                                        </button>
+                                    </div>
+                                    <div class="mdl-card__supporting-text">
+                                        <autosize-textarea v-model="criterion.description" label="Enter a description for this criterion here." :disabled="reviewIsInProgress"></autosize-textarea>
+                                    </div>
+                                </div>
+                            </mdl-card>
+
+                        </div>
+                        <div slot="actions" class="mdl-card__actions">
+                            <button type="button"
+                                    class="mdl-button mdl-js-button mdl-button--fab mdl-button--mini-fab mdl-button--colored"
+                                    @click="addCriterion">
+                                <i class="material-icons">add</i>
+                            </button>
+                        </div>
+                    </mdl-card>
+
+                    <div class="mdl-cell mdl-cell--1-col mdl-cell--1-col-tablet mdl-cell-1-col-phone"></div>
+                </div>
+
+                <template v-if="!reviewIsInProgress">
+
+                    <div class="mdl-grid">
+                        <div class="mdl-cell mdl-cell--1-col mdl-cell--1-col-tablet mdl-cell-1-col-phone"></div>
+                        <div class="mdl-cell mdl-cell--10-col mdl-cell--6-col-tablet mdl-cell-2-col-phone">
+                            <button
+                                    class="mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect mdl-button--accent"
+                                    type="submit"
+                                    :disabled="!rubricIsValid || submissionInProgress"
+                                    @click="submitRubricForm">
+                                Submit
+                            </button>
+                        </div>
+                        <div class="mdl-cell mdl-cell--1-col mdl-cell--1-col-tablet mdl-cell-1-col-phone"></div>
+                    </div>
+
+                    <div class="mdl-grid">
+                        <div class="mdl-cell mdl-cell--1-col mdl-cell--1-col-tablet mdl-cell-1-col-phone"></div>
+                        <div class="mdl-cell mdl-cell--10-col mdl-cell--6-col-tablet mdl-cell-2-col-phone">
+                            <mdl-snackbar display-on="notification"></mdl-snackbar>
+                        </div>
+                        <div class="mdl-cell mdl-cell--1-col mdl-cell--1-col-tablet mdl-cell-1-col-phone"></div>
+                    </div>
+
+                </template>
+
+
+            {% endverbatim %}
+        </form>
+
+    </div>
+{% endblock %}

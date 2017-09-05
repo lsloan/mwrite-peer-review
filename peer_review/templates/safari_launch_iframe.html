@@ -1,0 +1,24 @@
+{% extends 'base_student.html' %}
+{% load static %}
+
+{% block header %}
+    <script defer="" src="{% static 'js/safari.js' %}"></script>
+{% endblock %}
+
+{% block content %}
+    <div>
+        <div class="mdl-grid">
+            <div class="mdl-cell mdl-cell--2-col mdl-cell--1-col-tablet mdl-cell-1-col-phone"></div>
+            <div class="mdl-cell mdl-cell--8-col mdl-cell--6-col-tablet mdl-cell-2-col-phone">
+                <p>Welcome to MWrite Peer Review!  Please click the button below to launch the tool.</p>
+                <button id="launch-button"
+                        data-referer="{{ referer }}"
+                        type="button"
+                        class="mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect mdl-button--accent">
+                    Launch M-Write Peer Review
+                </button>
+            </div>
+            <div class="mdl-cell mdl-cell--2-col mdl-cell--1-col-tablet mdl-cell-1-col-phone"></div>
+        </div>
+    </div>
+{% endblock%}

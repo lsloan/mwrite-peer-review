@@ -1,0 +1,29 @@
+<div class="peer_review_card_for_student mdl-card mdl-cell mdl-cell--3-col mdl-shadow--2dp">
+    {% if review.completed == review.total_completed and review.received == review.total_received %}
+        <div class="mdl-card__title mdl-card--expand review-status-ok">
+            <h2 class="mdl-card__title-text review_title">{{review.title}}</h2>
+        </div>
+    {% else %}
+        <div class="mdl-card__title mdl-card--expand review-status-incomplete">
+            <h2 class="mdl-card__title-text review_title">{{review.title}}</h2>
+        </div>
+    {% endif %}
+
+    <div class="mdl-card__supporting-text">
+        <div class="icon-container validation-container">
+        <i class="material-icons icon-24px">{% if review.completed == review.total_completed %}done{% else %}info_outline{% endif %}</i>
+        <span class="icon-caption">Submitted {{review.completed}}/{{review.total_completed}} peer reviews on time</span>
+        </div>
+    </div>
+
+    <div class="mdl-card__supporting-text">
+        <div class="icon-container validation-container">
+        <i class="material-icons icon-24px">{% if review.received == review.total_received %}done{% else %}info_outline{% endif %}</i>
+        <span class="icon-caption">Received {{review.received}}/{{review.total_received}} peer reviews</span>
+        </div>
+    </div>
+
+    <div class="mdl-card__actions mdl-card--border">
+        <a class="mdl-button mdl-js-button mdl-js-ripple-effect review_link" href="/course/{{ course_id }}/review/student/{{student_id}}/rubric/{{review.rubric_id}}">Go To {{review.title}}</a>
+    </div>
+</div>

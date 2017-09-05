@@ -7,6 +7,8 @@ from django.contrib.auth.backends import ModelBackend
 from django.contrib.auth import get_user_model
 from django.contrib.auth.models import AnonymousUser
 
+from rolepermissions.roles import assign_role
+
 from .models import NonceHistory
 from .utils import LtiRequestValidator
 
@@ -33,8 +35,22 @@ class LtiBackend(ModelBackend):
 
         return username_string
 
-    def authenticate(self, request, lti_launch_request):
+    @staticmethod
+    def _determine_role(lti_launch_request):
+        roles = lti_launch_request.roles
+        if 'Instructor' in roles or 'urn:lti:role:ims/lis/TeachingAssistant' in roles or 'ContentDeveloper' in roles:
+            role = 'instructor'
+        else:
+            role = 'student'
+        return role
+
+    def authenticate(self, request, lti_launch_request, url_course_id):
         validator = LtiRequestValidator()
+        if url_course_id != lti_launch_request.launch_params['custom_canvas_course_id']:
+            logger.warning('Tried to launch for course %d but LTI params specify course %d' %
+                           (url_course_id, lti_launch_request.launch_params['custom_canvas_course_id']))
+            logger.debug('LTI launch params: %s' % lti_launch_request.to_params())
+            raise PermissionDenied
         if not lti_launch_request.is_valid_request(validator):
             logger.warning(
                 ('LTI launch request is invalid (oauth_consumer_key: "%s")' %
@@ -61,6 +77,7 @@ class LtiBackend(ModelBackend):
                 UserModel.USERNAME_FIELD: username,
             })
             if created:
+                assign_role(user, LtiBackend._determine_role(lti_launch_request))
                 logger.info('LTI user created (%s)' % username)
         else:
             try:
