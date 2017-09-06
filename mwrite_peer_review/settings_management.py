@@ -37,7 +37,7 @@ def getenv_csv(var, default=''):
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
-SECRET_KEY = None
+SECRET_KEY = 'not_real'
 
 DEBUG = getenv_bool('MWRITE_PEER_REVIEW_DEBUG_MODE')
 
@@ -134,9 +134,11 @@ WSGI_APPLICATION = 'mwrite_peer_review.wsgi.application'
 
 # Database
 # https://docs.djangoproject.com/en/1.10/ref/settings/#databases
-
 DATABASES = {
-    'default': None
+    'default': {
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
+    }
 }
 
 
@@ -174,7 +176,7 @@ TIME_OUTPUT_FORMAT = '%b %-d %-I:%M %p'  # if running on Windows, replace - with
 # https://docs.djangoproject.com/en/1.10/howto/static-files/
 
 # TODO hacky. separate static files into their own artifact
-STATIC_URL = LTI_APP_REDIRECT if LTI_APP_REDIRECT[-1] == '/' else LTI_APP_REDIRECT + '/'
+STATIC_URL = '/'
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
