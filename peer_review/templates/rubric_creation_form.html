@@ -106,11 +106,14 @@
                             title="Peer Review"
                             supporting-text="slot">
                         <div slot="supporting-text">
-                            <div class="mdl-card__supporting-text">
+
+                            <!-- TODO disabled due to lack of demand -->
+                            <div v-if="false" class="mdl-card__supporting-text">
                                 <mdl-switch v-model="distributePeerReviewsForSections" :disabled="reviewIsInProgress">
                                     Distribute peer reviews only to students in the same section
                                 </mdl-switch>
                             </div>
+
                             <div class="mdl-card__supporting-text">
                                 <mdl-switch v-model="peerReviewOpenDateIsPromptDueDate" :disabled="reviewIsInProgress">
                                     Use the writing prompt's due date as the peer review open date

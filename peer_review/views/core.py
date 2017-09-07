@@ -159,10 +159,12 @@ class RubricCreationFormView(HasRoleMixin, TemplateView):
         else:
             peer_review_open_date_is_prompt_due_date = params['peer_review_open_date_is_prompt_due_date']
 
-        if 'distribute_peer_reviews_for_sections' not in params:
-            return HttpResponse('Missing flag for section-only peer review distribution')
-        else:
-            distribute_peer_reviews_for_sections = params['distribute_peer_reviews_for_sections']
+        # TODO disabled (for now) due to lack of demand
+        # if 'distribute_peer_reviews_for_sections' not in params:
+        #     return HttpResponse('Missing flag for section-only peer review distribution')
+        # else:
+        #     distribute_peer_reviews_for_sections = params['distribute_peer_reviews_for_sections']
+        distribute_peer_reviews_for_sections = False
 
         logger.info('peer review open date = %s' % peer_review_open_date)
 
