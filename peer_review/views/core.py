@@ -89,7 +89,7 @@ class RubricCreationFormView(HasRoleMixin, TemplateView):
         fetched_assignments = persist_assignments(course_id)
 
         try:
-            CanvasAssignment.objects.get(id=passback_assignment_id)
+            passback_assignment = CanvasAssignment.objects.get(id=passback_assignment_id)
         except CanvasAssignment.DoesNotExist:
             raise Http404
 
@@ -116,6 +116,7 @@ class RubricCreationFormView(HasRoleMixin, TemplateView):
         return {
             'course_id': course_id,
             'passback_assignment_id': passback_assignment_id,
+            'passback_assignment': passback_assignment,
             'potential_prompts_and_rubrics': json.dumps({a.id: a.title for a in assignments}),
             'validations': json.dumps({assignment.id: assignment.validation for assignment in fetched_assignments},
                                       default=AssignmentValidation.json_default),
