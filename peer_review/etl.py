@@ -36,7 +36,7 @@ def _due_dates_from_overrides(assignment, overrides):
     if assignment.get('due_at') is not None:
         due_date_utc = parse_datetime(assignment['due_at'])
     elif overrides and len(overrides) == 1:
-        due_date_utc = parse_datetime(overrides[0])
+        due_date_utc = parse_datetime(overrides[0]['due_at'])
     else:
         due_date_utc = None
         number_of_overrides = len(overrides) if overrides else 0
@@ -61,8 +61,17 @@ def _convert_assignment(assignment):
     assignment_id = assignment['id']
     overrides = retrieve('assignment-overrides', course_id, assignment_id) if assignment['has_overrides'] else None
     due_date_utc, number_of_due_dates = _due_dates_from_overrides(assignment, overrides)
-    sections = list(map(lambda o: o['course_section_id'], overrides)) if overrides else None
-    section_name = retrieve('section', course_id, sections[0])['name'] if sections and len(sections) == 1 else None
+
+    sections = None
+    section_name = None
+    if overrides:
+        sections = thread_last(overrides,
+                               (map, lambda o: o.get('course_section_id')),
+                               (remove, lambda o: o is None),
+                               list)
+        if sections and len(sections) == 1:
+            section_name = retrieve('section', course_id, sections[0])['name']
+
     validation = AssignmentValidation(submission_upload_type=assignment.get('submission_types'),
                                       allowed_extensions=assignment.get('allowed_extensions'),
                                       due_date_utc=due_date_utc,
