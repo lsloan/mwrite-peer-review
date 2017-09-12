@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-GUNICORN_WORKERS=1
+GUNICORN_WORKERS="${GUNICORN_WORKERS:-4}"
 GUNICORN_PORT=8000
 
 printenv >> /etc/environment
