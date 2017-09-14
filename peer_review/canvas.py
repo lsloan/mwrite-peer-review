@@ -29,7 +29,8 @@ _routes = {
                                  'enrollment_type[]': ['student'],
                                  'include[]':         ['enrollments']
                              }},
-    'sections':             {'route': 'courses/%s/sections'}
+    'sections':             {'route': 'courses/%s/sections'},
+    'section':              {'route': 'courses/%s/sections/%s'}
 }
 
 
