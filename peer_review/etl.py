@@ -35,7 +35,7 @@ class AssignmentValidation:
 def _due_dates_from_overrides(assignment, overrides):
     if assignment.get('due_at') is not None:
         due_date_utc = parse_datetime(assignment['due_at'])
-    elif overrides and len(overrides) == 1:
+    elif overrides and len(overrides) == 1 and overrides[0].get('due_at'):
         due_date_utc = parse_datetime(overrides[0]['due_at'])
     else:
         due_date_utc = None
