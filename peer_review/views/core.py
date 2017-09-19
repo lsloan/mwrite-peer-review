@@ -470,10 +470,14 @@ class SingleReviewDetailView(HasRoleMixin, TemplateView):
                     PeerReviewComment.objects.filter(criterion=criterion, peer_review_id__in=peer_review_ids)
                                              .order_by('peer_review__submission__author_id'))
                    for criterion in rubric.criteria.all()]
-        return {'title': CanvasCourse.objects.get(id=int(kwargs['course_id'])).name,
-                'prompt_title': submission.assignment.title,
-                'user_is_instructor': user_is_instructor,
-                'review': details}
+
+        course_id = int(kwargs['course_id'])
+        context = {'title': CanvasCourse.objects.get(id=course_id).name,
+                   'prompt_title': submission.assignment.title,
+                   'user_is_instructor': user_is_instructor,
+                   'review': details}
+        if user_is_instructor:
+            context['course_id'] = course_id
 
 
 class ReviewsForAStudentView(HasRoleMixin, TemplateView):
