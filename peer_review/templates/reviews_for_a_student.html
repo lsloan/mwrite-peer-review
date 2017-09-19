@@ -82,7 +82,7 @@
 
                         <div class="mdl-card__actions mdl-card--border">
                             {% if not review_to_receive.received %}
-                                <a class='mdl-button mdl-js-button mdl-js-ripple-effect review_link' href="mailto:{{ student_email }}">
+                                <a class='mdl-button mdl-js-button mdl-js-ripple-effect review_link' href="mailto:{{ review_to_receive.reviewer_email }}">
                                     Email {{ review_to_receive.student_first_name }}
                                 </a>
                                 <a class='mdl-button mdl-js-button mdl-js-ripple-effect review_link' href="/course/{{ course_id }}/submissions/{{ submission.id }}/download">

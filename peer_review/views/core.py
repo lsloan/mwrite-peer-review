@@ -538,9 +538,15 @@ class ReviewsForAStudentView(HasRoleMixin, TemplateView):
 
             is_late = True if submit_time is None else submit_time > rubric.passback_assignment.due_date_utc
 
+            if '@' in peer_review.student.username:
+                reviewer_email = peer_review.student.username
+            else:
+                reviewer_email = '%s@umich.edu' % peer_review.student.username
+
             received.append({
                 'student': peer_review.student,
                 'student_first_name': peer_review.student.full_name.split()[0],
+                'reviewer_email': reviewer_email,
                 'received': received_review,
                 'submit_time': submit_time,
                 'is_late': is_late,
