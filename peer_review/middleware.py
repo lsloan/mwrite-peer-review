@@ -1,3 +1,4 @@
+import re
 import logging
 from django.conf import settings
 from django.shortcuts import render_to_response
@@ -13,13 +14,21 @@ class FixedUserAgentMiddleware(MiddlewareMixin, UserAgentMiddleware):
 
 
 def safari_iframe_launch_middleware(get_response):
+
     def middleware(request):
-        if request.path == '/launch' and \
-           request.user_agent.browser.family == 'Safari' and \
-           settings.SAFARI_LAUNCH_COOKIE not in request.COOKIES:
+        url_match = re.search('^/course/(?P<course_id>[0-9]+)/launch$', request.path)
+        browser_is_safari = request.user_agent.browser.family == 'Safari'
+        safari_cookie_exists = settings.SAFARI_LAUNCH_COOKIE not in request.COOKIES
+
+        if url_match and browser_is_safari and safari_cookie_exists:
             logger.debug('Unauthenticated Safari user detected, serving Safari landing page')
-            return render_to_response('safari_launch_iframe.html', {'referer': request.META['HTTP_REFERER']})
+            context = {
+                'referer': request.META['HTTP_REFERER'],
+                'course_id': url_match.group('course_id')
+            }
+            return render_to_response('safari_launch_iframe.html', context=context)
         else:
             response = get_response(request)
         return response
+
     return middleware
