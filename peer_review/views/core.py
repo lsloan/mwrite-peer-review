@@ -550,7 +550,7 @@ class ReviewsForAStudentView(HasRoleMixin, TemplateView):
         if '@' in student.username:
             student_email = student.username
         else:
-            student_email = '%s@umich.edu' % student.usernames
+            student_email = '%s@umich.edu' % student.username
 
         course = CanvasCourse.objects.get(id=int(kwargs['course_id']))
         return {'prompt_title': rubric.reviewed_assignment.title,
