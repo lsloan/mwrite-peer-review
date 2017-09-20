@@ -478,6 +478,7 @@ class SingleReviewDetailView(HasRoleMixin, TemplateView):
                    'review': details}
         if user_is_instructor:
             context['course_id'] = course_id
+        return context
 
 
 class ReviewsForAStudentView(HasRoleMixin, TemplateView):
