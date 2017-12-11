@@ -428,7 +428,7 @@ class AssignmentStatus(HasRoleMixin, TemplateView):
         submissions = rubric.reviewed_assignment.canvas_submission_set.all()
 
         reviews = []
-        sections = []
+        sections = set()
         for submission in submissions:
             total_completed_num = submission.total_completed_by_a_student.count()
             completed_reviews_num = submission.num_comments_each_review_per_student       \
@@ -440,31 +440,35 @@ class AssignmentStatus(HasRoleMixin, TemplateView):
                                              .filter(received__gte=rubric.num_criteria) \
                                              .count()
 
-            author_sections = submission.author.sections.filter(id__in=rubric.sections.values_list('id', flat=True))
+            if rubric.sections.all():
+                author_sections = submission.author.sections.filter(id__in=rubric.sections.values_list('id', flat=True))
+            else:
+                author_sections = submission.author.sections.all()
 
             for section in author_sections:
-                # TODO might be more efficient (but less explicit) to use a set here. potential optimization
-                if section not in sections:
-                    sections.append(section)
+                sections.add(section)
 
             reviews.append({
-                'author': submission.author,
+                'author':          submission.author,
                 'total_completed': total_completed_num,
-                'completed': completed_reviews_num,
-                'total_received': total_received_num,
-                'received': received_reviews_num,
-                'sections': author_sections,
-                'json_sections': json.dumps(list(author_sections.values_list('id', flat=True)))
+                'completed':       completed_reviews_num,
+                'total_received':  total_received_num,
+                'received':        received_reviews_num,
+                'sections':        author_sections,
+                'json_sections':   json.dumps(list(author_sections.values_list('id', flat=True)))
             })
 
+        sections = list(sections)
         sections.sort(key=lambda s: s.name)
 
         course = CanvasCourse.objects.get(id=int(kwargs['course_id']))
-        return {'course_id': course.id,
-                'title': course.name,
-                'reviews': reviews,
-                'rubric': rubric,
-                'sections': sections}
+        return {
+            'course_id': course.id,
+            'title':     course.name,
+            'reviews':   reviews,
+            'rubric':    rubric,
+            'sections':  sections
+        }
         
 
 class SingleReviewDetailView(HasRoleMixin, TemplateView):
