@@ -50,8 +50,15 @@ To add a course instance (make sure to change names where appropriate):
     requested size and access mode.  Do *not* specify a volumeName (or
     tell them what you give it, if you do).
 3. Create an OpenShift secret with the following files and contents:
-    * `secret.key` -- secret key file for Django
+    * `secret.key` -- secret key file for Django; generate with
+        ```bash
+        $ python -c "import string,random; uni=string.ascii_letters+string.digits+string.punctuation; print ''.join([random.SystemRandom().choice(uni) for i in range(random.randint(45,50))])" >> secret.key
+        ```
     * `lti_credentials.json`
+        ```bash
+        # to generate consumer_key / consumer_secret
+        $ cat /dev/urandom | env LC_CTYPE=C tr -dc 'a-zA-Z0-9' | fold -w 32 | head -n 1
+        ```
         ```json
         {"consumer_key": "consumer_secret"}
         ```
@@ -77,6 +84,10 @@ To add a course instance (make sure to change names where appropriate):
           secret.key: <... base64 encoded file ...>
           lti_credentials.json: <... base64 encoded file ...>
           database.json: <... base64 encoded file ...>
+        ```
+    * Once that's done:
+        ```bash
+        $ oc create -f mwrite-test-course-secret.yaml
         ```
 4. Create the app (replacing values where appropriate); TODO check git URL
     ```bash
