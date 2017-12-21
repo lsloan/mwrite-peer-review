@@ -29,7 +29,7 @@
                 {% if review_to_complete %}
                     <div class="mdl-card mdl-shadow--2dp">
                         <div class="mdl-card__title {% if review_to_complete.review_status_incomplete %}review-status-incomplete{% else %}review-status-ok{% endif %}">
-                            <h2 class="mdl-card__title-text">To {{ review_to_complete.student.full_name }}</h2>
+                            <h2 class="mdl-card__title-text review-title">To {{ review_to_complete.student.full_name }}</h2>
                         </div>
 
                         <div class="mdl-card__supporting-text">
@@ -65,7 +65,7 @@
                 {% if review_to_receive %}
                     <div class="mdl-card mdl-shadow--2dp">
                         <div class="mdl-card__title {% if review_to_receive.review_status_incomplete %}review-status-incomplete{% else %}review-status-ok{% endif %}">
-                            <h2 class="mdl-card__title-text">From {{ review_to_receive.student.full_name }}</h2>
+                            <h2 class="mdl-card__title-text review-title">From {{ review_to_receive.student.full_name }}</h2>
                         </div>
 
                         <div class="mdl-card__supporting-text">

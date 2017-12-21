@@ -209,18 +209,32 @@ class PeerReviewView(HasRoleMixin, TemplateView):
     allowed_roles = 'student'
     template_name = 'review.html'
 
+    ERROR_RESPONSE = HttpResponse('You cannot review this submission because it was not assigned to you.', status=403)
+    ERROR_TEMPLATE = 'Student %d (%s) tried to access submission %d (by %s), but'
+
     # TODO use error template for error responses
     def get_context_data(self, **kwargs):
+
         student_id = self.request.session['lti_launch_params']['custom_canvas_user_id']
         submission_id = kwargs['submission_id']
+
         try:
-            PeerReview.objects.get(student_id=student_id, submission_id=submission_id)
-        except PeerReview.DoesNotExist:
-            return HttpResponse('You cannot review this submission because it was not assigned to you.', status=403)
-        try:
+            student = CanvasStudent.objects.get(id=student_id)
             submission = CanvasSubmission.objects.get(id=submission_id)
+            PeerReview.objects.get(student=student, submission=submission)
+        except CanvasStudent.DoesNotExist:
+            logger.warning('Student %d does not exist' % student_id)
+            return PeerReviewView.ERROR_RESPONSE
         except CanvasSubmission.DoesNotExist:
-            raise Http404
+            logger.warning('User \'%s\' (student id = %d) tried to access submission %d, which does not exist' %
+                           (student.username, student.id, submission_id))
+            return PeerReviewView.ERROR_RESPONSE
+        except PeerReview.DoesNotExist:
+            logger.warning("""User \'%s\' (student id = %d) tried to access submission %d (by \'%s\')
+                              but does not have permission!""" %
+                           (student.username, student.id, submission.id, submission.author.username))
+            return PeerReviewView.ERROR_RESPONSE
+
         rubric = Rubric.objects.get(reviewed_assignment=submission.assignment)
         criteria = Criterion.objects.filter(rubric=rubric)
         course = CanvasCourse.objects.get(id=int(kwargs['course_id']))
@@ -406,49 +420,55 @@ class AssignmentStatus(HasRoleMixin, TemplateView):
     # TODO see how much of this can be accomplished with aggregation via the ORM
     def get_context_data(self, **kwargs):
 
-        rubric = Rubric.objects.get(id=kwargs['rubric_id'])
-        number_of_criteria = Rubric.num_criteria.__get__(rubric)
+        try:
+            rubric = Rubric.objects.get(id=kwargs['rubric_id'])
+        except Rubric.DoesNotExist:
+            return Http404
 
         submissions = rubric.reviewed_assignment.canvas_submission_set.all()
 
         reviews = []
-        sections = []
+        sections = set()
         for submission in submissions:
-            total_completed_num = len(CanvasSubmission.total_completed_by_a_student.__get__(submission))
-            peer_reviews_completed = CanvasSubmission.num_comments_each_review_per_student.__get__(submission) \
-                                                     .filter(completed__gte=number_of_criteria)
+            total_completed_num = submission.total_completed_by_a_student.count()
+            completed_reviews_num = submission.num_comments_each_review_per_student       \
+                                              .filter(completed__gte=rubric.num_criteria) \
+                                              .count()
 
-            completed_reviews = len(peer_reviews_completed)
+            total_received_num = submission.total_received_of_a_student.count()
+            received_reviews_num = submission.num_comments_each_review_per_submission   \
+                                             .filter(received__gte=rubric.num_criteria) \
+                                             .count()
 
-            total_received_num = len(CanvasSubmission.total_received_of_a_student.__get__(submission))
-            peer_reviews_received = CanvasSubmission.num_comments_each_review_per_submission.__get__(submission) \
-                                                    .filter(received__gte=number_of_criteria)
-            received_reviews = len(peer_reviews_received)
+            if rubric.sections.all():
+                author_sections = submission.author.sections.filter(id__in=rubric.sections.values_list('id', flat=True))
+            else:
+                author_sections = submission.author.sections.all()
 
-            author_sections = submission.author.sections.filter(id__in=rubric.sections.values_list('id', flat=True))
             for section in author_sections:
-                # TODO might be more efficient (but less explicit) to use a set here. potential optimization
-                if section not in sections:
-                    sections.append(section)
+                sections.add(section)
 
             reviews.append({
-                'author': submission.author,
+                'author':          submission.author,
                 'total_completed': total_completed_num,
-                'completed': completed_reviews,
-                'total_received': total_received_num,
-                'received': received_reviews,
-                'sections': author_sections,
-                'json_sections': json.dumps(list(author_sections.values_list('id', flat=True)))
+                'completed':       completed_reviews_num,
+                'total_received':  total_received_num,
+                'received':        received_reviews_num,
+                'sections':        author_sections,
+                'json_sections':   json.dumps(list(author_sections.values_list('id', flat=True)))
             })
 
+        sections = list(sections)
         sections.sort(key=lambda s: s.name)
 
         course = CanvasCourse.objects.get(id=int(kwargs['course_id']))
-        return {'course_id': course.id,
-                'title': course.name,
-                'reviews': reviews,
-                'rubric': rubric,
-                'sections': sections}
+        return {
+            'course_id': course.id,
+            'title':     course.name,
+            'reviews':   reviews,
+            'rubric':    rubric,
+            'sections':  sections
+        }
         
 
 class SingleReviewDetailView(HasRoleMixin, TemplateView):
