@@ -195,9 +195,15 @@
             peerReviewOpenDisabledDates: function() {
                 var dates = {};
                 if(this.promptDueDate && this.existingPeerReviewDueDate) {
+                    var toMoment = moment(this.promptDueDate, displayDateFormat);
+                    var fromMoment = moment(this.existingPeerReviewDueDate);
+
+                    toMoment.startOf('day');
+                    fromMoment.startOf('day');
+
                     dates = {
-                        to: moment(this.promptDueDate, displayDateFormat).toDate(),
-                        from: moment(this.existingPeerReviewDueDate).toDate()
+                        to: toMoment.toDate(),
+                        from: fromMoment.toDate()
                     };
                 }
                 return dates;
