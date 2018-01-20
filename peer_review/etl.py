@@ -1,7 +1,7 @@
 import os
-import shutil
 import logging
 import requests
+from zipfile import ZipFile
 from toolz.dicttoolz import dissoc
 from toolz.functoolz import thread_last
 from toolz.itertoolz import unique, remove
@@ -165,14 +165,20 @@ def _download_single_attachment(destination, attachment):
 
 
 def _download_multiple_attachments(destination, submission):
-    temp_directory_path = os.path.join(settings.MEDIA_ROOT, str(submission.id))
+    submission_id_str = str(submission['id'])
+    temp_directory_path = os.path.join(settings.MEDIA_ROOT, 'temporary', submission_id_str)
     os.makedirs(temp_directory_path, exist_ok=True)
     for attachment in submission['attachments']:
         _download_single_attachment(temp_directory_path, attachment)
-
-    archive_format = 'zip'
-    attachment_archive_filename = '%d_submissions.%s' % (submission.id, archive_format)
-    shutil.make_archive(attachment_archive_filename, archive_format, destination, temp_directory_path)
+    attachment_archive_filename = '%d_submissions.zip' % submission['id']
+    attachment_archive_full_path = os.path.join(destination, attachment_archive_filename)
+    log.info('dest = %s', destination)
+    log.info('path = %s', attachment_archive_full_path)
+    with ZipFile(attachment_archive_full_path, 'w') as archive_file:
+        for _, _, files in os.walk(temp_directory_path):
+            for fn in files:
+                archive_file.write(os.path.join(temp_directory_path, fn),
+                                   arcname=os.path.join(submission_id_str, fn))
     return attachment_archive_filename
 
 
@@ -190,7 +196,7 @@ def _download_submission(raw_submission):
     destination = os.path.join(settings.MEDIA_ROOT, 'submissions')
     os.makedirs(destination, exist_ok=True)
     if len(attachments) > 1:
-        filename = _download_multiple_attachments(destination, raw_submission['attachments'])
+        filename = _download_multiple_attachments(destination, raw_submission)
     else:
         filename = _download_single_attachment(destination, raw_submission['attachments'][0])
     return _convert_submission(raw_submission, filename)
