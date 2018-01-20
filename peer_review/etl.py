@@ -172,8 +172,6 @@ def _download_multiple_attachments(destination, submission):
         _download_single_attachment(temp_directory_path, attachment)
     attachment_archive_filename = '%d_submissions.zip' % submission['id']
     attachment_archive_full_path = os.path.join(destination, attachment_archive_filename)
-    log.info('dest = %s', destination)
-    log.info('path = %s', attachment_archive_full_path)
     with ZipFile(attachment_archive_full_path, 'w') as archive_file:
         for _, _, files in os.walk(temp_directory_path):
             for fn in files:
