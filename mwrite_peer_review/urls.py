@@ -4,7 +4,7 @@ from django.conf.urls import url, include
 
 import djangolti.views
 from peer_review.views.core import *
-from peer_review.views.special import DebugLtiParamsView, SafariLaunchPopup
+from peer_review.views.special import DebugLtiParamsView, SafariLaunchPopup, permission_denied
 
 
 def not_found(request):
@@ -35,6 +35,8 @@ urlpatterns = [
         url(r'^safari$', SafariLaunchPopup.as_view()),
     ]))
 ]
+
+handler403 = permission_denied
 
 if settings.DEBUG:
     from django.contrib.auth.views import login as auth_login

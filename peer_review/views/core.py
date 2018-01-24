@@ -30,10 +30,6 @@ from peer_review.util import parse_json_body, some
 logger = logging.getLogger(__name__)
 
 
-class UnauthorizedView(TemplateView):
-    template_name = '403.html'
-
-
 # TODO needs to handle assignment level launches
 class CourseIndexView(HasRoleMixin, View):
     allowed_roles = ['instructor', 'student']
@@ -220,15 +216,19 @@ class PeerReviewView(HasRoleMixin, TemplateView):
 
         try:
             student = CanvasStudent.objects.get(id=student_id)
-            submission = CanvasSubmission.objects.get(id=submission_id)
-            PeerReview.objects.get(student=student, submission=submission)
         except CanvasStudent.DoesNotExist:
             logger.warning('Student %d does not exist' % student_id)
             return PeerReviewView.ERROR_RESPONSE
+
+        try:
+            submission = CanvasSubmission.objects.get(id=submission_id)
         except CanvasSubmission.DoesNotExist:
             logger.warning('User \'%s\' (student id = %d) tried to access submission %d, which does not exist' %
                            (student.username, student.id, submission_id))
             return PeerReviewView.ERROR_RESPONSE
+
+        try:
+            PeerReview.objects.get(student=student, submission=submission)
         except PeerReview.DoesNotExist:
             logger.warning("""User \'%s\' (student id = %d) tried to access submission %d (by \'%s\')
                               but does not have permission!""" %
@@ -250,6 +250,12 @@ class PeerReviewView(HasRoleMixin, TemplateView):
     def post(self, request, *args, **kwargs):
 
         student_id = self.request.session['lti_launch_params']['custom_canvas_user_id']
+        try:
+            student = CanvasStudent.objects.get(id=student_id)
+        except CanvasStudent.DoesNotExist:
+            logger.warning('Student %d does not exist' % student_id)
+            return HttpResponse('That student does not exist.', status=400)
+
         submission_id = kwargs['submission_id']
         user_comments = parse_json_body(request.body)
 
@@ -261,19 +267,24 @@ class PeerReviewView(HasRoleMixin, TemplateView):
         try:
             peer_review = PeerReview.objects.get(student_id=student_id, submission_id=submission_id)
         except PeerReview.DoesNotExist:
+            logger.warning('Student %s tried to submit a review for a submission they were not assigned'
+                           % student.username)
             return HttpResponse('You were not assigned that submission.', status=403)
 
         rubric = Rubric.objects.get(reviewed_assignment=submission.assignment)
         user_comment_criteria_ids = [com['criterion_id'] for com in user_comments]
         user_comment_criteria = Criterion.objects.filter(id__in=user_comment_criteria_ids)
         if user_comment_criteria.count() != rubric.criteria.count():
-            return HttpResponse('Criterion IDs do not match.', 400)
+            logger.warning('Criterion IDs do not for review on submission %d for student "%s"'
+                           % (submission_id, student.username))
+            return HttpResponse('Criterion IDs do not match.', status=400)
 
         rubric_criteria_ids = map(lambda cri: cri.id, rubric.criteria.all())
         existing_comments = PeerReviewComment.objects.filter(peer_review=peer_review,
                                                              criterion_id__in=rubric_criteria_ids)
         if rubric.criteria.count() == existing_comments.count():
-            return HttpResponse('This review has already been completed.', 400)
+            logger.warning('Student "%s" tried to submit a review that has already been completed' % student.username)
+            return HttpResponse('This review has already been completed.', status=400)
         elif existing_comments.count() > 0:
             logger.warning('Somehow %d has only %d out of %d comments for %d!!!',
                            student_id, existing_comments.count(), rubric.criteria.count(), submission_id)
