@@ -30,10 +30,6 @@ from peer_review.util import parse_json_body, some
 logger = logging.getLogger(__name__)
 
 
-class UnauthorizedView(TemplateView):
-    template_name = '403.html'
-
-
 # TODO needs to handle assignment level launches
 class CourseIndexView(HasRoleMixin, View):
     allowed_roles = ['instructor', 'student']
