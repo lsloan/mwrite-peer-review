@@ -220,15 +220,19 @@ class PeerReviewView(HasRoleMixin, TemplateView):
 
         try:
             student = CanvasStudent.objects.get(id=student_id)
-            submission = CanvasSubmission.objects.get(id=submission_id)
-            PeerReview.objects.get(student=student, submission=submission)
         except CanvasStudent.DoesNotExist:
             logger.warning('Student %d does not exist' % student_id)
             return PeerReviewView.ERROR_RESPONSE
+
+        try:
+            submission = CanvasSubmission.objects.get(id=submission_id)
         except CanvasSubmission.DoesNotExist:
             logger.warning('User \'%s\' (student id = %d) tried to access submission %d, which does not exist' %
                            (student.username, student.id, submission_id))
             return PeerReviewView.ERROR_RESPONSE
+
+        try:
+            PeerReview.objects.get(student=student, submission=submission)
         except PeerReview.DoesNotExist:
             logger.warning("""User \'%s\' (student id = %d) tried to access submission %d (by \'%s\')
                               but does not have permission!""" %
