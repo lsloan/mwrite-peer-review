@@ -10,7 +10,9 @@ from peer_review.views.special import DebugLtiParamsView, SafariLaunchPopup, per
 def not_found(request):
     raise Http404
 
+
 urlpatterns = [
+    url(r'^who_am_i/', who_am_i),  # TODO remove this
     url(r'^course/(?P<course_id>[0-9]+)/', include([
 
         url(r'^favicon.ico$', not_found),   # TODO ...just add a favicon already
