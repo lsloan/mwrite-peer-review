@@ -72,10 +72,12 @@ INSTALLED_APPS = [
     'djangolti',
     'peer_review',
     'health_check',
-    'health_check.db'
+    'health_check.db',
+    'corsheaders'
 ]
 
 MIDDLEWARE = [
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
@@ -102,13 +104,19 @@ SESSION_COOKIE_AGE = 3600
 SESSION_COOKIE_SECURE = not DEBUG
 SESSION_COOKIE_HTTPONLY = True
 SESSION_EXPIRE_AT_BROWSER_CLOSE = True
+SESSION_COOKIE_DOMAIN = os.environ['MPR_SESSION_COOKIE_DOMAIN']
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 CSRF_HEADER_NAME = 'HTTP_X_CSRF_TOKEN'
 CSRF_COOKIE_HTTPONLY = True
 CSRF_COOKIE_SECURE = not DEBUG
 CSRF_COOKIE_NAME = 'fp'
+CSRF_COOKIE_DOMAIN = os.environ['MPR_CSRF_COOKIE_DOMAIN']
 X_FRAME_OPTIONS = 'ALLOW-FROM %s' % os.environ['MPR_LMS_URL']
 SAFARI_LAUNCH_COOKIE = 'safari_launch'
+CORS_ALLOW_CREDENTIALS = True
+CORS_ORIGIN_WHITELIST = [
+    os.environ['MPR_FRONTEND_RESOURCES_DOMAIN']
+]
 
 ROOT_URLCONF = 'mwrite_peer_review.urls'
 
