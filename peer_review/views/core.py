@@ -29,6 +29,8 @@ from peer_review.util import parse_json_body, some
 
 logger = logging.getLogger(__name__)
 
+
+# TODO implement and replace the example below with a JsonResponseMixin
 # TODO remove me starting here
 from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse

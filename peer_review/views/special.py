@@ -25,7 +25,7 @@ class LtiParamsForm(forms.Form):
 
 class DebugLtiParamsView(LoginRequiredMixin, FormView):
     template_name = 'debug_lti.html'
-    success_url = '/'
+    success_url = settings.LTI_APP_REDIRECT
     form_class = LtiParamsForm
 
     def get_form(self, form_class=None):
