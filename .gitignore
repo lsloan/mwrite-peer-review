@@ -23,7 +23,6 @@ __pycache__/
 *.so
 .Python
 env/
-build/
 develop-eggs/
 dist/
 downloads/
@@ -71,9 +70,16 @@ ENV/
 .ropeproject
 
 db.sqlite3
-config/
 
 staticfiles/
 !/peer_review/static/js/lib/
 
-mwrite_dev.sql
+config/server/local/
+config/server/prod/
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+frontend/test/unit/coverage/
+frontend/test/e2e/reports/
+selenium-debug.log

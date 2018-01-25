@@ -30,6 +30,16 @@ from peer_review.util import parse_json_body, some
 logger = logging.getLogger(__name__)
 
 
+# TODO implement and replace the example below with a JsonResponseMixin
+# TODO remove me starting here
+from django.contrib.auth.decorators import login_required
+from django.http import JsonResponse
+@login_required
+def who_am_i(request):
+    return JsonResponse({'username': request.user.username})
+# TODO remove me ending here
+
+
 # TODO needs to handle assignment level launches
 class CourseIndexView(HasRoleMixin, View):
     allowed_roles = ['instructor', 'student']
@@ -323,8 +333,8 @@ class InstructorDashboardView(HasRoleMixin, TemplateView):
                                                                   is_peer_review_assignment=True) \
                                                           .order_by('due_date_utc')
 
-        reviews = []       
-        prompt_assignments = []                                                   
+        reviews = []
+        prompt_assignments = []
         for assignment in peer_review_assignments:
             rubric = Rubric.objects.filter(passback_assignment=assignment)
             num_reviews = 0
@@ -480,7 +490,7 @@ class AssignmentStatus(HasRoleMixin, TemplateView):
             'rubric':    rubric,
             'sections':  sections
         }
-        
+
 
 class SingleReviewDetailView(HasRoleMixin, TemplateView):
     allowed_roles = ['student', 'instructor']
@@ -718,7 +728,7 @@ class OverviewDownload(HasRoleMixin, TemplateView):
 
         return response
 
-      
+
 class ReviewsDownload(HasRoleMixin, TemplateView):
     allowed_roles = 'instructor'
 
@@ -733,7 +743,7 @@ class ReviewsDownload(HasRoleMixin, TemplateView):
 
         total_completed = CanvasSubmission.total_completed_by_a_student.__get__(submission)
         comments_completed = PeerReviewComment.objects.filter(peer_review__in=total_completed)
-        
+
         for comment in comments_completed:
             writer.writerow([comment.peer_review.student.sortable_name, comment.peer_review.submission.author.sortable_name, comment.criterion.id, comment.comment])
 

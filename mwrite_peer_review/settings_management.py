@@ -39,13 +39,13 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 SECRET_KEY = 'not_real'
 
-DEBUG = getenv_bool('MWRITE_PEER_REVIEW_DEBUG_MODE')
+DEBUG = getenv_bool('MPR_DEBUG_MODE')
 
-ALLOWED_HOSTS = getenv_csv('MWRITE_PEER_REVIEW_ALLOWED_HOSTS')
+ALLOWED_HOSTS = getenv_csv('MPR_ALLOWED_HOSTS')
 
 APP_HOST = None
 
-GOOGLE_ANALYTICS_TRACKING_ID = os.environ.get('MWRITE_PEER_REVIEW_GOOGLE_ANALYTICS_TRACKING_ID')
+GOOGLE_ANALYTICS_TRACKING_ID = os.environ.get('MPR_GOOGLE_ANALYTICS_TRACKING_ID')
 
 # Storage configuration
 MEDIA_ROOT = None
