@@ -17,6 +17,7 @@ from django.http import HttpResponse, Http404
 from django.shortcuts import redirect
 from django.views.generic import View, TemplateView
 from django.core.exceptions import PermissionDenied
+from rolepermissions.roles import get_user_roles
 from rolepermissions.checkers import has_role
 from rolepermissions.mixins import HasRoleMixin
 from toolz.functoolz import thread_last
@@ -37,6 +38,12 @@ from peer_review.decorators import authorized_json_endpoint
 def who_am_i(request):
     return {'username': request.user.username}
 # TODO remove me ending here
+
+
+@login_required
+def user_roles(request):
+    roles = [role.get_name() for role in get_user_roles(request.user)]
+    return JsonResponse({'roles': roles})
 
 
 # TODO needs to handle assignment level launches

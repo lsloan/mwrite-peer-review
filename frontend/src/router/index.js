@@ -5,9 +5,14 @@ import RouteGuard from '@/components/RouteGuard';
 
 Vue.use(Router);
 
-const authFunc = (to, from, next) => {
-  console.log('nope');
-  next(false);
+const authGuard = (targetRole, to, from, next) => {
+  const userRoles = this.a.app.$userDetails.roles;
+  const go = userRoles.find((role) => role === targetRole);
+  next(!!go);
+};
+
+const instructorsOnlyGuard = (to, from, next) => {
+  return authGuard('instructor', to, from, next);
 };
 
 export default new Router({
@@ -21,7 +26,7 @@ export default new Router({
       path: '/tryAuth',
       name: 'AuthComponent',
       component: RouteGuard,
-      beforeEnter: authFunc
+      beforeEnter: instructorsOnlyGuard
     }
   ]
 });

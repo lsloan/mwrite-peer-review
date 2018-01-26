@@ -40,6 +40,8 @@
 </template>
 
 <script>
+import api from '@/services/api';
+
 export default {
   name: 'HelloWorld',
   data() {
@@ -50,12 +52,12 @@ export default {
   },
   methods: {
     retrieveName() {
-      this.$api.get('/who_am_i/').then((response) => {
+      api.get('/who_am_i/').then((response) => {
         this.name = response.data.username;
       });
     },
     sendMessage() {
-      this.$api.post('/tell_me_something/', {message: 'Hello from the frontend!'});
+      api.post('/tell_me_something/', {message: 'Hello from the frontend!'});
     }
   },
   mounted() {

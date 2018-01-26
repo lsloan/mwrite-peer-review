@@ -3,11 +3,10 @@
 import Vue from 'vue';
 import App from './App';
 import router from './router/index';
-import APIPlugin from './plugins/api';
+import UserDetail from '@/plugins/UserDetails';
 
 Vue.config.productionTip = false;
-
-Vue.use(APIPlugin);
+Vue.use(UserDetail);
 
 /* eslint-disable no-new */
 new Vue({

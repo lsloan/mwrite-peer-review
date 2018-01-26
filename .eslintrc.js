@@ -30,6 +30,11 @@ module.exports = {
     'no-debugger': process.env.NODE_ENV === 'production' ? 'error' : 'off',
     'semi': ['error', 'always'],
     'space-before-function-paren': ['warn', 'never'],
-    'padded-blocks': ['warn', 'never']
+    'padded-blocks': ['warn', 'never'],
+    'keyword-spacing': ['error', {'overrides': {
+      'if': {'after': false},
+      'for': {'after': false},
+      'while': {'after': false}
+    }}]
   }
 }
