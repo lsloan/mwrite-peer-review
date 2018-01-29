@@ -28,7 +28,7 @@ def json_response(view):
     return wrapper
 
 
-authorized_json_endpoint = compose(login_required_or_raise, json_response)
+authenticated_json_endpoint = compose(login_required_or_raise, json_response)
 
 
 # adapted from django.views.defaults.permission_denied
