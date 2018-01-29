@@ -4,7 +4,8 @@ from django.conf.urls import url, include
 
 import djangolti.views
 from peer_review.views.core import *
-from peer_review.views.special import DebugLtiParamsView, SafariLaunchPopup, permission_denied
+from peer_review.views.special import DebugLtiParamsView, SafariLaunchPopup
+from peer_review.decorators import permission_denied
 
 
 def not_found(request):
