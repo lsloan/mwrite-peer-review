@@ -1,10 +1,20 @@
 from django import http
+from django.core.exceptions import PermissionDenied
 from django.template import loader, TemplateDoesNotExist
 from django.utils.encoding import force_text
 from django.views.decorators.csrf import requires_csrf_token
 from django.views.defaults import ERROR_403_TEMPLATE_NAME
 
 from peer_review.views.special import logger
+
+
+def login_required_or_raise(view):
+    def wrapper(request):
+        if not request.user.is_authenticated:
+            raise PermissionDenied
+        else:
+            return view(request)
+    return wrapper
 
 
 # adapted from django.views.defaults.permission_denied
