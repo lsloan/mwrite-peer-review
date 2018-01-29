@@ -32,11 +32,10 @@ logger = logging.getLogger(__name__)
 
 # TODO implement and replace the example below with a JsonResponseMixin
 # TODO remove me starting here
-from django.contrib.auth.decorators import login_required
-from django.http import JsonResponse
-@login_required
+from peer_review.decorators import authorized_json_endpoint
+@authorized_json_endpoint
 def who_am_i(request):
-    return JsonResponse({'username': request.user.username})
+    return {'username': request.user.username}
 # TODO remove me ending here
 
 
