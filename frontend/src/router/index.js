@@ -2,6 +2,8 @@ import Vue from 'vue';
 import Router from 'vue-router';
 import HelloWorld from '@/components/HelloWorld';
 import RouteGuard from '@/components/RouteGuard';
+import StudentList from '@/components/StudentList';
+import DeleteMe from '@/components/DeleteMe';
 
 Vue.use(Router);
 
@@ -26,6 +28,16 @@ export default new Router({
       path: '/tryAuth',
       name: 'AuthComponent',
       component: RouteGuard,
+      beforeEnter: instructorsOnlyGuard
+    },
+    {
+      path: '/instructor/students',
+      component: StudentList,
+      beforeEnter: instructorsOnlyGuard
+    },
+    {
+      path: '/instructor/deleteme',
+      component: DeleteMe,
       beforeEnter: instructorsOnlyGuard
     }
   ]
