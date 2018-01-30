@@ -1,5 +1,7 @@
 import json
 
+from functools import wraps
+
 from django.http import JsonResponse, HttpResponseForbidden
 from django.core.exceptions import PermissionDenied
 from django.template import loader, TemplateDoesNotExist
@@ -7,6 +9,7 @@ from django.utils.encoding import force_text
 from django.views.decorators.csrf import requires_csrf_token
 from django.views.defaults import ERROR_403_TEMPLATE_NAME
 
+from rolepermissions.roles import get_user_roles
 from toolz.functoolz import thread_first, compose
 
 from peer_review.views.special import logger
@@ -19,6 +22,21 @@ def login_required_or_raise(view):
         else:
             return view(request)
     return wrapper
+
+
+# necessary because rolepermissions.decorators.has_role_decorator only supports single role
+def has_one_of_roles(**kwargs):
+    def decorator(view):
+        @wraps(view)
+        def wrapper(request):
+            valid_roles = kwargs['roles']
+            user_roles = get_user_roles(request.user)
+            if any(r in valid_roles for r in user_roles):
+                return view(request)
+            else:
+                raise PermissionDenied
+
+
 
 
 # TODO needs to support models and querysets
