@@ -3,6 +3,7 @@ from django.conf import settings
 from django.conf.urls import url, include
 
 import djangolti.views
+import peer_review.api.endpoints as api
 from peer_review.views.core import *
 from peer_review.views.special import DebugLtiParamsView, SafariLaunchPopup
 from peer_review.decorators import permission_denied
@@ -13,10 +14,13 @@ def not_found(request):
 
 
 urlpatterns = [
-    url(r'^who_am_i/', who_am_i),  # TODO remove this
     url(r'^user_roles/', user_roles),
-    url(r'^instructor_stuff/', instructor_stuff),  # TODO remove this
+
     url(r'^course/(?P<course_id>[0-9]+)/', include([
+
+        url(r'^students/', api.all_students),
+
+        ### old URLs below this point
 
         url(r'^favicon.ico$', not_found),   # TODO ...just add a favicon already
 

@@ -17,35 +17,22 @@ from django.http import HttpResponse, Http404, JsonResponse
 from django.shortcuts import redirect
 from django.views.generic import View, TemplateView
 from django.core.exceptions import PermissionDenied
-from django.contrib.auth.decorators import login_required
 from rolepermissions.roles import get_user_roles
 from rolepermissions.checkers import has_role
 from rolepermissions.mixins import HasRoleMixin
 from toolz.functoolz import thread_last
 from toolz.itertoolz import unique
 
-from peer_review.etl import persist_assignments, AssignmentValidation
-from peer_review.models import Rubric, Criterion, CanvasAssignment, PeerReviewDistribution, CanvasSubmission, \
-    PeerReview, PeerReviewComment, CanvasStudent, CanvasCourse
+from peer_review.models import *
 from peer_review.util import parse_json_body, some
+from peer_review.decorators import authenticated_json_endpoint
+from peer_review.etl import persist_assignments, AssignmentValidation
 
 logger = logging.getLogger(__name__)
 
 
-# TODO implement and replace the example below with a JsonResponseMixin
-# TODO remove me starting here
-from peer_review.decorators import authenticated_json_endpoint, authorized_json_endpoint
+# TODO refactor / move me
 @authenticated_json_endpoint
-def who_am_i(request):
-    return {'username': request.user.username}
-
-@authorized_json_endpoint(roles=['instructor'])
-def instructor_stuff(request):
-    return {'whatever': 'things'}
-# TODO remove me ending here
-
-
-@login_required
 def user_roles(request):
     roles = [role.get_name() for role in get_user_roles(request.user)]
     return JsonResponse({'roles': roles})
