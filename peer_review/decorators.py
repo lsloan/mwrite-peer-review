@@ -37,8 +37,6 @@ def has_one_of_roles(**kwargs):
                 raise PermissionDenied
 
 
-
-
 # TODO needs to support models and querysets
 def json_response(view):
     def wrapper(request):
