@@ -35,7 +35,7 @@ logger = logging.getLogger(__name__)
 @authenticated_json_endpoint
 def user_roles(request):
     roles = [role.get_name() for role in get_user_roles(request.user)]
-    return JsonResponse({'roles': roles})
+    return {'roles': roles}
 
 
 # TODO needs to handle assignment level launches
