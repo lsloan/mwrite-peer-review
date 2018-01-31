@@ -1,4 +1,5 @@
-import json
+import logging
+from functools import wraps
 
 from django.http import JsonResponse, HttpResponseForbidden
 from django.core.exceptions import PermissionDenied
@@ -7,9 +8,10 @@ from django.utils.encoding import force_text
 from django.views.decorators.csrf import requires_csrf_token
 from django.views.defaults import ERROR_403_TEMPLATE_NAME
 
+from rolepermissions.roles import get_user_roles
 from toolz.functoolz import thread_first, compose
 
-from peer_review.views.special import logger
+logger = logging.getLogger(__name__)
 
 
 def login_required_or_raise(view):
@@ -21,6 +23,21 @@ def login_required_or_raise(view):
     return wrapper
 
 
+# necessary because rolepermissions.decorators.has_role_decorator only supports single role
+def has_one_of_roles(**kwargs):
+    valid_roles = kwargs['roles']
+
+    def decorator(view):
+        def wrapper(request):
+            user_roles = [r.get_name() for r in get_user_roles(request.user)]
+            if any(r in valid_roles for r in user_roles):
+                return view(request)
+            else:
+                raise PermissionDenied
+        return wrapper
+    return decorator
+
+
 # TODO needs to support models and querysets
 def json_response(view):
     def wrapper(request):
@@ -28,8 +45,23 @@ def json_response(view):
     return wrapper
 
 
-authorized_json_endpoint = compose(login_required_or_raise, json_response)
+authenticated_json_endpoint = compose(login_required_or_raise, json_response)
 
+
+def authorized_json_endpoint(**kwargs):
+    valid_roles = kwargs['roles']
+
+    def decorator(view):
+        has_roles_decorator = has_one_of_roles(roles=valid_roles)
+        decorators = thread_first(view,
+                                  json_response,
+                                  has_roles_decorator,
+                                  login_required_or_raise)
+
+        def wrapper(request):
+            return decorators(request)
+        return wrapper
+    return decorator
 
 # adapted from django.views.defaults.permission_denied
 @requires_csrf_token
