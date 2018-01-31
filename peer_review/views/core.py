@@ -13,10 +13,11 @@ from dateutil.tz import tzutc
 from django.conf import settings
 from django.db import transaction
 from django.db.models import Q, F, Count, Case, When, Value, BooleanField, Max
-from django.http import HttpResponse, Http404
+from django.http import HttpResponse, Http404, JsonResponse
 from django.shortcuts import redirect
 from django.views.generic import View, TemplateView
 from django.core.exceptions import PermissionDenied
+from django.contrib.auth.decorators import login_required
 from rolepermissions.roles import get_user_roles
 from rolepermissions.checkers import has_role
 from rolepermissions.mixins import HasRoleMixin
