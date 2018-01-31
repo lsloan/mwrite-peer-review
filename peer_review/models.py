@@ -46,6 +46,7 @@ class CanvasStudent(models.Model):
     full_name = models.TextField()
     sortable_name = models.TextField()
     username = models.TextField()
+    course = models.ForeignKey(CanvasCourse, on_delete=models.CASCADE)
 
     class Meta:
         db_table = 'canvas_students'
