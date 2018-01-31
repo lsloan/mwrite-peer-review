@@ -34,10 +34,14 @@ logger = logging.getLogger(__name__)
 
 # TODO implement and replace the example below with a JsonResponseMixin
 # TODO remove me starting here
-from peer_review.decorators import authenticated_json_endpoint
+from peer_review.decorators import authenticated_json_endpoint, authorized_json_endpoint
 @authenticated_json_endpoint
 def who_am_i(request):
     return {'username': request.user.username}
+
+@authorized_json_endpoint(roles=['instructor'])
+def instructor_stuff(request):
+    return {'whatever': 'things'}
 # TODO remove me ending here
 
 
