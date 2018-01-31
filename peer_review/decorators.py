@@ -15,11 +15,12 @@ logger = logging.getLogger(__name__)
 
 
 def login_required_or_raise(view):
-    def wrapper(request):
+    def wrapper(*args, **kwargs):
+        request = args[0]
         if not request.user.is_authenticated:
             raise PermissionDenied
         else:
-            return view(request)
+            return view(*args, **kwargs)
     return wrapper
 
 
@@ -28,10 +29,11 @@ def has_one_of_roles(**kwargs):
     valid_roles = kwargs['roles']
 
     def decorator(view):
-        def wrapper(request):
+        def wrapper(*args, **kwargs):
+            request = args[0]
             user_roles = [r.get_name() for r in get_user_roles(request.user)]
             if any(r in valid_roles for r in user_roles):
-                return view(request)
+                return view(*args, **kwargs)
             else:
                 raise PermissionDenied
         return wrapper
@@ -40,8 +42,8 @@ def has_one_of_roles(**kwargs):
 
 # TODO needs to support models and querysets
 def json_response(view):
-    def wrapper(request):
-        return thread_first(request, view, JsonResponse)
+    def wrapper(*args, **kwargs):
+        return JsonResponse(view(*args, **kwargs))
     return wrapper
 
 
@@ -58,8 +60,8 @@ def authorized_json_endpoint(**kwargs):
                                   has_roles_decorator,
                                   login_required_or_raise)
 
-        def wrapper(request):
-            return decorators(request)
+        def wrapper(request, *args, **kwargs):
+            return decorators(request, *args, **kwargs)
         return wrapper
     return decorator
 
