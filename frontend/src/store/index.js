@@ -4,6 +4,8 @@ import api from '@/services/api';
 
 Vue.use(Vuex);
 
+// TODO consider hot reloading; see https://vuex.vuejs.org/en/hot-reload.html
+
 export default new Vuex.Store({
   state: {
     userDetails: {}
