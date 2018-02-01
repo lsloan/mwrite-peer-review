@@ -6,6 +6,12 @@ class CanvasCourse(models.Model):
     id = models.IntegerField(primary_key=True)
     name = models.TextField()
 
+    def to_dict(self, levels=1):
+        if levels >= 1:
+            return {'id': self.id, 'name': self.name}
+        else:
+            return self.id
+
     class Meta:
         db_table = 'canvas_courses'
 
@@ -15,6 +21,15 @@ class CanvasSection(models.Model):
     id = models.IntegerField(primary_key=True)
     course = models.ForeignKey(CanvasCourse, on_delete=models.CASCADE, related_name='sections')
     name = models.TextField()
+
+    def to_dict(self, levels=1):
+        if levels >= 1:
+            course = self.course.to_dict(levels=levels-1)
+            return {'id': self.id,
+                    'name': self.name,
+                    'course': course}
+        else:
+            return self.id
 
     class Meta:
         db_table = 'canvas_section'
@@ -47,6 +62,19 @@ class CanvasStudent(models.Model):
     sortable_name = models.TextField()
     username = models.TextField()
     course = models.ForeignKey(CanvasCourse, on_delete=models.CASCADE)
+
+    def to_dict(self, levels=1):
+        if levels >= 1:
+            next_levels = levels - 1
+            return {'id': self.id,
+                    'sortable_name': self.sortable_name,
+                    'full_name': self.full_name,
+                    'username': self.username,
+                    'sections': [section.to_dict(levels=next_levels)
+                                 for section in self.sections.all()],
+                    'course': self.course.to_dict(levels=next_levels)}
+        else:
+            return self.id
 
     class Meta:
         db_table = 'canvas_students'
