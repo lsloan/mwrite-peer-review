@@ -1,7 +1,9 @@
+import json
 import logging
-from functools import wraps
+from functools import partial
+from collections import Iterable
 
-from django.http import JsonResponse, HttpResponseForbidden
+from django.http import HttpResponse, HttpResponseForbidden
 from django.core.exceptions import PermissionDenied
 from django.template import loader, TemplateDoesNotExist
 from django.utils.encoding import force_text
@@ -9,7 +11,10 @@ from django.views.decorators.csrf import requires_csrf_token
 from django.views.defaults import ERROR_403_TEMPLATE_NAME
 
 from rolepermissions.roles import get_user_roles
+from toolz.dicttoolz import keymap
 from toolz.functoolz import thread_first, compose
+
+from peer_review.util import to_camel_case
 
 logger = logging.getLogger(__name__)
 
@@ -40,10 +45,18 @@ def has_one_of_roles(**kwargs):
     return decorator
 
 
-# TODO needs to support models and querysets
+# TODO think about pagination for large collections
 def json_response(view):
+    camel_caser = partial(keymap, to_camel_case)
+
     def wrapper(*args, **kwargs):
-        return JsonResponse(view(*args, **kwargs))
+        data = view(*args, **kwargs)
+        if isinstance(data, Iterable):
+            content = list(map(camel_caser, data))
+        else:
+            content = camel_caser(data)
+        return HttpResponse(content=json.dumps(content),
+                            content_type='application/json')
     return wrapper
 
 
@@ -65,6 +78,7 @@ def authorized_json_endpoint(**kwargs):
         return wrapper
     return decorator
 
+# TODO move somewhere else
 # adapted from django.views.defaults.permission_denied
 @requires_csrf_token
 def permission_denied(request, exception, template_name=ERROR_403_TEMPLATE_NAME):
