@@ -56,6 +56,7 @@ export default {
   },
   methods: {
     getStudents() {
+      // TODO use a store action
       api.get('/course/15/students').then((response) => {
         console.log(response.data);
       });
