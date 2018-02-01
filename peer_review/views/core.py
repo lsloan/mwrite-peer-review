@@ -31,13 +31,6 @@ from peer_review.etl import persist_assignments, AssignmentValidation
 logger = logging.getLogger(__name__)
 
 
-# TODO refactor / move me
-@authenticated_json_endpoint
-def user_roles(request):
-    roles = [role.get_name() for role in get_user_roles(request.user)]
-    return {'roles': roles}
-
-
 # TODO needs to handle assignment level launches
 class CourseIndexView(HasRoleMixin, View):
     allowed_roles = ['instructor', 'student']
