@@ -5,10 +5,13 @@
 </template>
 
 <script>
+import api from '@/services/api';
 export default {
   name: 'App',
   beforeCreate: function() {
-    this.$store.commit('fetchUserDetails');
+    api.get('/course/15/user/self').then(response => {
+      this.$store.commit('userDetails', response.data);
+    });
   }
 };
 </script>
