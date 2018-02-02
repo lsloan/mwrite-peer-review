@@ -3,8 +3,8 @@
     <h2>Title will go here</h2>
     <div>
       <div>
-        <div>filter by section part</div>
-        <div>filter by name part</div>
+        <div></div>
+        <div></div>
       </div>
       <v-client-table :data='formatData' :columns='cols' :options='options'></v-client-table>
     </div>
@@ -37,6 +37,14 @@ export default {
       ],
       cols: ['name', 'section'],
       options: {
+        filterByColumn: true,
+        filterable: ['name', 'section'],
+        listColumns: {
+          section: [
+            {id: 1, text: 'Section 1'},
+            {id: 2, text: 'Section 2'}
+          ]
+        },
         headings: {
           name: 'Student Name',
           section: 'Section'
@@ -56,9 +64,12 @@ export default {
       return formattedData;
     }
   }
-
 };
 </script>
 
 <style scoped>
+
+table {
+  font: red;
+}
 </style>

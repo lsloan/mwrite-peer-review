@@ -57,7 +57,9 @@ export default {
       });
     },
     sendMessage() {
-      api.post('/tell_me_something/', {message: 'Hello from the frontend!'});
+      api.get('/instructor_stuff').then((response) => {
+        console.log(response);
+      });
     }
   },
   mounted() {
