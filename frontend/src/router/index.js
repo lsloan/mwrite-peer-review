@@ -1,5 +1,6 @@
 import Vue from 'vue';
 import Router from 'vue-router';
+import store from '@/store';
 import HelloWorld from '@/components/HelloWorld';
 import RouteGuard from '@/components/RouteGuard';
 import StudentList from '@/components/StudentList';
@@ -8,7 +9,7 @@ import DeleteMe from '@/components/DeleteMe';
 Vue.use(Router);
 
 const authGuard = (targetRole, to, from, next) => {
-  const userRoles = this.a.app.$userDetails.roles;
+  const userRoles = store.state.userDetails.roles;
   const go = userRoles.find((role) => role === targetRole);
   next(!!go);
 };

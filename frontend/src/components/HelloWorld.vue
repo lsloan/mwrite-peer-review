@@ -1,7 +1,7 @@
 <template>
     <div class="hello">
-        <h1>{{ msg }}<span v-if="name">, {{ name }}!</span></h1>
-        <button v-on:click="sendMessage">Send A Message</button>
+        <h1>{{ msg }}<span v-if="username">, {{ username }}!</span></h1>
+        <button v-on:click="getStudents">Get Students List (check console)</button>
         <h2>Essential Links</h2>
         <ul>
             <li>
@@ -46,24 +46,21 @@ export default {
   name: 'HelloWorld',
   data() {
     return {
-      msg: 'Welcome to Your Vue.js App',
-      name: null
+      msg: 'Welcome to Your Vue.js App'
     };
   },
-  methods: {
-    retrieveName() {
-      api.get('/who_am_i/').then((response) => {
-        this.name = response.data.username;
-      });
-    },
-    sendMessage() {
-      api.get('/instructor_stuff').then((response) => {
-        console.log(response);
-      });
+  computed: {
+    username() {
+      return this.$store.state.userDetails.username;
     }
   },
-  mounted() {
-    this.retrieveName();
+  methods: {
+    getStudents() {
+      // TODO use a store action
+      api.get('/course/15/students').then((response) => {
+        console.log(response.data);
+      });
+    }
   }
 };
 </script>

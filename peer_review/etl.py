@@ -2,12 +2,15 @@ import os
 import logging
 import requests
 from zipfile import ZipFile
+from functools import partial
+
 from toolz.dicttoolz import dissoc
 from toolz.functoolz import thread_last
 from toolz.itertoolz import unique, remove
 from django.db import transaction
 from django.conf import settings
 from django.utils.dateparse import parse_datetime
+
 from peer_review.util import to_camel_case
 from peer_review.canvas import retrieve
 from peer_review.models import CanvasAssignment, CanvasSection, CanvasStudent, CanvasCourse, CanvasSubmission, Rubric
@@ -135,17 +138,19 @@ def persist_sections(course_id):
             section.save()
 
 
-def _convert_student(raw_student):
+def _convert_student(course_id, raw_student):
     return CanvasStudent(id=raw_student['id'],
                          username=raw_student['login_id'],
                          full_name=raw_student['name'],
-                         sortable_name=raw_student['sortable_name'])
+                         sortable_name=raw_student['sortable_name'],
+                         course_id=course_id)
 
 
 def persist_students(course_id):
     raw_students = retrieve('students', course_id)
     enrollments_by_student_id = {s['id']: s['enrollments'] for s in raw_students}
-    students = list(map(_convert_student, raw_students))
+    student_converter = partial(_convert_student, course_id)
+    students = list(map(student_converter, raw_students))
 
     with transaction.atomic():
         for student in students:
