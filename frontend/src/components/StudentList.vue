@@ -12,6 +12,7 @@
 </template>
 
 <script>
+import api from '@/services/api';
 import Vue from 'vue';
 import { ClientTable } from 'vue-tables-2';
 Vue.use(ClientTable, {}, false, 'bootstrap3', 'default');
@@ -20,21 +21,6 @@ export default {
   name: 'StudentList',
   data() {
     return {
-      fake_data: [{
-        student: {
-          first_name: 'name1',
-          last_name: 'ZlastName1'
-        },
-        section: '1'
-      },
-      {
-        student: {
-          first_name: 'name2',
-          last_name: 'lastName2'
-        },
-        section: 'filterval'
-      }
-      ],
       cols: ['name', 'section'],
       options: {
         filterByColumn: true,
@@ -49,20 +35,32 @@ export default {
           name: 'Student Name',
           section: 'Section'
         }
-      }
+      },
+      json_data: {}
     };
   },
   computed: {
     formatData() {
-      const origData = this.fake_data;
+      const origData = this.json_data;
       var formattedData = [];
       for(var i = 0; i < origData.length; i++) {
-        formattedData.push({name: origData[i]['student']['first_name'] + ' ' + origData[i]['student']['last_name'], section: origData[i]['section']});
+        formattedData.push({name: origData[i]['fullName'] + ' (' + origData[i]['username'] + ')', section: origData[i]['sections']});
       }
+      console.log('new data ', formattedData);
 
-      console.log('new data: ', formattedData);
       return formattedData;
     }
+  },
+  methods: {
+    getStudents() {
+      api.get('/course/15/students').then((response) => {
+        console.log('response: ', response.data);
+        this.json_data = response.data;
+      });
+    }
+  },
+  created: function() {
+    this.getStudents();
   }
 };
 </script>
