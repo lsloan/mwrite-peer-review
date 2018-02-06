@@ -15,10 +15,11 @@ def all_students(request, course_id):
 
 
 @authenticated_json_endpoint
-def logged_in_user_details(request, course_id):
+def logged_in_user_details(request):
     roles = [role.get_name() for role in get_user_roles(request.user)]
+    course_id = request.session['lti_launch_params']['custom_canvas_course_id']
     return {
         'username': request.user.username,
+        'course_id': course_id,
         'roles': roles
     }
-
