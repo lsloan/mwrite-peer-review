@@ -56,8 +56,8 @@ export default {
   },
   methods: {
     getStudents() {
-      // TODO use a store action
-      api.get('/course/15/students').then((response) => {
+      const { courseId } = this.$store.state.userDetails;
+      api.get('/course/{0}/students', courseId).then((response) => {
         console.log(response.data);
       });
     }
