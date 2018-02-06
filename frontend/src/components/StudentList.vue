@@ -28,7 +28,9 @@ export default {
         listColumns: {
           section: [
             {id: 1, text: 'Section 1'},
-            {id: 2, text: 'Section 2'}
+            {id: 2, text: 'Section 2'},
+            {id: 3, text: 'MWrite Test Course 1'},
+            {id: 4, text: 'Auto Test Section 1'}
           ]
         },
         headings: {
@@ -44,7 +46,8 @@ export default {
       const origData = this.json_data;
       var formattedData = [];
       for(var i = 0; i < origData.length; i++) {
-        formattedData.push({name: origData[i]['fullName'] + ' (' + origData[i]['username'] + ')', section: origData[i]['sections']});
+        var firstSection = origData[i]['sections'][0]['name'];
+        formattedData.push({name: origData[i]['fullName'] + ' (' + origData[i]['username'] + ')', section: firstSection});
       }
       console.log('new data ', formattedData);
 
@@ -66,7 +69,6 @@ export default {
 </script>
 
 <style scoped>
-
 table {
   font: red;
 }
