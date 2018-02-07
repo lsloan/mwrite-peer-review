@@ -5,7 +5,7 @@
             <peer-review-assignment-card
                 :prompt="assignment.prompt"
                 :rubric="assignment.rubric"
-                :review="assignment.review" />
+                :review="assignment.review"/>
         </template>
     </div>
 </template>
