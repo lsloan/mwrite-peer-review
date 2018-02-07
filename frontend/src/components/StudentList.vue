@@ -28,8 +28,9 @@ export default {
         filterable: ['name', 'section'],
         customFilters: [{
           name: 'section',
-          callback(row, query) {
-            console.log('triggering custom filter');
+          callback: (row, query) => {
+            console.log('triggering custom filter, this: ', this);
+            this.customSectionFilter(row, query);
           }
         }],
         listColumns: {
@@ -52,10 +53,6 @@ export default {
     formatData() {
       const origData = this.json_data;
       var formattedData = [];
-      // for(var i = 0; i < origData.length; i++) {
-      //   var firstSection = origData[i]['sections'][0]['name'];
-      //   formattedData.push({name: origData[i]['fullName'] + ' (' + origData[i]['username'] + ')', section: firstSection});
-      // }
       formattedData = origData.map(convertDataFormat);
       console.log('new data ', formattedData);
 
@@ -69,6 +66,12 @@ export default {
         console.log('response: ', response.data);
         this.json_data = response.data;
       });
+    },
+    customSectionFilter(row, query) {
+      console.log('customSectionFilter function row: ', row);
+      console.log('query: ', query);
+      // need to get text corresponding to query which is the id
+      return (row['section'] === query);
     }
   },
   created: function() {
