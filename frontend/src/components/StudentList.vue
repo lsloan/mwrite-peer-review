@@ -6,7 +6,10 @@
         <div></div>
         <div></div>
       </div>
-      <v-client-table name='studentTable' :data='formatData' :columns='cols' :options='options' ></v-client-table>
+      <v-client-table name='studentTable' :data='formatData' :columns='cols' :options='options' >
+        <span slot='section' slot-scope='props'>{{joinCommas(props.row)}}
+        </span>
+      </v-client-table>
     </div>
   </div>
 </template>
@@ -35,10 +38,10 @@ export default {
         }],
         listColumns: {
           section: [
-            {id: 1, text: 'Section 1'},
-            {id: 2, text: 'Section 2'},
-            {id: 3, text: 'MWrite Test Course 1'},
-            {id: 4, text: 'Auto Test Section 1'}
+            {id: 107, text: 'MWrite Test Course 1'},
+            {id: 108, text: 'Section 1'},
+            {id: 109, text: 'Section 2'},
+            {id: 129, text: 'Auto Test Section 1'}
           ]
         },
         headings: {
@@ -57,6 +60,13 @@ export default {
       console.log('new data ', formattedData);
 
       return formattedData;
+    },
+    sectionOptions() {
+      const origData = this.json_data;
+      // var sectionIdDict = {};
+      // var sectionOptions = [];
+      console.log('orig', origData);
+      return true;
     }
   },
   methods: {
@@ -68,10 +78,18 @@ export default {
       });
     },
     customSectionFilter(row, query) {
-      console.log('customSectionFilter function row: ', row);
+      console.log('customSectionFilter function row: ', row['section']['ids']);
       console.log('query: ', query);
       // need to get text corresponding to query which is the id
-      return (row['section'] === query);
+      // console.log('the options: ', this);
+      // const optionsSection = this._data.options.listColumns.section;
+      // console.log('the options: ', optionsSection);
+      console.log('includes returns: ', row['section']['ids'].includes(query))
+      return (row['section']['ids'].includes(parseInt(query)));
+    },
+    joinCommas(row) {
+      console.log('the input:', row);
+      return row['section']['names'].join(',');
     }
   },
   created: function() {
@@ -80,10 +98,16 @@ export default {
 };
 
 const convertDataFormat = (rowData) => {
-  var concatSections = rowData['sections'][0]['name'];
+  var sectionNamesIds = rowData['sections'].reduce(function(acc, next) {
+    acc['names'].push(next['name']);
+    acc['ids'].push(next['id']);
+
+    return acc;
+  }, {names: [], ids: []});
+
   var fullName = rowData['fullName'] + ' (' + rowData['username'] + ')';
 
-  return {name: fullName, section: concatSections};
+  return {name: fullName, section: sectionNamesIds};
 };
 </script>
 
