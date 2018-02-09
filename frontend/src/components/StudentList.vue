@@ -31,9 +31,22 @@ export default {
         filterable: ['name', 'section'],
         customFilters: [{
           name: 'section',
-          callback: (row, query) => {
-            console.log('triggering custom filter, this: ', this);
-            this.customSectionFilter(row, query);
+          callback: function(row, query) {
+            // console.log('triggering custom filter, this: ', this);
+            // // console.log('return val of customSectionFilter:', this.customSectionFilter(row, query));
+            // console.log('customSectionFilter function row: ', row['section']['ids']);
+            // console.log('query: ', parseInt(query), typeof (parseInt(query)));
+            // console.log('typeof elem in array:', typeof (row['section']['ids'][0]));
+            // // return (row['section']['ids'].includes(parseInt(query)));
+            // console.log(Boolean(row['section']['ids'].find(elem => {
+            //   return (parseInt(query) === elem);
+            // })));
+            // const result = Boolean(row['section']['ids'].find(elem => {
+            //   console.log('query in find:', query);
+            //   return (parseInt(query) === elem);
+            // }));
+            // return result;
+            return false;
           }
         }],
         listColumns: {
@@ -76,16 +89,6 @@ export default {
         console.log('response: ', response.data);
         this.json_data = response.data;
       });
-    },
-    customSectionFilter(row, query) {
-      console.log('customSectionFilter function row: ', row['section']['ids']);
-      console.log('query: ', query);
-      // need to get text corresponding to query which is the id
-      // console.log('the options: ', this);
-      // const optionsSection = this._data.options.listColumns.section;
-      // console.log('the options: ', optionsSection);
-      console.log('includes returns: ', row['section']['ids'].includes(query))
-      return (row['section']['ids'].includes(parseInt(query)));
     },
     joinCommas(row) {
       console.log('the input:', row);
