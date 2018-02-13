@@ -3,18 +3,36 @@
     <h2>Title will go here</h2>
     <div>
       <div>
-        <div></div>
+        <div>
+        </div>
         <div></div>
       </div>
       <table>
         <tr>
+          <td>
+            <input v-model='nameFilter' placeholder='enter name'>
+          </td>
+          <td>
+            <select v-model='selected'>
+              <option value='0'>All Students</option>
+              <option v-for='(option, key) in possibleSections' :value='key' :key='key'>
+                {{option}}
+              </option>
+            </select>
+            <span>Selected: {{ selected }}</span>
+          </td>
+        </tr>
+        <tr>
           <th>Student Name</th>
           <th>Sections</th>
         </tr>
-        <tr v-for='row in formatData' :key='row.index'>
+        <tr v-for='row in filteredData' :key='row.index'>
           <td>{{row.name}}</td>
-          <td v-for='(section, index) in row.section.names' :key='index'>
-            <span>{{section}}</span><span v-if='index < row.section.names.length -1'>,&nbsp;</span>
+          <td>
+            <span v-for='(section, index) in row.section.names' :key='index'>{{section}}
+              <span v-if='index < row.section.names.length -1'>,&nbsp;
+              </span>
+          </span>
           </td>
         </tr>
       </table>
@@ -29,7 +47,10 @@ export default {
   name: 'StudentList',
   data() {
     return {
-      json_data: []
+      json_data: [],
+      parsedData: [],
+      selected: '0',
+      nameFilter: ''
     };
   },
   computed: {
@@ -38,15 +59,32 @@ export default {
       var formattedData = [];
       formattedData = origData.map(convertDataFormat);
       console.log('new data ', formattedData);
-
       return formattedData;
     },
-    sectionOptions() {
-      const origData = this.json_data;
-      // var sectionIdDict = {};
-      // var sectionOptions = [];
-      console.log('orig', origData);
-      return true;
+    possibleSections() {
+      var allSections = this.json_data.reduce(function(acc, next) {
+        var sections = next['sections'];
+
+        for(var i = 0; i < sections.length; i++) {
+          acc[sections[i]['id']] = sections[i]['name'];
+        }
+
+        return acc;
+      }, {});
+      return allSections;
+    },
+    filteredData() {
+      var filteredData = [];
+      const parsedData = this.formatData;
+      console.log('section selected:', this.selected);
+      console.log('name selected:', this.nameFilter);
+      // should be an 'and' filter
+
+      if(this.selected === '0' && this.nameFilter === '') {
+        return parsedData;
+      }
+
+      return filteredData;
     }
   },
   methods: {
@@ -56,10 +94,6 @@ export default {
         console.log('response: ', response.data);
         this.json_data = response.data;
       });
-    },
-    joinCommas(row) {
-      console.log('the input:', row);
-      return row['section']['names'].join(',');
     }
   },
   created: function() {
