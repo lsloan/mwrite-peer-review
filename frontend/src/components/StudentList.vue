@@ -66,7 +66,10 @@ export default {
         var sections = next['sections'];
 
         for(var i = 0; i < sections.length; i++) {
-          acc[sections[i]['id']] = sections[i]['name'];
+          if(!acc.hasOwnProperty(sections[i]['id'])) {
+            // console.log('adding section');
+            acc[sections[i]['id']] = sections[i]['name'];
+          }
         }
 
         return acc;
@@ -78,11 +81,33 @@ export default {
       const parsedData = this.formatData;
       console.log('section selected:', this.selected);
       console.log('name selected:', this.nameFilter);
-      // should be an 'and' filter
+      // should be an 'AND' filter
 
       if(this.selected === '0' && this.nameFilter === '') {
+        console.log('NO filter');
         return parsedData;
       }
+
+      const sectionSelected = this.selected;
+      const nameSelected = this.nameFilter;
+
+      parsedData.filter(function(row) {
+        if(sectionSelected !== '0' && nameSelected !== '') {
+          // both criteria selected
+          // must filter by both using AND
+          console.log('filter by BOTH');
+          return true;
+        }
+        if(sectionSelected !== '0') {
+          // only filter by section
+          console.log('only filter by section');
+        }
+        if(nameSelected !== '') {
+          // only filter by name.
+          // match nameSelected to any substring?
+          console.log('only filter by name');
+        }
+      });
 
       return filteredData;
     }
