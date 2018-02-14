@@ -1,41 +1,43 @@
 <template>
-  <div>
-    <h2>Title will go here</h2>
-    <div>
+  <div class='mdl-grid'>
+    <div class='mdl-cell mdl-cell--12-col'>
+      <h2>Title will go here</h2>
       <div>
         <div>
+          <div>
+          </div>
+          <div></div>
         </div>
-        <div></div>
+        <table>
+          <tr>
+            <td>
+              <input v-model='nameFilter' placeholder='enter name'>
+            </td>
+            <td>
+              <select v-model='selected'>
+                <option value='0'>All Students</option>
+                <option v-for='(option, key) in possibleSections' :value='key' :key='key'>
+                  {{option}}
+                </option>
+              </select>
+              <span>Selected: {{ selected }}</span>
+            </td>
+          </tr>
+          <tr>
+            <th>Student Name</th>
+            <th>Sections</th>
+          </tr>
+          <tr v-for='row in filteredData' :key='row.index'>
+            <td>{{row.name}}</td>
+            <td>
+              <span v-for='(section, index) in row.section.names' :key='index'>{{section}}
+                <span v-if='index < row.section.names.length -1'>,&nbsp;
+                </span>
+            </span>
+            </td>
+          </tr>
+        </table>
       </div>
-      <table>
-        <tr>
-          <td>
-            <input v-model='nameFilter' placeholder='enter name'>
-          </td>
-          <td>
-            <select v-model='selected'>
-              <option value='0'>All Students</option>
-              <option v-for='(option, key) in possibleSections' :value='key' :key='key'>
-                {{option}}
-              </option>
-            </select>
-            <span>Selected: {{ selected }}</span>
-          </td>
-        </tr>
-        <tr>
-          <th>Student Name</th>
-          <th>Sections</th>
-        </tr>
-        <tr v-for='row in filteredData' :key='row.index'>
-          <td>{{row.name}}</td>
-          <td>
-            <span v-for='(section, index) in row.section.names' :key='index'>{{section}}
-              <span v-if='index < row.section.names.length -1'>,&nbsp;
-              </span>
-          </span>
-          </td>
-        </tr>
-      </table>
     </div>
   </div>
 </template>
@@ -96,7 +98,7 @@ export default {
           // both criteria selected
           // must filter by both using AND
           console.log('filter by BOTH');
-          return true;
+          return (row['section']['ids'].includes(parseInt(sectionSelected)) && (row['name'].toLowerCase()).includes(nameSelected.toLowerCase()));
         }
         if(sectionSelected !== '0') {
           // only filter by section
