@@ -91,7 +91,7 @@ export default {
       const sectionSelected = this.selected;
       const nameSelected = this.nameFilter;
 
-      parsedData.filter(function(row) {
+      filteredData = parsedData.filter(function(row) {
         if(sectionSelected !== '0' && nameSelected !== '') {
           // both criteria selected
           // must filter by both using AND
@@ -100,12 +100,12 @@ export default {
         }
         if(sectionSelected !== '0') {
           // only filter by section
-          console.log('only filter by section');
+          return row['section']['ids'].includes(parseInt(sectionSelected));
         }
         if(nameSelected !== '') {
           // only filter by name.
           // match nameSelected to any substring?
-          console.log('only filter by name');
+          return (row['name'].toLowerCase()).includes(nameSelected.toLowerCase());
         }
       });
 
