@@ -8,34 +8,37 @@
           </div>
           <div></div>
         </div>
-        <table>
+        <table class='mdl-data-table mdl-js-data-table'>
+          <thead>
           <tr>
-            <td>
+            <td class='mdl-data-table__cell--non-numeric'>
               <input v-model='nameFilter' placeholder='enter name'>
             </td>
-            <td>
+            <td class='mdl-data-table__cell--non-numeric'>
               <select v-model='selected'>
                 <option value='0'>All Students</option>
                 <option v-for='(option, key) in possibleSections' :value='key' :key='key'>
                   {{option}}
                 </option>
               </select>
-              <span>Selected: {{ selected }}</span>
             </td>
           </tr>
-          <tr>
-            <th>Student Name</th>
-            <th>Sections</th>
-          </tr>
-          <tr v-for='row in filteredData' :key='row.index'>
-            <td>{{row.name}}</td>
-            <td>
-              <span v-for='(section, index) in row.section.names' :key='index'>{{section}}
-                <span v-if='index < row.section.names.length -1'>,&nbsp;
-                </span>
-            </span>
-            </td>
-          </tr>
+            <tr>
+              <th class='mdl-data-table__cell--non-numeric'>Student Name</th>
+              <th class='mdl-data-table__cell--non-numeric'>Sections</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr v-for='row in filteredData' :key='row.index'>
+              <td class='mdl-data-table__cell--non-numeric'>{{row.name}}</td>
+              <td class='mdl-data-table__cell--non-numeric'>
+                <span v-for='(section, index) in row.section.names' :key='index'>{{section}}
+                  <span v-if='index < row.section.names.length -1'>,&nbsp;
+                  </span>
+              </span>
+              </td>
+            </tr>
+          </tbody>
         </table>
       </div>
     </div>
@@ -136,7 +139,7 @@ const convertDataFormat = (rowData) => {
     return acc;
   }, {names: [], ids: []});
 
-  var fullName = rowData['fullName'] + ' (' + rowData['username'] + ')';
+  var fullName = rowData['sortableName'] + ' (' + rowData['username'] + ')';
 
   return {name: fullName, section: sectionNamesIds};
 };
@@ -144,6 +147,6 @@ const convertDataFormat = (rowData) => {
 
 <style scoped>
 table {
-  font: red;
+  width: 100%;
 }
 </style>
