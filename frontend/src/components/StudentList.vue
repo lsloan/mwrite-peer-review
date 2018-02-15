@@ -15,12 +15,8 @@
               <input v-model='nameFilter' placeholder='enter name'>
             </td>
             <td class='mdl-data-table__cell--non-numeric'>
-              <select v-model='selected'>
-                <option value='0'>All Students</option>
-                <option v-for='(option, key) in possibleSections' :value='key' :key='key'>
-                  {{option}}
-                </option>
-              </select>
+              <mdl-select label='Section Filter' v-model='selected' id='section-select' :options='possibleSections'>
+              </mdl-select>
             </td>
           </tr>
             <tr>
@@ -47,6 +43,9 @@
 
 <script>
 import api from '@/services/api';
+import VueMdl from 'vue-mdl';
+import Vue from 'vue';
+Vue.use(VueMdl);
 
 export default {
   name: 'StudentList',
@@ -65,21 +64,6 @@ export default {
       formattedData = origData.map(convertDataFormat);
       console.log('new data ', formattedData);
       return formattedData;
-    },
-    possibleSections() {
-      var allSections = this.json_data.reduce(function(acc, next) {
-        var sections = next['sections'];
-
-        for(var i = 0; i < sections.length; i++) {
-          if(!acc.hasOwnProperty(sections[i]['id'])) {
-            // console.log('adding section');
-            acc[sections[i]['id']] = sections[i]['name'];
-          }
-        }
-
-        return acc;
-      }, {});
-      return allSections;
     },
     filteredData() {
       var filteredData = [];
@@ -115,6 +99,30 @@ export default {
       });
 
       return filteredData;
+    },
+    possibleSections() {
+      var allSections = this.json_data.reduce(function(acc, next) {
+        var sections = next['sections'];
+
+        for(var i = 0; i < sections.length; i++) {
+          if(!acc.hasOwnProperty(sections[i]['id'])) {
+            // console.log('adding section');
+            acc[sections[i]['id']] = sections[i]['name'];
+          }
+        }
+
+        return acc;
+      }, {});
+      allSections[0] = 'All students';
+      console.log('possibleSections:', allSections);
+      var sectionsList = [];
+
+      Object.keys(allSections).forEach(function(key) {
+        sectionsList.push({'name': allSections[key], 'value': key});
+      });
+
+      console.log('sectionsList:', sectionsList);
+      return sectionsList;
     }
   },
   methods: {
@@ -148,5 +156,6 @@ const convertDataFormat = (rowData) => {
 <style scoped>
 table {
   width: 100%;
+  border-style: solid hidden;
 }
 </style>
