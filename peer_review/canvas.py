@@ -19,9 +19,11 @@ _routes = {
     'enrollments':          {'route': 'courses/%s/enrollments'},
 
     'course':               {'route': 'courses/%s'},
-    'assignments':          {'route': 'courses/%s/assignments'},
+    'assignments':          {'route': 'courses/%s/assignments',
+                             'params': {
+                                 'include[]': ['overrides']
+                             }},
     'assignment':           {'route': 'courses/%s/assignments/%s'},
-    'assignment-overrides': {'route': 'courses/%s/assignments/%s/overrides'},
     'submissions':          {'route': 'courses/%s/assignments/%s/submissions'},
     'submission_file':      {'route': 'courses/%s/assignments/%s/submissions/self/files'},
     'students':             {'route': 'courses/%s/users',
