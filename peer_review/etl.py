@@ -1,11 +1,12 @@
 import os
 import logging
 import requests
+from functools import partial
 from zipfile import ZipFile
 from functools import partial
 
 from toolz.dicttoolz import dissoc
-from toolz.functoolz import thread_last
+from toolz.functoolz import thread_last, memoize
 from toolz.itertoolz import unique, remove
 from django.db import transaction
 from django.conf import settings
@@ -59,28 +60,27 @@ def _is_peer_review_assignment(assignment):
            settings.APP_HOST in assignment['external_tool_tag_attributes']['url']
 
 
-def _convert_assignment(assignment):
+def _convert_assignment(section_name_getter, assignment):
     course_id = assignment['course_id']
     assignment_id = assignment['id']
-    overrides = retrieve('assignment-overrides', course_id, assignment_id) if assignment['has_overrides'] else None
-    due_date_utc, number_of_due_dates = _due_dates_from_overrides(assignment, overrides)
+    due_date_utc, number_of_due_dates = _due_dates_from_overrides(assignment, assignment.get('overrides'))
 
-    sections = None
+    section_ids = None
     section_name = None
-    if overrides:
-        sections = thread_last(overrides,
-                               (map, lambda o: o.get('course_section_id')),
-                               (remove, lambda o: o is None),
-                               list)
-        if sections and len(sections) == 1:
-            section_name = retrieve('section', course_id, sections[0])['name']
+    if 'overrides' in assignment:
+        section_ids = thread_last(assignment['overrides'],
+                                  (map, lambda o: o.get('course_section_id')),
+                                  (remove, lambda o: o is None),
+                                  list)
+        if section_ids and len(section_ids) == 1:
+            section_name = section_name_getter(section_ids[0])
 
     validation = AssignmentValidation(submission_upload_type=assignment.get('submission_types'),
                                       allowed_extensions=assignment.get('allowed_extensions'),
                                       due_date_utc=due_date_utc,
                                       number_of_due_dates=number_of_due_dates,
                                       section_name=section_name,
-                                      number_of_sections=len(sections) if sections else 0)
+                                      number_of_sections=len(section_ids) if section_ids else 0)
     return CanvasAssignment(id=assignment_id,
                             course_id=course_id,
                             title=assignment['name'],
@@ -99,8 +99,12 @@ def persist_course(course_id):
 
 
 def persist_assignments(course_id):
+    section_name_getter = memoize(lambda section_id: retrieve('section', course_id, section_id)['name'])
+    assignment_converter = partial(_convert_assignment, section_name_getter)
+
     canvas_assignments = retrieve('assignments', course_id)
-    assignments = [_convert_assignment(canvas_assignment) for canvas_assignment in canvas_assignments]
+    assignments = [assignment_converter(canvas_assignment) for canvas_assignment in canvas_assignments]
+
     for assignment in assignments:
         if not assignment.is_peer_review_assignment:
             try:
