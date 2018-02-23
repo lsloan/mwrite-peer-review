@@ -4,6 +4,7 @@ from django.db import connection
 from toolz.dicttoolz import keymap
 from rolepermissions.roles import get_user_roles
 
+import peer_review.etl as etl
 import peer_review.util as util
 from peer_review.models import CanvasStudent
 from peer_review.decorators import authorized_json_endpoint, authenticated_json_endpoint
@@ -34,19 +35,22 @@ def all_peer_review_assignment_details(request, course_id):
     query = """
         SELECT
           total_reviews.rubric_id,
-          peer_review_assignment_id,
-          canvas_assignments.title        AS peer_review_title,
+          peer_review_assignments.id           AS peer_review_assignment_id,
+          peer_review_assignments.title        AS peer_review_title,
           CASE WHEN peer_review_distributions.distributed_at_utc IS NOT NULL
             THEN peer_review_distributions.distributed_at_utc
-            ELSE open_date
-          END                             AS open_date,
-          canvas_assignments.due_date_utc AS due_date,
+          ELSE open_date
+          END                                  AS open_date,
+          peer_review_assignments.due_date_utc AS due_date,
           number_of_completed_reviews,
           number_of_assigned_reviews,
           CASE WHEN peer_review_distributions.is_distribution_complete IS TRUE
-            THEN TRUE ELSE FALSE
-          END                             AS reviews_in_progress
+            THEN TRUE
+          ELSE FALSE
+          END                                  AS reviews_in_progress
         FROM
+          canvas_assignments peer_review_assignments
+          LEFT JOIN
           (SELECT
              rubrics.id                      AS rubric_id,
              rubrics.peer_review_open_date   AS open_date,
@@ -57,10 +61,11 @@ def all_peer_review_assignment_details(request, course_id):
              LEFT JOIN canvas_submissions ON canvas_assignments.id = canvas_submissions.assignment_id
              LEFT JOIN peer_reviews ON canvas_submissions.id = peer_reviews.submission_id
            WHERE course_id = %s
-           GROUP BY rubric_id) AS total_reviews
+           GROUP BY rubric_id) AS total_reviews ON peer_review_assignments.id = total_reviews.peer_review_assignment_id
           LEFT JOIN (SELECT
                        criteria_by_rubric.rubric_id,
-                       cast(sum(number_of_criteria = number_of_comments AND number_of_comments IS NOT NULL)
+                       cast(sum(number_of_criteria = number_of_comments AND
+                                number_of_comments IS NOT NULL)
                             AS SIGNED) AS number_of_completed_reviews
                      FROM
                        (SELECT
@@ -88,17 +93,21 @@ def all_peer_review_assignment_details(request, course_id):
                          ON criteria_by_rubric.rubric_id = comments_by_rubric.rubric_id
                      GROUP BY criteria_by_rubric.rubric_id) AS completed_reviews
             ON total_reviews.rubric_id = completed_reviews.rubric_id
-          LEFT JOIN canvas_assignments ON peer_review_assignment_id = canvas_assignments.id
-          LEFT JOIN peer_review_distributions ON total_reviews.rubric_id = peer_review_distributions.rubric_id;
+          LEFT JOIN peer_review_distributions ON total_reviews.rubric_id = peer_review_distributions.rubric_id
+        WHERE peer_review_assignments.id in %s and peer_review_assignments.is_peer_review_assignment IS TRUE;
     """
 
+    fetched_assignments = etl.persist_assignments(course_id)
+    fetched_assignment_ids = tuple(map(lambda a: a.id, fetched_assignments))
+
     with connection.cursor() as cursor:
-        cursor.execute(query, [course_id])
+        cursor.execute(query, [course_id, fetched_assignment_ids])
         data = util.fetchall_dicts(cursor)
 
     for row in data:
         row['due_date'] = row['due_date'].strftime('%Y-%m-%d %H:%M:%SZ')
-        row['open_date'] = row['open_date'].strftime('%Y-%m-%d %H:%M:%SZ')
+        if row.get('open_date'):
+            row['open_date'] = row['open_date'].strftime('%Y-%m-%d %H:%M:%SZ')
         row['reviews_in_progress'] = row['reviews_in_progress'] == 1
 
     return [keymap(util.to_camel_case, row) for row in data]
