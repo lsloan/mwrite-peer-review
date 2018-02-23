@@ -36,10 +36,16 @@ def all_peer_review_assignment_details(request, course_id):
           total_reviews.rubric_id,
           peer_review_assignment_id,
           canvas_assignments.title        AS peer_review_title,
-          open_date,
+          CASE WHEN peer_review_distributions.distributed_at_utc IS NOT NULL
+            THEN peer_review_distributions.distributed_at_utc
+            ELSE open_date
+          END                             AS open_date,
           canvas_assignments.due_date_utc AS due_date,
           number_of_completed_reviews,
-          number_of_assigned_reviews
+          number_of_assigned_reviews,
+          CASE WHEN peer_review_distributions.is_distribution_complete IS TRUE
+            THEN TRUE ELSE FALSE
+          END                             AS reviews_in_progress
         FROM
           (SELECT
              rubrics.id                      AS rubric_id,
@@ -54,8 +60,7 @@ def all_peer_review_assignment_details(request, course_id):
            GROUP BY rubric_id) AS total_reviews
           LEFT JOIN (SELECT
                        criteria_by_rubric.rubric_id,
-                       cast(sum(number_of_criteria = number_of_comments AND
-                                number_of_comments IS NOT NULL)
+                       cast(sum(number_of_criteria = number_of_comments AND number_of_comments IS NOT NULL)
                             AS SIGNED) AS number_of_completed_reviews
                      FROM
                        (SELECT
@@ -83,7 +88,8 @@ def all_peer_review_assignment_details(request, course_id):
                          ON criteria_by_rubric.rubric_id = comments_by_rubric.rubric_id
                      GROUP BY criteria_by_rubric.rubric_id) AS completed_reviews
             ON total_reviews.rubric_id = completed_reviews.rubric_id
-          LEFT JOIN canvas_assignments ON peer_review_assignment_id = canvas_assignments.id;
+          LEFT JOIN canvas_assignments ON peer_review_assignment_id = canvas_assignments.id
+          LEFT JOIN peer_review_distributions ON total_reviews.rubric_id = peer_review_distributions.rubric_id;
     """
 
     with connection.cursor() as cursor:
@@ -93,5 +99,6 @@ def all_peer_review_assignment_details(request, course_id):
     for row in data:
         row['due_date'] = row['due_date'].strftime('%Y-%m-%d %H:%M:%SZ')
         row['open_date'] = row['open_date'].strftime('%Y-%m-%d %H:%M:%SZ')
+        row['reviews_in_progress'] = row['reviews_in_progress'] == 1
 
     return [keymap(util.to_camel_case, row) for row in data]
