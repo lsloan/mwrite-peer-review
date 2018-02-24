@@ -87,6 +87,7 @@ class CanvasSubmission(models.Model):
     author = models.ForeignKey(CanvasStudent, on_delete=models.DO_NOTHING)
     assignment = models.ForeignKey(CanvasAssignment, on_delete=models.DO_NOTHING, related_name='canvas_submission_set')
     filename = models.CharField(unique=True, max_length=255)
+    score = models.FloatField(null=True, blank=True)
 
     # TODO this needs a better name -- these are just assigned, may not be actually completed
     @property

@@ -190,7 +190,8 @@ def _convert_submission(raw_submission, filename):
         'id': raw_submission['id'],
         'author_id': raw_submission['user_id'],
         'assignment_id': raw_submission['assignment_id'],
-        'filename': filename
+        'filename': filename,
+        'score': raw_submission['score']
     }
 
 

@@ -28,6 +28,9 @@ from peer_review.util import parse_json_body, some
 from peer_review.decorators import authenticated_json_endpoint
 from peer_review.etl import persist_assignments, AssignmentValidation
 
+from lti import OutcomeRequest
+from lti.outcome_request import REPLACE_REQUEST
+
 logger = logging.getLogger(__name__)
 
 
@@ -487,6 +490,16 @@ class SingleReviewDetailView(HasRoleMixin, TemplateView):
     allowed_roles = ['student', 'instructor']
     template_name = 'single_review_details.html'
 
+    def post_score(self):
+        request = OutcomeRequest()
+        request.consumer_key = 'ASN0uThzdgRDvDmjT2d5tT8ho6Zump'
+        request.consumer_secret = 'qCFNSKL5WFlWulk1jxstO8BM5JtvqD'
+        request.lis_outcome_service_url = self.request.session['lti_launch_params']['lis_outcome_service_url']
+        request.lis_result_sourcedid = self.request.session['lti_launch_params']['lis_result_sourcedid']
+        request.operation = REPLACE_REQUEST
+        response = request.post_replace_result(0.92)
+        print (response.is_success())
+
     def get_context_data(self, **kwargs):
 
         user_id = int(self.request.session['lti_launch_params']['custom_canvas_user_id'])
@@ -497,19 +510,19 @@ class SingleReviewDetailView(HasRoleMixin, TemplateView):
             raise PermissionDenied
 
         peer_review_ids = PeerReview.objects.filter(submission=submission).values_list('id', flat=True)
-        rubric = submission.assignment.rubric_for_prompt
-        details = [(criterion,
-                    PeerReviewComment.objects.filter(criterion=criterion, peer_review_id__in=peer_review_ids)
-                                             .order_by('peer_review__submission__author_id'))
-                   for criterion in rubric.criteria.all()]
+        # rubric = submission.assignment.rubric_for_prompt
+        # details = [(criterion,
+        #             PeerReviewComment.objects.filter(criterion=criterion, peer_review_id__in=peer_review_ids)
+        #                                      .order_by('peer_review__submission__author_id'))
+        #            for criterion in rubric.criteria.all()]
 
         course_id = int(kwargs['course_id'])
         context = {'title': CanvasCourse.objects.get(id=course_id).name,
                    'prompt_title': submission.assignment.title,
-                   'user_is_instructor': user_is_instructor,
-                   'review': details}
+                   'user_is_instructor': user_is_instructor}
         if user_is_instructor:
             context['course_id'] = course_id
+        self.post_score()
         return context
 
 
