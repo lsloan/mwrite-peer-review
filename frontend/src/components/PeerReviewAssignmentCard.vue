@@ -57,6 +57,8 @@
 </template>
 
 <script>
+import {getValidationIssues} from "../services/validation";
+
 export default {
   name: 'peer-review-assignment-card',
   props: [
@@ -89,6 +91,9 @@ export default {
     },
     courseId() {
       return this.$store.state.userDetails.courseId;
+    },
+    issuesType() {
+        const issues = getValidationIssues()
     }
   }
 };
