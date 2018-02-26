@@ -1,4 +1,4 @@
-export function getValidationIssues(validationsAreForPrompt, validationInfo) {
+export function validationInfoAsIssues(validationInfo, validationsAreForPrompt = true) {
   const assignmentType = validationsAreForPrompt ? 'prompt' : 'revision';
   const errors = [];
   const warnings = [];
@@ -49,9 +49,9 @@ export function getValidationIssues(validationsAreForPrompt, validationInfo) {
 
     if(localDueDate === null) {
       if(numberOfDueDates === 0) {
-        const message = validationsAreForPrompt ?
-          'This prompt has no due date. This will prevent MWrite Peer Review from distributing submissions for review.' :
-          'This revision has no due date. This will prevent MWrite Peer Review from retrieving submissions.';
+        const message = validationsAreForPrompt
+          ? 'This prompt has no due date. This will prevent MWrite Peer Review from distributing submissions for review.'
+          : 'This revision has no due date. This will prevent MWrite Peer Review from retrieving submissions.';
         errors.push({
           message: message,
           fatal: true

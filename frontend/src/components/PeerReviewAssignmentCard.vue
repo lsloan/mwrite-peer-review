@@ -8,12 +8,21 @@
 
         <div class="mdl-card__supporting-text">
             <div class="icon-container">
-                <i :class="{'material-icons': true, 'icon-24px': true, 'ok-icon-color': rubricId}">
-                    <template v-if="rubricId">done</template>
-                    <template v-else>not_interested</template>
+                <i :class="validationIconClasses">
+                    <template v-if="!rubricExists">not_interested</template>
+                    <template v-else-if="issues.length === 0">done</template>
+                    <template v-else-if="rubricHasFatalIssues">warning</template>
+                    <template v-else-if="rubricHasNonFatalIssues">error_outline</template>
                 </i>
                 <span class="icon-caption">
-                    <template v-if="rubricId">Rubric was configured correctly</template>
+                    <template v-if="rubricExists">
+                        <template v-if="issues.length > 0">
+                            {{ rubricActionText }} rubric to see
+                            <template v-if="rubricHasFatalIssues">problems</template>
+                            <template v-else>suggested changes</template>
+                        </template>
+                        <template v-else>Rubric was configured correctly</template>
+                    </template>
                     <template v-else>Rubric has not been created</template>
                 </span>
             </div>
@@ -57,7 +66,7 @@
 </template>
 
 <script>
-import {getValidationIssues} from "../services/validation";
+import {validationInfoAsIssues} from '../services/validation';
 
 export default {
   name: 'peer-review-assignment-card',
@@ -68,7 +77,8 @@ export default {
     'open-date',
     'peer-review-assignment-id',
     'peer-review-title',
-    'date-format'
+    'date-format',
+    'validation-info'
   ],
   filters: {
     formatMoment(m, format) {
@@ -92,8 +102,26 @@ export default {
     courseId() {
       return this.$store.state.userDetails.courseId;
     },
-    issuesType() {
-        const issues = getValidationIssues()
+    issues() {
+      return validationInfoAsIssues(this.validationInfo);
+    },
+    rubricExists() {
+      return Boolean(this.rubricId);
+    },
+    rubricHasFatalIssues() {
+      return this.issues.length > 0 && this.issues.some(i => i.fatal);
+    },
+    rubricHasNonFatalIssues() {
+      return this.issues.length > 0 && this.issues.some(i => !i.fatal);
+    },
+    validationIconClasses() {
+      return {
+        'material-icons': true,
+        'icon-24px': true,
+        'icon-color-ok': this.rubricExists && this.issues.length === 0,
+        'icon-color-warning': this.rubricExists && this.rubricHasNonFatalIssues,
+        'icon-color-error': this.rubricExists && this.rubricHasFatalIssues
+      };
     }
   }
 };
@@ -104,8 +132,16 @@ export default {
         width: 330px;
     }
 
-    .ok-icon-color {
+    .icon-color-ok {
         color: #02d60c;
+    }
+
+    .icon-color-warning {
+        color: #d17302;
+    }
+
+    .icon-color-error {
+        color: #c40000;
     }
 
     .rubric-action {

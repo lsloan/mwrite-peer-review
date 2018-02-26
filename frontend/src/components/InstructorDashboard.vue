@@ -9,6 +9,7 @@
             :reviews-in-progress="assignment.reviewsInProgress"
             :due-date="assignment.dueDate"
             :open-date="assignment.openDate"
+            :validation-info="assignment.validationInfo"
             date-format="MMMM D h:mm A"/>
     </div>
 </template>

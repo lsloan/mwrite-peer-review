@@ -35,6 +35,7 @@ module.exports = {
       'if': {'after': false},
       'for': {'after': false},
       'while': {'after': false}
-    }}]
+    }}],
+    'brace-style': ['error', 'stroustrup']
   }
 }
