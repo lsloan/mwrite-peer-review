@@ -32,3 +32,11 @@ def parse_json_body(b):
 
 def some(predicate, collection):
     return any(map(predicate, collection))
+
+
+def fetchall_dicts(cursor):
+    columns = [col[0] for col in cursor.description]
+    return [
+        dict(zip(columns, row))
+        for row in cursor.fetchall()
+    ]

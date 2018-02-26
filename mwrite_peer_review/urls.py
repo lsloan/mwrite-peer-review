@@ -19,6 +19,7 @@ urlpatterns = [
     url(r'^course/(?P<course_id>[0-9]+)/', include([
 
         url(r'^students/', api.all_students),
+        url(r'^peer_review/all', api.all_peer_review_assignment_details),
 
         ### old URLs below this point
 
