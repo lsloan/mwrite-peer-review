@@ -1,3 +1,4 @@
+import json
 import logging
 
 from django.db import connection
@@ -99,6 +100,7 @@ def all_peer_review_assignment_details(request, course_id):
 
     fetched_assignments = etl.persist_assignments(course_id)
     fetched_assignment_ids = tuple(map(lambda a: a.id, fetched_assignments))
+    validations = {a.id: a.validation for a in fetched_assignments}
 
     with connection.cursor() as cursor:
         cursor.execute(query, [course_id, fetched_assignment_ids])
@@ -109,5 +111,12 @@ def all_peer_review_assignment_details(request, course_id):
         if row.get('open_date'):
             row['open_date'] = row['open_date'].strftime('%Y-%m-%d %H:%M:%SZ')
         row['reviews_in_progress'] = row['reviews_in_progress'] == 1
+
+        validation_info = validations.get(row['peer_review_assignment_id'])
+        if validation_info:
+            row['validation_info'] = etl.AssignmentValidation.json_default(validation_info,
+                                                                           camel_case=True)
+        else:
+            row['validation_info'] = None
 
     return [keymap(util.to_camel_case, row) for row in data]

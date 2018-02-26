@@ -1,7 +1,6 @@
 import os
 import logging
 import requests
-from functools import partial
 from zipfile import ZipFile
 from functools import partial
 
@@ -32,8 +31,13 @@ class AssignmentValidation:
         self.number_of_sections = kwargs.get('number_of_sections')
 
     @staticmethod
-    def json_default(validation):
-        return {to_camel_case(k): v for k, v in validation.__dict__.items()}
+    def json_default(validation, camel_case=False):
+        def key_transform(key):
+            if camel_case:
+                return to_camel_case(key)
+            else:
+                return key
+        return {key_transform(k): v for k, v in validation.__dict__.items()}
 
 
 def _due_dates_from_overrides(assignment, overrides):
