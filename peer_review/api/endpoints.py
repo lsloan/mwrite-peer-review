@@ -36,6 +36,7 @@ def all_peer_review_assignment_details(request, course_id):
     query = """
         SELECT
           total_reviews.rubric_id,
+          total_reviews.prompt_id,
           peer_review_assignments.id           AS peer_review_assignment_id,
           peer_review_assignments.title        AS peer_review_title,
           CASE WHEN peer_review_distributions.distributed_at_utc IS NOT NULL
@@ -55,6 +56,7 @@ def all_peer_review_assignment_details(request, course_id):
           (SELECT
              rubrics.id                      AS rubric_id,
              rubrics.peer_review_open_date   AS open_date,
+             rubrics.reviewed_assignment_id  AS prompt_id,
              rubrics.passback_assignment_id  AS peer_review_assignment_id,
              count(DISTINCT peer_reviews.id) AS number_of_assigned_reviews
            FROM rubrics
@@ -112,10 +114,10 @@ def all_peer_review_assignment_details(request, course_id):
             row['open_date'] = row['open_date'].strftime('%Y-%m-%d %H:%M:%SZ')
         row['reviews_in_progress'] = row['reviews_in_progress'] == 1
 
-        validation_info = validations.get(row['peer_review_assignment_id'])
+        validation_info = validations.get(row['prompt_id'])
         if validation_info:
-            row['validation_info'] = etl.AssignmentValidation.json_default(validation_info,
-                                                                           camel_case=True)
+            validation_info_dict = etl.AssignmentValidation.json_default(validation_info, camel_case=True)
+            row['validation_info'] = validation_info_dict
         else:
             row['validation_info'] = None
 
