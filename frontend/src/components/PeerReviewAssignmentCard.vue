@@ -3,30 +3,29 @@
 
         <div class="mdl-card__title mdl-card--expand">
             <!-- TODO should be an h1? -->
-            <h2 class="mdl-card__title-text">{{ prompt.title }}</h2>
+            <h2 class="mdl-card__title-text">{{ peerReviewTitle }}</h2>
         </div>
 
         <div class="mdl-card__supporting-text">
             <div class="icon-container">
-                <i v-bind:class="{'material-icons': true, 'icon-24px': true, 'ok-icon-color': rubric}">
-                    <template v-if="rubric">done</template>
+                <i :class="{'material-icons': true, 'icon-24px': true, 'ok-icon-color': rubricId}">
+                    <template v-if="rubricId">done</template>
                     <template v-else>not_interested</template>
                 </i>
                 <span class="icon-caption">
-                    <template v-if="rubric">Rubric was configured correctly</template>
+                    <template v-if="rubricId">Rubric was configured correctly</template>
                     <template v-else>Rubric has not been created</template>
                 </span>
             </div>
         </div>
 
-        <div v-if="rubric" class="mdl-card__supporting-text">
+        <div :class="{'mdl-card__supporting-text': true, 'invisible': !rubricId }">
             <div class="icon-container">
                 <i class="material-icons icon-24px">date_range</i>
                 <span class="icon-caption">
-                    <template v-if="rubric.distributionIsComplete">Opened</template>
+                    <template v-if="reviewsInProgress">Opened</template>
                     <template v-else>Will open</template>
-                    <!-- TODO fix the below -->
-                    <template v-if="prompt.dueDateUtc">{{ openDate }}</template>
+                    <template v-if="dueDate">{{ openDate | formatMoment(dateFormat) }}</template>
                     <template v-else>anytime</template>
                 </span>
             </div>
@@ -35,47 +34,64 @@
         <div class="mdl-card__supporting-text">
             <div class="icon-container">
                 <i class="material-icons icon-24px">query_builder</i>
-                <span class="icon-caption">Due by {{ dueDate }}</span>
+                <span class="icon-caption">Due by {{ dueDate | formatMoment(dateFormat) }}</span>
             </div>
         </div>
 
-        <!-- TODO fix link paths -->
+        <!-- TODO change these <a>s to <router-link>s when these views are ported to VueJS -->
         <div class="mdl-card__actions mdl-card--border">
-            <router-link
-                to="/course/{{ courseId }}/rubric/assignment/{{ review.assignmentId }}"
+            <a
+                :href="rubricActionUrl"
                 class="rubric-action mdl-button mdl-button--colored mdl-js-button mdl-js-ripple-effect">
                 {{ rubricActionText }} Rubric
-            </router-link>
-            <router-link
-                v-if="rubric.distributionIsComplete"
-                to="/course/{{ courseId }}/status/rubric/{{ rubric.id }}"
+            </a>
+            <a
+                v-if="reviewsInProgress"
+                :href="viewReviewsUrl"
                 class="view-reviews-action mdl-button mdl-button--colored mdl-js-button mdl-js-ripple-effect">
                 View Reviews
-            </router-link>
+            </a>
         </div>
 
     </div>
 </template>
 
 <script>
-  export default {
-      name: 'peer-review-assignment-card',
-      props: ['prompt', 'rubric', 'review'], // TODO play with props and data layout
-      computed: {
-          openDate() {
-              return 'TODO open date';
-          },
-          dueDate() {
-              return 'TODO due date';
-          },
-          rubricActionText() {
-              return 'TODO rubric action text';
-          },
-          courseId() {
-              return this.$store.state.userDetails.courseId;
-          }
-      }
+export default {
+  name: 'peer-review-assignment-card',
+  props: [
+    'rubric-id',
+    'reviews-in-progress',
+    'due-date',
+    'open-date',
+    'peer-review-assignment-id',
+    'peer-review-title',
+    'date-format'
+  ],
+  filters: {
+    formatMoment(m, format) {
+      return m ? m.format(format) : '';
+    }
+  },
+  computed: {
+    rubricActionUrl() {
+      // TODO remove __API_URL__ when these views are ported to VueJS
+      return __API_URL__ + '/course/' + this.courseId + '/rubric/assignment/' + this.peerReviewAssignmentId;
+    },
+    viewReviewsUrl() {
+      // TODO remove __API_URL__ when these views are ported to VueJS
+      return __API_URL__ + '/course/' + this.courseId + '/status/rubric/' + this.rubricId + '/all';
+    },
+    rubricActionText() {
+      return this.reviewsInProgress
+        ? 'View'
+        : (this.rubricId ? 'Edit' : 'Create');
+    },
+    courseId() {
+      return this.$store.state.userDetails.courseId;
+    }
   }
+};
 </script>
 
 <style scoped>
@@ -111,6 +127,10 @@
 
     .icon-caption {
         margin-left: 10px;
+    }
+
+    .invisible {
+        visibility: hidden
     }
 
 </style>

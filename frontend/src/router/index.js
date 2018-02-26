@@ -4,6 +4,7 @@ import store from '@/store';
 import HelloWorld from '@/components/HelloWorld';
 import RouteGuard from '@/components/RouteGuard';
 import StudentList from '@/components/StudentList';
+import InstructorDashboard from '@/components/InstructorDashboard';
 import DeleteMe from '@/components/DeleteMe';
 
 Vue.use(Router);
@@ -29,6 +30,11 @@ export default new Router({
       path: '/tryAuth',
       name: 'AuthComponent',
       component: RouteGuard,
+      beforeEnter: instructorsOnlyGuard
+    },
+    {
+      path: '/instructor/dashboard',
+      component: InstructorDashboard,
       beforeEnter: instructorsOnlyGuard
     },
     {
