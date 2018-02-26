@@ -136,6 +136,11 @@ export default {
         width: 330px;
     }
 
+    .mdl-card__actions {
+        display: block;
+        text-align: center;
+    }
+
     .icon-color-ok {
         color: #02d60c;
     }
