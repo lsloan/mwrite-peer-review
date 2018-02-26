@@ -49,15 +49,13 @@
 
         <!-- TODO change these <a>s to <router-link>s when these views are ported to VueJS -->
         <div class="mdl-card__actions mdl-card--border">
-            <a
-                :href="rubricActionUrl"
-                class="rubric-action mdl-button mdl-button--colored mdl-js-button mdl-js-ripple-effect">
+            <a :href="rubricActionUrl"
+               class="mdl-button mdl-button--colored mdl-js-button mdl-js-ripple-effect">
                 {{ rubricActionText }} Rubric
             </a>
-            <a
-                v-if="reviewsInProgress"
-                :href="viewReviewsUrl"
-                class="view-reviews-action mdl-button mdl-button--colored mdl-js-button mdl-js-ripple-effect">
+            <a v-if="reviewsInProgress"
+               :href="viewReviewsUrl"
+               class="mdl-button mdl-button--colored mdl-js-button mdl-js-ripple-effect">
                 View Reviews
             </a>
         </div>
@@ -142,14 +140,6 @@ export default {
 
     .icon-color-error {
         color: #c40000;
-    }
-
-    .rubric-action {
-        /* TODO what goes here? can this be combined with view-reviews-action? */
-    }
-
-    .view-reviews-action {
-        /* TODO what goes here? can this be combined with rubric-action? */
     }
 
     /***********/
