@@ -28,14 +28,20 @@
             </div>
         </div>
 
-        <div :class="{'mdl-card__supporting-text': true, 'invisible': !rubricId }">
+        <div class="mdl-card__supporting-text">
             <div class="icon-container">
                 <i class="material-icons icon-24px">date_range</i>
                 <span class="icon-caption">
-                    <template v-if="reviewsInProgress">Opened</template>
-                    <template v-else>Will open</template>
+
+                    <template v-if="rubricExists">
+                        <template v-if="reviewsInProgress">Opened</template>
+                        <template v-else>Will open</template>
+                    </template>
+                    <template v-else>Rubric has not been created</template>
+
                     <template v-if="dueDate">{{ openDate | formatMoment(dateFormat) }}</template>
                     <template v-else>anytime</template>
+
                 </span>
             </div>
         </div>
@@ -56,7 +62,7 @@
             <a v-if="reviewsInProgress"
                :href="viewReviewsUrl"
                class="mdl-button mdl-button--colored mdl-js-button mdl-js-ripple-effect">
-                View Reviews
+                See Reviews
             </a>
         </div>
 
@@ -159,9 +165,4 @@ export default {
     .icon-caption {
         margin-left: 10px;
     }
-
-    .invisible {
-        visibility: hidden
-    }
-
 </style>
