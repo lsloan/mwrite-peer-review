@@ -37,7 +37,6 @@ export default {
         a.openDate = openDate ? moment(openDate).local() : null;
         return a;
       });
-      console.log(response.data);
     });
   }
 };
