@@ -66,20 +66,20 @@ INSTALLED_APPS = [
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
-    'whitenoise.runserver_nostatic',
-    'django.contrib.staticfiles',
+    'whitenoise.runserver_nostatic',  # TODO should be removed once all views are ported to VueJS
+    'django.contrib.staticfiles',     # TODO should be removed once all views are ported to VueJS
     'rolepermissions',
     'djangolti',
     'peer_review',
-    'health_check',
-    'health_check.db',
+    'health_check',                   # TODO do we even use this anymore?
+    'health_check.db',                # TODO do we even use this anymore?
     'corsheaders'
 ]
 
 MIDDLEWARE = [
     'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
-    'whitenoise.middleware.WhiteNoiseMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',  # TODO should be removed once all views are ported to VueJS
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -181,10 +181,10 @@ TIME_OUTPUT_FORMAT = '%b %-d %-I:%M %p'  # if running on Windows, replace - with
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/1.10/howto/static-files/
 
-# TODO hacky. separate static files into their own artifact
-STATIC_URL = LTI_APP_REDIRECT if LTI_APP_REDIRECT[-1] == '/' else LTI_APP_REDIRECT + '/'
+# TODO should eventually turn off static file handling completely once views are ported to VueJS
+STATIC_URL = '/static/'
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
-STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'  # TODO remove after views ported to Vue
 
 
 LOGGING = {
