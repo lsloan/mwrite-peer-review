@@ -1,62 +1,73 @@
 import Vue from 'vue';
 import Router from 'vue-router';
+
 import store from '@/store';
-import HelloWorld from '@/components/HelloWorld';
-import RouteGuard from '@/components/RouteGuard';
 import StudentList from '@/components/StudentList';
+import NestedRouteContainer from '@/components/NestedRouteContainer';
 import InstructorDashboard from '@/components/InstructorDashboard';
-import DeleteMe from '@/components/DeleteMe';
 
 Vue.use(Router);
 
-const guardTest = (targetRole, to, from, next) => {
+const hasRoleTest = (targetRole, to, from, next) => {
   const {roles} = store.state.userDetails;
   const shouldProceed = roles.find(role => role === targetRole);
   next(!!shouldProceed);
 };
 
-const authGuard = (targetRole, to, from, next, tryAgain = true) => {
+const instructorsOnlyGuard = (to, from, next) => {
+  hasRoleTest('instructor', to, from, next);
+};
+
+const checkOrFetchUserDetails = (next, tryAgain) => {
   if('roles' in store.state.userDetails) {
-    guardTest(targetRole, to, from, next);
+    next();
   }
   else if(tryAgain) {
     store.dispatch('fetchUserDetails').then(() => {
-      authGuard(targetRole, to, from, next, false);
+      checkOrFetchUserDetails(next, false);
     });
   }
 };
 
-const instructorsOnlyGuard = (to, from, next) => {
-  return authGuard('instructor', to, from, next);
+const ensureUserDetailsArePresent = (to, from, next) => {
+  checkOrFetchUserDetails(next, true);
 };
 
-export default new Router({
+// TODO should use route names here instead of paths?
+const redirectToRoleDashboard = (to, from, next) => {
+  const {roles} = store.state.userDetails;
+  if(roles.includes('instructor')) {
+    next('/instructor/dashboard');
+  }
+  else {
+    next(false); // TODO update this when the student dashboard is ported to VueJS
+  }
+};
+
+const router = new Router({
   routes: [
     {
       path: '/',
-      name: 'HelloWorld',
-      component: HelloWorld
+      beforeEnter: redirectToRoleDashboard
     },
     {
-      path: '/tryAuth',
-      name: 'AuthComponent',
-      component: RouteGuard,
-      beforeEnter: instructorsOnlyGuard
-    },
-    {
-      path: '/instructor/dashboard',
-      component: InstructorDashboard,
-      beforeEnter: instructorsOnlyGuard
-    },
-    {
-      path: '/instructor/students',
-      component: StudentList,
-      beforeEnter: instructorsOnlyGuard
-    },
-    {
-      path: '/instructor/deleteme',
-      component: DeleteMe,
-      beforeEnter: instructorsOnlyGuard
+      path: '/instructor',
+      component: NestedRouteContainer,
+      beforeEnter: instructorsOnlyGuard,
+      children: [
+        {
+          path: 'dashboard',
+          component: InstructorDashboard
+        },
+        {
+          path: 'students',
+          component: StudentList
+        }
+      ]
     }
   ]
 });
+
+router.beforeEach(ensureUserDetailsArePresent);
+
+export default router;
