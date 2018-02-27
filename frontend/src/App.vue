@@ -16,10 +16,7 @@
 
 <script>
 export default {
-  name: 'App',
-  beforeCreate: function() {
-    this.$store.dispatch('fetchUserDetails');
-  }
+  name: 'App'
 };
 </script>
 
