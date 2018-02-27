@@ -2,7 +2,7 @@
 
 {% block nav_links %}
     <nav class="mdl-navigation">
-        <a class="mdl-navigation__link peer_review" href="/course/{{ course_id }}/dashboard/instructor">PEER REVIEW</a>
+        <a class="mdl-navigation__link peer_review" href="{{ frontend_landing_url }}#/instructor/dashboard">PEER REVIEW</a>
         <a class="mdl-navigation__link students" href="/course/{{ course_id }}/review/students">STUDENTS</a>
     </nav>
 {% endblock %}

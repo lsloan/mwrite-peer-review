@@ -50,9 +50,11 @@ GOOGLE_ANALYTICS_TRACKING_ID = os.environ.get('MPR_GOOGLE_ANALYTICS_TRACKING_ID'
 # Storage configuration
 MEDIA_ROOT = os.environ['MPR_SUBMISSIONS_PATH']
 
+FRONTEND_LANDING_URL = os.environ['MPR_LANDING_ROUTE']
+
 # LTI configuration
 LTI_CONSUMER_SECRETS = json.loads(read_file_from_env('MPR_LTI_CREDENTIALS_PATH'))
-LTI_APP_REDIRECT = os.environ['MPR_LANDING_ROUTE']
+LTI_APP_REDIRECT = FRONTEND_LANDING_URL
 LTI_ENFORCE_SSL = False  # TODO want this to be True in prod; add config for X-Forwarded etc.
 
 # Canvas API configuration
@@ -131,7 +133,8 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
-                'peer_review.context_processors.google_analytics'
+                'peer_review.context_processors.google_analytics',      # TODO remove after views ported to Vue
+                'peer_review.context_processors.frontend_landing_url'   # TODO remove after views ported to Vue
             ],
         },
     },

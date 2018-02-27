@@ -116,7 +116,7 @@ def all_peer_review_assignment_details(request, course_id):
 
         validation_info = validations.get(row['prompt_id'])
         if validation_info:
-            validation_info_dict = etl.AssignmentValidation.json_default(validation_info, camel_case=True)
+            validation_info_dict = etl.AssignmentValidation.json_default(validation_info)
             row['validation_info'] = validation_info_dict
         else:
             row['validation_info'] = None

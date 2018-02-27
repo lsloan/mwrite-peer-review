@@ -31,7 +31,7 @@ class AssignmentValidation:
         self.number_of_sections = kwargs.get('number_of_sections')
 
     @staticmethod
-    def json_default(validation, camel_case=False):
+    def json_default(validation, camel_case=True):
         def key_transform(key):
             if camel_case:
                 return to_camel_case(key)
