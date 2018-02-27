@@ -1,5 +1,5 @@
 {
-  "name": "uservice-django-poc-frontend",
+  "name": "mwrite-peer-review-frontend",
   "version": "1.0.0",
   "description": "Frontend for M-Write Peer Review",
   "author": "Dave Harlan <dkharlan@umich.edu>",
