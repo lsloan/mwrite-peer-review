@@ -1,10 +1,10 @@
 <template>
-    <p>This is another view</p>
+    <router-view/>
 </template>
 
 <script>
 export default {
-  name: 'DeleteMe'
+  name: 'nested-route-container'
 };
 </script>
 

@@ -5,7 +5,15 @@
             <div class="mdl-layout__header-row">
                 <span class="mdl-layout__title">M-Write Peer Review</span>
                 <div class="mdl-layout-spacer"></div>
-                <!-- TODO nav links go here -->
+                <nav v-if="userIsInstructor" class="mdl-navigation">
+                    <router-link class="mdl-navigation__link" to="/instructor/dashboard">
+                        Peer Review
+                    </router-link>
+                    <!-- TODO change the <a> below to <router-link> when students list is completed -->
+                    <a class="mdl-navigation__link" :href="studentsListUrl">
+                        Students
+                    </a>
+                </nav>
             </div>
         </header>
         <main class="mdl-layout__content">
@@ -16,13 +24,25 @@
 
 <script>
 export default {
-  name: 'App'
+  name: 'App',
+  computed: {
+    userIsInstructor() {
+      const {roles} = this.$store.state.userDetails;
+      return roles ? roles.includes('instructor') : false;
+    },
+    studentsListUrl() {
+      return __API_URL__ + '/course/' + this.$store.state.userDetails.courseId + '/review/students';
+    }
+  }
 };
 </script>
 
 <style>
-#app {
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-}
+    .mdl-navigation__link {
+        text-transform: uppercase;
+    }
+
+    .mdl-layout__header-row {
+        padding-left: 20px;
+    }
 </style>
