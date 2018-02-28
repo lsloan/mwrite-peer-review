@@ -17,15 +17,26 @@
             </div>
         </header>
         <main class="mdl-layout__content">
+            <breadcrumb v-if="userIsInstructor" :path-components="breadcrumbPathComponents"/>
             <router-view/>
         </main>
     </div>
 </template>
 
 <script>
+import Breadcrumb from '@/components/Breadcrumb';
+
 export default {
   name: 'App',
+  components: {Breadcrumb},
   computed: {
+    breadcrumbPathComponents() {
+      return [
+        {text: 'One', href: '/one'},
+        {text: 'Two', href: '/two'},
+        {text: 'Three', href: '/three'}
+      ];
+    },
     userIsInstructor() {
       const {roles} = this.$store.state.userDetails;
       return roles ? roles.includes('instructor') : false;
