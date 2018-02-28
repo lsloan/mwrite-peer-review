@@ -19,6 +19,13 @@ import moment from 'moment';
 import api from '../services/api';
 import PeerReviewAssignmentCard from './PeerReviewAssignmentCard';
 
+const convertDateStringsToMoments = assignment => {
+  const {dueDate, openDate} = assignment;
+  assignment.dueDate = dueDate ? moment(dueDate).local() : null;
+  assignment.openDate = openDate ? moment(openDate).local() : null;
+  return assignment;
+};
+
 export default {
   components: {PeerReviewAssignmentCard},
   props: ['assignments'],
@@ -31,12 +38,7 @@ export default {
   mounted() {
     const { courseId } = this.$store.state.userDetails;
     api.get('/course/{0}/peer_review/all', courseId).then(response => {
-      this.reviewAssignments = response.data.map(a => {
-        const {dueDate, openDate} = a;
-        a.dueDate = dueDate ? moment(dueDate).local() : null;
-        a.openDate = openDate ? moment(openDate).local() : null;
-        return a;
-      });
+      this.reviewAssignments = response.data.map(convertDateStringsToMoments);
     });
   }
 };
