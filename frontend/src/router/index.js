@@ -21,7 +21,10 @@ const router = new Router({
       children: [
         {
           path: 'dashboard',
-          component: InstructorDashboard
+          component: InstructorDashboard,
+          meta: {
+            breadcrumbPathComponents: [{text: 'Peer Review', href: '/instructor/dashboard'}]
+          }
         },
         {
           path: 'students',
