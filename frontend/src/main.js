@@ -5,9 +5,11 @@ import App from './App';
 import VueMdl from 'vue-mdl';
 
 import store from '@/store';
-import router from './router/index';
+import router from '@/router';
+import api from '@/plugins/api';
 
 Vue.use(VueMdl);
+Vue.use(api);
 
 Vue.config.productionTip = false;
 
