@@ -1,12 +1,15 @@
 import Vue from 'vue';
 import Router from 'vue-router';
+import multiguard from 'vue-router-multiguard';
 
 import {redirectToRoleDashboard, ensureUserDetailsArePresent, instructorsOnlyGuard} from './guards';
 import StudentList from '@/components/StudentList';
-import NestedRouteContainer from '@/components/NestedRouteContainer';
+import PermissionDenied from '@/components/PermissionDenied';
 import InstructorDashboard from '@/components/InstructorDashboard';
 
 Vue.use(Router);
+
+const authenticatedInstructorsOnly = multiguard([ensureUserDetailsArePresent, instructorsOnlyGuard]);
 
 const router = new Router({
   routes: [
@@ -15,26 +18,26 @@ const router = new Router({
       beforeEnter: redirectToRoleDashboard
     },
     {
-      path: '/instructor',
-      component: NestedRouteContainer,
-      beforeEnter: instructorsOnlyGuard,
-      children: [
-        {
-          path: 'dashboard',
-          component: InstructorDashboard,
-          meta: {
-            breadcrumbPathComponents: [{text: 'Peer Review', href: '/instructor/dashboard'}]
-          }
-        },
-        {
-          path: 'students',
-          component: StudentList
-        }
-      ]
+      path: '/permission-denied',
+      component: PermissionDenied
+    },
+    {
+      path: '/instructor/dashboard',
+      component: InstructorDashboard,
+      beforeEnter: authenticatedInstructorsOnly,
+      meta: {
+        breadcrumbPathComponents: [{text: 'Peer Review', href: '/instructor/dashboard'}]
+      }
+    },
+    {
+      path: '/instructor/students',
+      component: StudentList,
+      beforeEnter: authenticatedInstructorsOnly,
+      meta: {
+        breadcrumbPathComponents: [{text: 'Students', href: '/instructor/students'}]
+      }
     }
   ]
 });
-
-router.beforeEach(ensureUserDetailsArePresent);
 
 export default router;

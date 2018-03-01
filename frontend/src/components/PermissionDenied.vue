@@ -1,12 +1,13 @@
 <template>
-    <router-view/>
+    <p>TODO some verbiage here</p>
 </template>
 
 <script>
 export default {
-  name: 'nested-route-container'
+  name: 'permission-denied'
 };
 </script>
 
 <style scoped>
+
 </style>
