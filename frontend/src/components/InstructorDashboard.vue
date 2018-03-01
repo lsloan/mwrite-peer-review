@@ -16,7 +16,6 @@
 
 <script>
 import moment from 'moment';
-import api from '../services/api';
 import PeerReviewAssignmentCard from './PeerReviewAssignmentCard';
 
 const convertDateStringsToMoments = assignment => {
@@ -37,7 +36,7 @@ export default {
   },
   mounted() {
     const { courseId } = this.$store.state.userDetails;
-    api.get('/course/{0}/peer_review/all', courseId).then(response => {
+    this.$api.get('/course/{0}/peer_review/all', courseId).then(response => {
       this.reviewAssignments = response.data.map(convertDateStringsToMoments);
     });
   }

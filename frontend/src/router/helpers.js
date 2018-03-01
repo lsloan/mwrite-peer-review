@@ -6,12 +6,12 @@ export const hasRoleTest = (targetRole, to, from, next) => {
   next(!!shouldProceed);
 };
 
-export const checkOrFetchUserDetails = (next, tryAgain) => {
-  if('roles' in store.state.userDetails) {
+export const checkOrFetchUserDetails = (next, shouldFetch) => {
+  if(next && 'roles' in store.state.userDetails) {
     next();
   }
-  else if(tryAgain) {
-    store.dispatch('fetchUserDetails').then(() => {
+  else if(shouldFetch) {
+    return store.dispatch('fetchUserDetails').then(() => {
       checkOrFetchUserDetails(next, false);
     });
   }
