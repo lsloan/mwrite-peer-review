@@ -4,7 +4,7 @@ import multiguard from 'vue-router-multiguard';
 
 import {redirectToRoleDashboard, ensureUserDetailsArePresent, instructorsOnlyGuard} from './guards';
 import StudentList from '@/components/StudentList';
-import PermissionDenied from '@/components/PermissionDenied';
+import Error from '@/components/Error';
 import InstructorDashboard from '@/components/InstructorDashboard';
 
 Vue.use(Router);
@@ -19,7 +19,8 @@ const router = new Router({
     },
     {
       path: '/permission-denied',
-      component: PermissionDenied
+      component: Error,
+      props: {errorMessage: 'You do not have permission to visit that page. Please try logging in again.'}
     },
     {
       path: '/instructor/dashboard',
