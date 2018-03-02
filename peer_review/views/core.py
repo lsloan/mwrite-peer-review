@@ -492,8 +492,8 @@ class SingleReviewDetailView(HasRoleMixin, TemplateView):
 
     def post_score(self):
         request = OutcomeRequest()
-        request.consumer_key = 'ASN0uThzdgRDvDmjT2d5tT8ho6Zump'
-        request.consumer_secret = 'qCFNSKL5WFlWulk1jxstO8BM5JtvqD'
+        request.consumer_key = self.request.session['lti_launch_params']['oauth_consumer_key']
+        request.consumer_secret = settings.LTI_CONSUMER_SECRETS.get(request.consumer_key)
         request.lis_outcome_service_url = self.request.session['lti_launch_params']['lis_outcome_service_url']
         request.lis_result_sourcedid = self.request.session['lti_launch_params']['lis_result_sourcedid']
         request.operation = REPLACE_REQUEST
