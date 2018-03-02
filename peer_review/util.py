@@ -34,6 +34,10 @@ def some(predicate, collection):
     return any(map(predicate, collection))
 
 
+def keymap_all(fn, collection):
+    return (keymap(fn, d) for d in collection)
+
+
 def fetchall_dicts(cursor):
     columns = [col[0] for col in cursor.description]
     return [
