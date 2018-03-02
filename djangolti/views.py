@@ -14,7 +14,7 @@ from django.urls import reverse
 from django.shortcuts import render
 from django.utils.decorators import method_decorator
 
-from lti import ToolConfig, ToolConsumer
+from lti import ToolConfig
 from lti.contrib.django import DjangoToolProvider
 
 logger = logging.getLogger(__name__)
@@ -85,9 +85,6 @@ class LaunchView(View):
         else:
             raise PermissionDenied
 
-        print (request.session['lti_launch_params'])
-        print (request.GET.get('debug'))
-
         if request.GET.get('debug') in ('1', 'on', 'true'):
             context = {
                 'redirect': app_redirect,
@@ -115,27 +112,3 @@ class ReturnView(View):
         else:
             messages.warning(request, 'Return URL not found')
             return render(request, 'djangolti/index.html')
-
-
-# @method_decorator(xframe_options_exempt, name='dispatch')
-# class TestView(View):
-#     http_method_names = ('get')
-#
-#     def get(self, request):
-#         consumer = ToolConsumer(
-#         consumer_key='my_key_given_from_provider',
-#         consumer_secret='super_secret',
-#         launch_url='provider_url',
-#         params={
-#             'lti_message_type': 'basic-lti-launch-request'
-#         }
-#     )
-#
-#     return render(
-#         request,
-#         'lti_consumer/index.html',
-#         {
-#             'launch_data': consumer.generate_launch_data(),
-#             'launch_url': consumer.launch_url
-#         }
-#     )
