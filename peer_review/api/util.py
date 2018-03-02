@@ -1,5 +1,3 @@
-from toolz.functoolz import thread_last
-
 from peer_review.etl import AssignmentValidation
 
 
