@@ -14,7 +14,7 @@ from django.conf import settings
 from django.db import transaction
 from django.db.models import Q, F, Count, Case, When, Value, BooleanField, Max
 from django.http import HttpResponse, Http404, JsonResponse
-from django.shortcuts import redirect
+from django.shortcuts import redirect, get_object_or_404
 from django.views.generic import View, TemplateView
 from django.core.exceptions import PermissionDenied
 from rolepermissions.roles import get_user_roles
@@ -30,6 +30,8 @@ from peer_review.etl import persist_assignments, AssignmentValidation
 
 from lti import OutcomeRequest
 from lti.outcome_request import REPLACE_REQUEST
+
+from peer_review.canvas import submit_grade, retrieve
 
 logger = logging.getLogger(__name__)
 
@@ -490,7 +492,17 @@ class SingleReviewDetailView(HasRoleMixin, TemplateView):
     allowed_roles = ['student', 'instructor']
     template_name = 'single_review_details.html'
 
-    def post_score(self):
+    def post_score_canvas(self, score=None):
+        course_id = self.kwargs['course_id']
+        submission_id = self.kwargs['submission_id']
+        submission = get_object_or_404(CanvasSubmission, id=submission_id)
+        assignment_id = submission.assignment.id
+        user_id = submission.author.id
+        submit_grade('submission_grade', course_id, assignment_id, user_id, score)
+        retrieved_submission = retrieve('submission_grade', course_id, assignment_id, user_id)
+        print ('Score', retrieved_submission['score'])
+
+    def post_score_lti(self):
         request = OutcomeRequest()
         request.consumer_key = self.request.session['lti_launch_params']['oauth_consumer_key']
         request.consumer_secret = settings.LTI_CONSUMER_SECRETS.get(request.consumer_key)
@@ -522,7 +534,8 @@ class SingleReviewDetailView(HasRoleMixin, TemplateView):
                    'user_is_instructor': user_is_instructor}
         if user_is_instructor:
             context['course_id'] = course_id
-        self.post_score()
+        # self.post_score_lti()
+        self.post_score_canvas(94.0)
         return context
 
 

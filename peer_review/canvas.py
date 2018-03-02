@@ -30,7 +30,8 @@ _routes = {
                                  'include[]':         ['enrollments']
                              }},
     'sections':             {'route': 'courses/%s/sections'},
-    'section':              {'route': 'courses/%s/sections/%s'}
+    'section':              {'route': 'courses/%s/sections/%s'},
+    'submission_grade':     {'route': 'courses/%s/assignments/%s/submissions/%s'}
 }
 
 
@@ -132,3 +133,10 @@ def submit_file(user_token, course_id, assignment_id, filename, contents, mime_t
         settings.CANVAS_API_TOKEN = saved_token
 
     return file_submission_json
+
+
+def submit_grade(resource, course_id, assignment_id, user_id, score):
+    url = _make_url(resource, (course_id, assignment_id, user_id))
+    headers = _make_headers()
+    if score:
+        requests.put(url, headers=headers, data={'submission[posted_grade]': score})
