@@ -5,7 +5,7 @@ FROM httpd:alpine
 RUN apk add --update nodejs nodejs-npm
 
 RUN mkdir -p /tmp/build
-COPY . /tmp/build
+COPY ../ /tmp/build
 WORKDIR /tmp/build
 
 RUN npm install
