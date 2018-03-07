@@ -2,9 +2,6 @@
 
 ## OpenShift Setup Instructions
 
-These steps may change in the future, but for now this is how you set up a new
-instance of M-Write Peer Review on the OpenShift Container Platform.
-
 To allow OpenShift to pull from a private Github repository:
 1. Create a deployment key
     ```bash
