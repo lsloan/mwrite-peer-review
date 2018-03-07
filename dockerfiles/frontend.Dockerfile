@@ -1,4 +1,5 @@
 FROM httpd:2.4-alpine
+ARG MPR_API_URL
 
 # TODO can we remove npm stuff afterwards, or should this be done in CI?
 RUN mkdir -p /tmp/build

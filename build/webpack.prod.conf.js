@@ -34,7 +34,7 @@ const webpackConfig = merge(baseWebpackConfig, {
     // TODO see if we can move this to base and use environment variables
     new webpack.DefinePlugin({
       'process.env': env,
-      '__API_URL__': '\'http://api.poc.experiments.openshift.dsc.umich.edu\''
+      '__API_URL__': process.env['MPR_API_URL']
     }),
     new UglifyJsPlugin({
       uglifyOptions: {
