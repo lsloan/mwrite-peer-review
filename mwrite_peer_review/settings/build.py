@@ -46,6 +46,7 @@ DEBUG = getenv_bool('MPR_DEBUG_MODE')
 # Application definition
 INSTALLED_APPS = [
     'django.contrib.staticfiles',     # TODO should be removed once all views are ported to VueJS
+    'peer_review'
 ]
 
 MIDDLEWARE = []
@@ -108,7 +109,7 @@ TIME_OUTPUT_FORMAT = '%b %-d %-I:%M %p'  # if running on Windows, replace - with
 
 # TODO should eventually turn off static file handling completely once views are ported to VueJS
 STATIC_URL = '/static/'
-STATIC_ROOT = os.path.join(BASE_DIR, '../../staticfiles')
+STATIC_ROOT = os.path.join(BASE_DIR, '../staticfiles')
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'  # TODO remove after views ported to Vue
 
 
