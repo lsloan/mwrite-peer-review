@@ -1,0 +1,104 @@
+apiVersion: v1
+kind: DeploymentConfig
+metadata:
+  labels:
+    app: mwrite-peer-review-dev
+  name: mwrite-peer-review-dev-jobs
+  namespace: mwrite-peer-review-dev
+spec:
+  replicas: 1
+  selector:
+    app: mwrite-peer-review-dev
+    deploymentconfig: mwrite-peer-review-dev-jobs
+  strategy:
+    activeDeadlineSeconds: 21600
+    resources: {}
+    rollingParams:
+      intervalSeconds: 1
+      maxSurge: 25%
+      maxUnavailable: 25%
+      timeoutSeconds: 600
+      updatePeriodSeconds: 1
+    type: Rolling
+  template:
+    metadata:
+      labels:
+        app: mwrite-peer-review-dev
+        deploymentconfig: mwrite-peer-review-dev-jobs
+    spec:
+      containers:
+      - image: mwrite-peer-review-dev-jobs:latest
+        env:
+        - name: MPR_DEBUG_MODE
+          value: "true"
+        - name: MPR_ALLOWED_HOSTS
+          value: api.peer-review-dev.mwrite.openshift.dsc.umich.edu
+        - name: MPR_APP_HOST
+          value: api.peer-review-dev.mwrite.openshift.dsc.umich.edu
+        - name: MPR_LANDING_ROUTE
+          value: https://peer-review-dev.mwrite.openshift.dsc.umich.edu
+        - name: MPR_FRONTEND_RESOURCES_DOMAIN
+          value: peer-review-dev.mwrite.openshift.dsc.umich.edu
+        - name: MPR_LMS_URL
+          value: https://umich-dev.instructure.com
+        - name: MPR_CANVAS_API_URL
+          value: https://umich-dev.instructure.com/api/v1/
+        - name: MPR_CANVAS_API_TOKEN
+          value: <...redacted...>
+        - name: MPR_SECRET_KEY_PATH
+          value: /etc/mwrite-peer-review/secret.key
+        - name: MPR_SUBMISSIONS_PATH
+          value: /srv/mwrite-peer-review
+        - name: MPR_LTI_CREDENTIALS_PATH
+          value: /etc/mwrite-peer-review/lti_credentials.json
+        - name: MPR_DB_CONFIG_PATH
+          value: /etc/mwrite-peer-review/database.json
+        - name: MPR_TIMEZONE
+          value: America/Detroit
+        - name: MPR_SESSION_COOKIE_DOMAIN
+          value: peer-review-dev.mwrite.openshift.dsc.umich.edu
+        - name: MPR_CSRF_COOKIE_DOMAIN
+          value: peer-review-dev.mwrite.openshift.dsc.umich.edu
+        - name: MPR_GOOGLE_ANALYTICS_TRACKING_ID
+          value: <...redacted...>
+        imagePullPolicy: Always
+        name: mwrite-peer-review-dev-jobs
+        ports:
+        - containerPort: 8080
+          protocol: TCP
+        resources: {}
+        terminationMessagePath: /dev/termination-log
+        terminationMessagePolicy: File
+      dnsPolicy: ClusterFirst
+      restartPolicy: Always
+      schedulerName: default-scheduler
+      securityContext: {}
+      terminationGracePeriodSeconds: 30
+      volumeMounts:
+        - mountPath: /etc/mwrite-peer-review
+          name: secret-volume
+          readOnly: true
+        - mountPath: /srv/mwrite-peer-review
+          name: submission-storage-volume
+          readOnly: false
+      volumes:
+      - name: secret-volume
+        secret:
+          defaultMode: 420
+          secretName: mwrite-course-15-secret
+      - name: submission-storage-volume
+        persistentVolumeClaim:
+          claimName: mwrite-peer-review-dev-course-15-storage-claim
+  test: false
+  triggers:
+  - type: ConfigChange
+  - imageChangeParams:
+      automatic: true
+      containerNames:
+      - mwrite-peer-review-dev-jobs
+      from:
+        kind: ImageStreamTag
+        name: mwrite-peer-review-dev-jobs:latest
+        namespace: mwrite-peer-review-dev
+    type: ImageChange
+
