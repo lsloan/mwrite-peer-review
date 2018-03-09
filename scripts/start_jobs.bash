@@ -2,4 +2,4 @@
 
 set -x
 printenv >> /etc/environment
-cron
+crond -f
