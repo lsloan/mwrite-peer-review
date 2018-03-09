@@ -1,0 +1,11 @@
+apiVersion: v1
+kind: ImageStream
+metadata:
+  labels:
+    app: mwrite-peer-review-dev
+  name: mwrite-peer-review-dev-jobs
+  namespace: mwrite-peer-review-dev 
+spec:
+  lookupPolicy:
+    local: false
+

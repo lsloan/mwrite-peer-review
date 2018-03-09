@@ -1,0 +1,56 @@
+apiVersion: v1
+kind: DeploymentConfig
+metadata:
+  labels:
+    app: mwrite-peer-review-dev
+  name: mwrite-peer-review-dev-frontend
+  namespace: mwrite-peer-review-dev
+spec:
+  replicas: 1
+  selector:
+    app: mwrite-peer-review-dev
+    deploymentconfig: mwrite-peer-review-dev-frontend
+  strategy:
+    activeDeadlineSeconds: 21600
+    resources: {}
+    rollingParams:
+      intervalSeconds: 1
+      maxSurge: 25%
+      maxUnavailable: 25%
+      timeoutSeconds: 600
+      updatePeriodSeconds: 1
+    type: Rolling
+  template:
+    metadata:
+      labels:
+        app: mwrite-peer-review-dev
+        deploymentconfig: mwrite-peer-review-dev-frontend
+    spec:
+      containers:
+      - image: mwrite-peer-review-dev-frontend:latest
+        imagePullPolicy: Always
+        name: mwrite-peer-review-dev-frontend
+        ports:
+        - containerPort: 80
+          protocol: TCP
+        resources: {}
+        terminationMessagePath: /dev/termination-log
+        terminationMessagePolicy: File
+      dnsPolicy: ClusterFirst
+      restartPolicy: Always
+      schedulerName: default-scheduler
+      securityContext: {}
+      terminationGracePeriodSeconds: 30
+  test: false
+  triggers:
+  - type: ConfigChange
+  - imageChangeParams:
+      automatic: true
+      containerNames:
+      - mwrite-peer-review-dev-frontend
+      from:
+        kind: ImageStreamTag
+        name: mwrite-peer-review-dev-frontend:latest
+        namespace: mwrite-peer-review-dev 
+    type: ImageChange
+
