@@ -190,7 +190,7 @@ These should be created in roughly the following order:
     $ oc start-build bc/mwrite-peer-review-dev-jobs
     $ oc start-build bc/mwrite-peer-review-dev-frontend 
     ```
-10. Once the build is done and the pod is running, `oc rsh` and run Django migration
+10. `oc rsh` to a running API or jobs container and run the Django migrations.
 
 ## Adding The Tool To Canvas
 
