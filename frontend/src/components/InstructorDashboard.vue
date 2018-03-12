@@ -1,16 +1,21 @@
 <template>
     <div class="mdl-grid">
-        <peer-review-assignment-card
-            v-for="assignment in reviewAssignments"
-            :key="assignment.peerReviewAssignmentId"
-            :peer-review-assignment-id="assignment.peerReviewAssignmentId"
-            :peer-review-title="assignment.peerReviewTitle"
-            :rubric-id="assignment.rubricId"
-            :reviews-in-progress="assignment.reviewsInProgress"
-            :due-date="assignment.dueDate"
-            :open-date="assignment.openDate"
-            :validation-info="assignment.validationInfo"
-            date-format="MMMM D h:mm A"/>
+        <div v-if="reviewAssignments && reviewAssignments.length > 0">
+            <peer-review-assignment-card
+                v-for="assignment in reviewAssignments"
+                :key="assignment.peerReviewAssignmentId"
+                :peer-review-assignment-id="assignment.peerReviewAssignmentId"
+                :peer-review-title="assignment.peerReviewTitle"
+                :rubric-id="assignment.rubricId"
+                :reviews-in-progress="assignment.reviewsInProgress"
+                :due-date="assignment.dueDate"
+                :open-date="assignment.openDate"
+                :validation-info="assignment.validationInfo"
+                date-format="MMMM D h:mm A"/>
+        </div>
+        <div v-else-if="reviewAssignments && reviewAssignments.length === 0" class="empty-assignments-container mdl-card mdl-cell mdl-cell--12-col">
+            <p>There are currently no peer review assignments.</p>
+        </div>
     </div>
 </template>
 
@@ -27,11 +32,10 @@ const convertDateStringsToMoments = assignment => {
 
 export default {
   components: {PeerReviewAssignmentCard},
-  props: ['assignments'],
   name: 'instructor-dashboard',
   data() {
     return {
-      reviewAssignments: []
+      reviewAssignments: null
     };
   },
   mounted() {
@@ -44,4 +48,7 @@ export default {
 </script>
 
 <style scoped>
+    .empty-assignments-container {
+        text-align: center;
+    }
 </style>
