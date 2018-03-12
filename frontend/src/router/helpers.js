@@ -16,3 +16,39 @@ export const checkOrFetchUserDetails = (next, shouldFetch) => {
     });
   }
 };
+
+// TODO find somewhere better for this function
+const goTo = (vm, next, uri) => {
+  if(vm) {
+    vm.$router.push(uri);
+  }
+  else if(next) {
+    next(uri);
+  }
+  else {
+    throw Error('Can\'t navigate without vm or next');
+  }
+};
+
+// TODO find somewhere better for this function
+export const navigateToErrorPage = (vm, next, error) => {
+  // TODO find somewhere better for these urls
+  const errorRoute = '/error';
+  const permissionDeniedRoute = '/permission-denied';
+
+  if(error.response) {
+    switch(error.response.status) {
+      case 401:
+      case 403:
+        goTo(vm, next, permissionDeniedRoute);
+        break;
+      default:
+        goTo(vm, next, errorRoute);
+    }
+  }
+  else {
+    goTo(vm, next, errorRoute);
+  }
+
+  throw error;
+};
