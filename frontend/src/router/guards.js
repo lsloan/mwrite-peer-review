@@ -20,10 +20,7 @@ export const redirectToRoleDashboard = (to, from, next) => {
 };
 
 export const ensureUserDetailsArePresent = (to, from, next) => {
-  const promiseOrNothing = checkOrFetchUserDetails(next, true);
-  if(promiseOrNothing) {
-    promiseOrNothing.catch(error => navigateToErrorPage(null, next, error));
-  }
+  checkOrFetchUserDetails(next, true).catch(error => navigateToErrorPage(null, next, error));
 };
 
 export const instructorsOnlyGuard = (to, from, next) => {

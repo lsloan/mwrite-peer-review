@@ -8,7 +8,10 @@ export const hasRoleTest = (targetRole, to, from, next) => {
 
 export const checkOrFetchUserDetails = (next, shouldFetch) => {
   if(next && 'roles' in store.state.userDetails) {
-    next();
+    return new Promise((resolve, reject) => {
+      next();
+      resolve();
+    });
   }
   else if(shouldFetch) {
     return store.dispatch('fetchUserDetails').then(() => {
