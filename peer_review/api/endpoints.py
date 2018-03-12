@@ -33,6 +33,7 @@ def all_students(request, course_id):
 
 @authorized_json_endpoint(roles=['instructor'])
 def all_peer_review_assignment_details(request, course_id):
+    etl.persist_course(course_id)
     assignments = etl.persist_assignments(course_id)
     fetched_assignment_ids = tuple(map(lambda a: a.id, assignments))
 
