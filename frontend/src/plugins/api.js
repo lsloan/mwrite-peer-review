@@ -3,19 +3,29 @@ import {navigateToErrorPage} from '@/router/helpers';
 
 export default {
   install(Vue) {
-    Vue.prototype.$api = function() {
-      const vm = this;
-      this.$api.get = function() {
-        return api.get.apply(vm, arguments).catch(error => navigateToErrorPage(vm, null, error));
-      };
-      this.$api.post = function() {
-        return api.post.apply(vm, arguments).catch(error => navigateToErrorPage(vm, null, error));
-      };
-    };
-
     Vue.mixin({
       beforeCreate() {
-        this.$api();
+        const vm = this;
+        this._api = {
+          get() {
+            return api
+              .get
+              .apply(vm, arguments)
+              .catch(error => navigateToErrorPage(vm, null, error));
+          },
+          post() {
+            return api
+              .post
+              .apply(vm, arguments)
+              .catch(error => navigateToErrorPage(vm, null, error));
+          }
+        };
+      }
+    });
+
+    Object.defineProperty(Vue.prototype, '$api', {
+      get() {
+        return this._api;
       }
     });
   }
