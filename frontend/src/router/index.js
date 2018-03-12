@@ -18,6 +18,10 @@ const router = new Router({
       beforeEnter: redirectToRoleDashboard
     },
     {
+      path: '/error',
+      component: Error
+    },
+    {
       path: '/permission-denied',
       component: Error,
       props: {errorMessage: 'You do not have permission to visit that page. Please try logging in again.'}

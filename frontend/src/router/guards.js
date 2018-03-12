@@ -1,5 +1,5 @@
 import store from '@/store';
-import {checkOrFetchUserDetails, hasRoleTest} from './helpers';
+import {checkOrFetchUserDetails, hasRoleTest, navigateToErrorPage} from './helpers';
 
 // TODO should use route names here instead of paths?
 export const redirectToRoleDashboard = (to, from, next) => {
@@ -16,18 +16,11 @@ export const redirectToRoleDashboard = (to, from, next) => {
         next(false);
       }
     })
-    .catch(error => {
-      if(error.response.status === 403) {
-        next('/permission-denied');
-      }
-      else {
-        next(false);
-      }
-    });
+    .catch(error => navigateToErrorPage(null, next, error));
 };
 
 export const ensureUserDetailsArePresent = (to, from, next) => {
-  checkOrFetchUserDetails(next, true);
+  checkOrFetchUserDetails(next, true).catch(error => navigateToErrorPage(null, next, error));
 };
 
 export const instructorsOnlyGuard = (to, from, next) => {
