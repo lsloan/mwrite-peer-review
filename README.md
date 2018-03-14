@@ -25,6 +25,8 @@ pass these as environment variables in OpenShift.
 
 ## Runtime Environment
 
+***TODO** -- need to separate these by container type (job / API) *
+
 The API and jobs containers derive their runtime configuration from the following environment variables:
 
 | Variable                         | Type                  | Optional (Default) | Description                                                                                                                        |
@@ -45,6 +47,15 @@ The API and jobs containers derive their runtime configuration from the followin
 | MPR_SESSION_COOKIE_DOMAIN        | domain name only      | No                 | Sets Django's [SESSION_COOKIE_DOMAIN](https://docs.djangoproject.com/en/1.11/ref/settings/#session-cookie-domain) setting for CORS |
 | MPR_CSRF_COOKIE_DOMAIN           | domain name only      | No                 | Sets Django's [CSRF_COOKIE_DOMAIN](https://docs.djangoproject.com/en/1.11/ref/settings/#csrf-cookie-domain) setting for CORS       |
 | MPR_GOOGLE_ANALYTICS_TRACKING_ID | tracking ID           | No                 | Google analytics tracking ID for legacy views; **deprecated**                                                                      |
+
+The jobs container also uses the following environment variables:
+
+| Variable              | Type                | Optional (default) | Description                                                                                                         |
+| --------------------- | ------------------- | ------------------ | ------------------------------------------------------------------------------------------------------------------- |
+| MPR_EMAIL_HOST        | email               | No                 | Sets Django's [EMAIL_HOST](https://docs.djangoproject.com/en/1.11/ref/settings/#std:setting-EMAIL_HOST) setting     |
+| MPR_EMAIL_PORT        | int                 | No                 | Sets Django's [EMAIL_PORT](https://docs.djangoproject.com/en/1.11/ref/settings/#std:setting-EMAIL_PORT) setting     |
+| MPR_SERVER_FROM_EMAIL | email               | No                 | Sets Django's [SERVER_EMAIL](https://docs.djangoproject.com/en/1.11/ref/settings/#std:setting-SERVER_EMAIL) setting |
+| MPR_SERVER_TO_EMAILS  | email[, email, ...] | No                 | Sets Django's [ADMINS](https://docs.djangoproject.com/en/1.11/ref/settings/#std:setting-ADMINS) setting             |
 
 See the [API's OpenShift deployment](config/server/example/openshift/dc/api-dc.yaml) config for examples.
   

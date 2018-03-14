@@ -36,12 +36,14 @@ def getenv_csv(var, default=''):
 
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-
 DEBUG = getenv_bool('MPR_DEBUG_MODE')
-
 SECRET_KEY = 'unused'
-
 APP_HOST = None
+
+EMAIL_HOST = os.environ['MPR_EMAIL_HOST']
+EMAIL_PORT = os.environ['MPR_EMAIL_PORT']
+SERVER_EMAIL = os.environ['MPR_SERVER_FROM_EMAIL']
+ADMINS = getenv_csv('MPR_SERVER_TO_EMAILS')
 
 # Storage configuration
 MEDIA_ROOT = None
