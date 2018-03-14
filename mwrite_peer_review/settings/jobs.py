@@ -36,12 +36,14 @@ def getenv_csv(var, default=''):
 
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-
 DEBUG = getenv_bool('MPR_DEBUG_MODE')
-
 SECRET_KEY = 'unused'
-
 APP_HOST = None
+
+EMAIL_HOST = os.environ['MPR_EMAIL_HOST']
+EMAIL_PORT = os.environ['MPR_EMAIL_PORT']
+SERVER_EMAIL = os.environ['MPR_SERVER_FROM_EMAIL']
+ADMINS = list(map(lambda email: ('', email), getenv_csv('MPR_SERVER_TO_EMAILS')))
 
 # Storage configuration
 MEDIA_ROOT = None
@@ -81,7 +83,7 @@ LANGUAGE_CODE = 'en-us'
 USE_I18N = True
 USE_L10N = True
 USE_TZ = True
-TIME_ZONE = None
+TIME_ZONE = os.environ['MPR_TIMEZONE']
 TIME_OUTPUT_FORMAT = '%b %-d %-I:%M %p'  # if running on Windows, replace - with #
 
 
@@ -110,6 +112,10 @@ LOGGING = {
             'class': 'logging.StreamHandler',
             'formatter': 'debug',
         },
+        'mail_admins': {
+            'class': 'django.utils.log.AdminEmailHandler',
+            'formatter': 'debug'
+        }
     },
     'loggers': {
         '': {
@@ -117,5 +123,10 @@ LOGGING = {
             'level': 'DEBUG',
             'propagate': True,
         },
+        'management_commands': {
+            'handlers': ['mail_admins'],
+            'level': 'ERROR',
+            'propagate': True
+        }
     },
 }

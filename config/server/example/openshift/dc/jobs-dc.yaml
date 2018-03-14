@@ -61,6 +61,14 @@ spec:
           value: peer-review-dev.mwrite.openshift.dsc.umich.edu
         - name: MPR_GOOGLE_ANALYTICS_TRACKING_ID
           value: <...redacted...>
+        - name: MPR_EMAIL_HOST
+          value: mail-relay.itd.umich.edu
+        - name: MPR_EMAIL_PORT
+          value: "25"
+        - name: MPR_SERVER_FROM_EMAIL
+          value: <...redacted...>
+        - name: MPR_SERVER_TO_EMAILS
+          value: <...redacted...>
         imagePullPolicy: Always
         name: mwrite-peer-review-dev-jobs
         ports:
