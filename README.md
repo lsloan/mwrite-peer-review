@@ -25,7 +25,7 @@ pass these as environment variables in OpenShift.
 
 ## Runtime Environment
 
-***TODO** -- need to separate these by container type (job / API) *
+_**TODO** -- need to separate these by container type (job / API)_
 
 The API and jobs containers derive their runtime configuration from the following environment variables:
 
