@@ -43,7 +43,7 @@ APP_HOST = None
 EMAIL_HOST = os.environ['MPR_EMAIL_HOST']
 EMAIL_PORT = os.environ['MPR_EMAIL_PORT']
 SERVER_EMAIL = os.environ['MPR_SERVER_FROM_EMAIL']
-ADMINS = getenv_csv('MPR_SERVER_TO_EMAILS')
+ADMINS = list(map(lambda email: ('', email), getenv_csv('MPR_SERVER_TO_EMAILS')))
 
 # Storage configuration
 MEDIA_ROOT = None
@@ -113,7 +113,6 @@ LOGGING = {
             'formatter': 'debug',
         },
         'mail_admins': {
-            'level': 'ERROR',
             'class': 'django.utils.log.AdminEmailHandler',
             'formatter': 'debug'
         }
