@@ -83,7 +83,7 @@ LANGUAGE_CODE = 'en-us'
 USE_I18N = True
 USE_L10N = True
 USE_TZ = True
-TIME_ZONE = None
+TIME_ZONE = os.environ['MPR_TIMEZONE']
 TIME_OUTPUT_FORMAT = '%b %-d %-I:%M %p'  # if running on Windows, replace - with #
 
 
