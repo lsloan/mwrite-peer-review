@@ -55,7 +55,7 @@ The jobs container also uses the following environment variables:
 | MPR_EMAIL_HOST        | email               | No                 | Sets Django's [EMAIL_HOST](https://docs.djangoproject.com/en/1.11/ref/settings/#std:setting-EMAIL_HOST) setting     |
 | MPR_EMAIL_PORT        | int                 | No                 | Sets Django's [EMAIL_PORT](https://docs.djangoproject.com/en/1.11/ref/settings/#std:setting-EMAIL_PORT) setting     |
 | MPR_SERVER_FROM_EMAIL | email               | No                 | Sets Django's [SERVER_EMAIL](https://docs.djangoproject.com/en/1.11/ref/settings/#std:setting-SERVER_EMAIL) setting |
-| MPR_SERVER_TO_EMAILS  | email[, email, ...] | No                 | Sets Django's [ADMINS](https://docs.djangoproject.com/en/1.11/ref/settings/#std:setting-ADMINS) setting             |
+| MPR_SERVER_TO_EMAILS  | email[, email, ...] | No                 | Used to derive Django's [ADMINS](https://docs.djangoproject.com/en/1.11/ref/settings/#std:setting-ADMINS) setting   |
 
 See the [API's OpenShift deployment](config/server/example/openshift/dc/api-dc.yaml) config for examples.
   
