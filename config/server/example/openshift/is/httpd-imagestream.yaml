@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: ImageStream
+metadata:
+  labels:
+    app: mwrite-peer-review-dev
+  name: httpd 
+  namespace: mwrite-peer-review-dev
+spec:
+  dockerImageRepository: "docker.io/httpd"
+  lookupPolicy:
+    local: false
+

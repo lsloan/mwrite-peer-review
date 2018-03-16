@@ -17,7 +17,7 @@ export default new Vuex.Store({
   },
   actions: {
     fetchUserDetails(context) {
-      api.get('/user/self').then(response => {
+      return api.get('/user/self').then(response => {
         context.commit('userDetails', response.data);
       });
     }

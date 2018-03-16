@@ -12,7 +12,7 @@
 
 {% block content %}
     <div class="dashboard_links">
-        <a href="/course/{{ course_id }}/dashboard/instructor" class="link_for_nav is_peer_review">Peer Review</a>
+        <a href="{{ frontend_landing_url }}/#/instructor/dashboard" class="link_for_nav is_peer_review">Peer Review</a>
         <p class="slash_between">/</p>
         <p class="text_on_nav">{{ rubric.passback_assignment.title }}</p>
     </div>
@@ -61,7 +61,7 @@
                     <td class="student_received">{{ review.received }} of {{ review.total_received }}</td>
                 </tr>
             {% endfor %}
-        </tbody>        
+        </tbody>
     </table>
 
     <style type="text/css">

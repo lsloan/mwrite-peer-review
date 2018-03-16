@@ -34,7 +34,9 @@ module.exports = {
     'keyword-spacing': ['error', {'overrides': {
       'if': {'after': false},
       'for': {'after': false},
-      'while': {'after': false}
-    }}]
+      'while': {'after': false},
+      'switch': {'after': false}
+    }}],
+    'brace-style': ['error', 'stroustrup']
   }
 }
