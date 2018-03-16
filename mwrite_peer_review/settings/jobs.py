@@ -54,8 +54,8 @@ LTI_APP_REDIRECT = None
 LTI_ENFORCE_SSL = False  # TODO want this to be True in prod; add config for X-Forwarded etc.
 
 # Canvas API configuration
-CANVAS_API_URL = None
-CANVAS_API_TOKEN = None
+CANVAS_API_URL = os.environ['MPR_CANVAS_API_URL']
+CANVAS_API_TOKEN = os.environ['MPR_CANVAS_API_TOKEN']
 
 # Application definition
 INSTALLED_APPS = ['peer_review']
