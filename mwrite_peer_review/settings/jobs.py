@@ -46,7 +46,7 @@ SERVER_EMAIL = os.environ['MPR_SERVER_FROM_EMAIL']
 ADMINS = list(map(lambda email: ('', email), getenv_csv('MPR_SERVER_TO_EMAILS')))
 
 # Storage configuration
-MEDIA_ROOT = None
+MEDIA_ROOT = os.environ['MPR_SUBMISSIONS_PATH']
 
 # LTI configuration
 LTI_CONSUMER_SECRETS = None
