@@ -297,7 +297,11 @@
                             vm.$root.$emit('notification', {
                                 message: 'The rubric was successfully created.  You will be returned to the dashboard.'
                             });
-                            setTimeout(function() { window.location.href = '/course/' + vm.courseId; }, 4000);
+                            var frontendLandingUrl = document.querySelector('#rubric-form').dataset['frontendLandingUrl'];
+                            var redirectToDashboard = function() {
+                              window.location.href = frontendLandingUrl + '/#/instructor/dashboard';
+                            };
+                            setTimeout(redirectToDashboard, 4000);
                         },
                         function() {
                             // TODO be more specific in certain cases e.g. 403 (session probably expired)
