@@ -49,7 +49,7 @@
                                 <a class='mdl-button mdl-js-button mdl-js-ripple-effect review_link' href="mailto:{{ student_email }}">
                                     Email {{ student_first_name }}
                                 </a>
-                                <a class='mdl-button mdl-js-button mdl-js-ripple-effect review_link' href="/course/{{ course_id }}/submissions/{{ submission.id }}/download">
+                                <a class='mdl-button mdl-js-button mdl-js-ripple-effect review_link' href="/course/{{ course_id }}/submissions/{{ review_to_complete.submission.id }}/download">
                                     See {{ review_to_complete.student_first_name }}'s submission
                                 </a>
                             {% else %}
