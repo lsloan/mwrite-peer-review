@@ -3,7 +3,7 @@ import logging
 from rolepermissions.roles import get_user_roles
 
 import peer_review.etl as etl
-from peer_review.models import CanvasStudent
+from peer_review.models import CanvasStudent, CanvasCourse
 from peer_review.queries import ReviewDetails
 from peer_review.api.util import merge_validations
 from peer_review.util import to_camel_case, keymap_all
@@ -16,9 +16,11 @@ logger = logging.getLogger(__name__)
 def logged_in_user_details(request):
     roles = [role.get_name() for role in get_user_roles(request.user)]
     course_id = request.session['lti_launch_params']['custom_canvas_course_id']
+    course_name = CanvasCourse.objects.get(id=course_id).name
     return {
         'username': request.user.username,
         'course_id': course_id,
+        'course_name': course_name,
         'roles': roles
     }
 

@@ -9,12 +9,11 @@
                     <router-link class="mdl-navigation__link" to="/instructor/dashboard">
                         Peer Review
                     </router-link>
-                    <!-- TODO change the <a> below to <router-link> when students list is completed -->
-                    <a class="mdl-navigation__link" :href="studentsListUrl">
+                    <router-link class="mdl-navigation__link" to="/instructor/students">
                         Students
-                    </a>
+                    </router-link>
                 </nav>
-            </div>
+              </div>
         </header>
         <main class="mdl-layout__content">
             <breadcrumb
@@ -49,9 +48,6 @@ export default {
     userIsInstructor() {
       const {roles} = this.$store.state.userDetails;
       return roles ? roles.includes('instructor') : false;
-    },
-    studentsListUrl() {
-      return __API_URL__ + '/course/' + this.$store.state.userDetails.courseId + '/review/students';
     }
   }
 };

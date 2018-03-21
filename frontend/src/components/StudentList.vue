@@ -1,48 +1,43 @@
 <template>
   <div class='mdl-grid'>
     <div class='mdl-cell mdl-cell--12-col'>
-      <h2>Title will go here</h2>
-      <div>
-        <div>
-          <div>
-          </div>
-          <div></div>
-        </div>
-        <table class='mdl-data-table mdl-js-data-table'>
-          <thead>
-          <tr>
+      <h1>{{courseName}} Students</h1>
+    </div>
+    <div class='mdl-cell align-with-table'>
+      <mdl-select label='Section Filter' v-model='selected' id='section-select' :options='possibleSections'>
+      </mdl-select>
+    </div>
+    <div class='mdl-cell'>
+      <div class='mdl-textfield'>
+        <input v-model='nameFilter' class="mdl-textfield__input" type="text" placeholder='enter name' id='name-filter'>
+      </div>
+    </div>
+    <div class='mdl-cell mdl-cell--12-col'>
+      <table class='mdl-data-table mdl-js-data-table'>
+        <thead>
+          <tr class='no-top-border'>
+            <th class='mdl-data-table__cell--non-numeric table-heading'>Student Name</th>
+            <th class='mdl-data-table__cell--non-numeric table-heading'>Sections</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr v-for='row in filteredData' :key='row.index'>
+            <td class='mdl-data-table__cell--non-numeric'>{{row.name}}</td>
             <td class='mdl-data-table__cell--non-numeric'>
-              <input v-model='nameFilter' placeholder='enter name'>
-            </td>
-            <td class='mdl-data-table__cell--non-numeric'>
-              <mdl-select label='Section Filter' v-model='selected' id='section-select' :options='possibleSections'>
-              </mdl-select>
+              <span v-for='(section, index) in row.section.names' :key='index'>{{section}}
+                <span v-if='index < row.section.names.length -1'>,&nbsp;
+                </span>
+            </span>
             </td>
           </tr>
-            <tr>
-              <th class='mdl-data-table__cell--non-numeric'>Student Name</th>
-              <th class='mdl-data-table__cell--non-numeric'>Sections</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr v-for='row in filteredData' :key='row.index'>
-              <td class='mdl-data-table__cell--non-numeric'>{{row.name}}</td>
-              <td class='mdl-data-table__cell--non-numeric'>
-                <span v-for='(section, index) in row.section.names' :key='index'>{{section}}
-                  <span v-if='index < row.section.names.length -1'>,&nbsp;
-                  </span>
-              </span>
-              </td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
+        </tbody>
+      </table>
     </div>
   </div>
 </template>
 
 <script>
-import api from '@/services/api';
+// import api from '@/services/api';
 import VueMdl from 'vue-mdl';
 import Vue from 'vue';
 Vue.use(VueMdl);
@@ -58,6 +53,9 @@ export default {
     };
   },
   computed: {
+    courseName() {
+      return this.$store.state.userDetails.courseName;
+    },
     formatData() {
       const origData = this.json_data;
       var formattedData = [];
@@ -128,7 +126,7 @@ export default {
   methods: {
     getStudents() {
       const { courseId } = this.$store.state.userDetails;
-      api.get('/course/{0}/students', courseId).then((response) => {
+      this.$api.get('/course/{0}/students', courseId).then((response) => {
         console.log('response: ', response.data);
         this.json_data = response.data;
       });
@@ -154,8 +152,30 @@ const convertDataFormat = (rowData) => {
 </script>
 
 <style scoped>
+h1 {
+  font-size: 30px;
+  font-weight: 700;
+}
+
 table {
   width: 100%;
   border-style: solid hidden;
+}
+
+.no-top-border {
+  border-top-style: hidden;
+}
+
+.table-heading {
+  font-size: 18px;
+  color: black;
+}
+
+td {
+  font-size: 15px;
+}
+
+.align-with-table {
+    padding-left: 24px;
 }
 </style>
