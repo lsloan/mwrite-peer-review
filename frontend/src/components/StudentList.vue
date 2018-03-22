@@ -7,9 +7,10 @@
       <mdl-select label='Section Filter' v-model='selected' id='section-select' :options='possibleSections'>
       </mdl-select>
     </div>
-    <div class='mdl-cell'>
-      <div class='mdl-textfield'>
-        <input v-model='nameFilter' class="mdl-textfield__input" type="text" placeholder='enter name' id='name-filter'>
+    <div class='mdl-cell align-with-table'>
+      <div class='mdl-textfield flexbox'>
+        <input v-model='nameFilter' class="mdl-textfield__input clickable" type="text" placeholder='Search for a student' id='name-filter'>
+        <i class="material-icons">search</i>
       </div>
     </div>
     <div class='mdl-cell mdl-cell--12-col'>
@@ -22,7 +23,7 @@
         </thead>
         <tbody>
           <tr v-for='row in filteredData' :key='row.index'>
-            <td class='mdl-data-table__cell--non-numeric'>{{row.name}}</td>
+            <td class='mdl-data-table__cell--non-numeric clickable'>{{row.name}}</td>
             <td class='mdl-data-table__cell--non-numeric'>
               <span v-for='(section, index) in row.section.names' :key='index'>{{section}}
                 <span v-if='index < row.section.names.length -1'>,&nbsp;
@@ -177,5 +178,17 @@ td {
 
 .align-with-table {
     padding-left: 24px;
+}
+
+.clickable:hover {
+  cursor: pointer;
+}
+
+#section-select {
+  cursor: pointer;
+}
+
+.flexbox {
+  display: flex;
 }
 </style>
