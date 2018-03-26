@@ -14,10 +14,13 @@ def not_found(request):
 
 urlpatterns = [
 
+    url(r'^launch$', djangolti.views.LaunchView.as_view(), name='launch'),
+    url(r'^user/self$', api.logged_in_user_details),
+
     url(r'^course/(?P<course_id>[0-9]+)/', include([
 
         url(r'^students/', api.all_students),
-        url(r'^user/self', api.logged_in_user_details),
+        url(r'^peer_review/all', api.all_peer_review_assignment_details),
 
         ### old URLs below this point
 
@@ -26,7 +29,6 @@ urlpatterns = [
         url(r'^health/', include('health_check.urls')),
 
         url(r'^$', CourseIndexView.as_view()),
-        url(r'^launch$', djangolti.views.LaunchView.as_view(), name='launch'),
         url(r'^dashboard/instructor$', InstructorDashboardView.as_view()),
         url(r'^dashboard/student$', StudentDashboardView.as_view()),
         url(r'^status/rubric/(?P<rubric_id>[0-9]+)/all$', AssignmentStatus.as_view()),

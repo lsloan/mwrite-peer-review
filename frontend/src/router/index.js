@@ -1,45 +1,48 @@
 import Vue from 'vue';
 import Router from 'vue-router';
-import store from '@/store';
-import HelloWorld from '@/components/HelloWorld';
-import RouteGuard from '@/components/RouteGuard';
+import multiguard from 'vue-router-multiguard';
+
+import {redirectToRoleDashboard, ensureUserDetailsArePresent, instructorsOnlyGuard} from './guards';
 import StudentList from '@/components/StudentList';
-import DeleteMe from '@/components/DeleteMe';
+import Error from '@/components/Error';
+import InstructorDashboard from '@/components/InstructorDashboard';
 
 Vue.use(Router);
 
-const authGuard = (targetRole, to, from, next) => {
-  const userRoles = store.state.userDetails.roles;
-  const go = userRoles.find((role) => role === targetRole);
-  next(!!go);
-};
+const authenticatedInstructorsOnly = multiguard([ensureUserDetailsArePresent, instructorsOnlyGuard]);
 
-const instructorsOnlyGuard = (to, from, next) => {
-  return authGuard('instructor', to, from, next);
-};
-
-export default new Router({
+const router = new Router({
   routes: [
     {
       path: '/',
-      name: 'HelloWorld',
-      component: HelloWorld
+      beforeEnter: redirectToRoleDashboard
     },
     {
-      path: '/tryAuth',
-      name: 'AuthComponent',
-      component: RouteGuard,
-      beforeEnter: instructorsOnlyGuard
+      path: '/error',
+      component: Error
+    },
+    {
+      path: '/permission-denied',
+      component: Error,
+      props: {errorMessage: 'You do not have permission to visit that page. Please try logging in again.'}
+    },
+    {
+      path: '/instructor/dashboard',
+      component: InstructorDashboard,
+      beforeEnter: authenticatedInstructorsOnly,
+      meta: {
+        breadcrumbPathComponents: [{text: 'Peer Review', href: '/instructor/dashboard'}]
+      }
     },
     {
       path: '/instructor/students',
       component: StudentList,
-      beforeEnter: instructorsOnlyGuard
-    },
-    {
-      path: '/instructor/deleteme',
-      component: DeleteMe,
-      beforeEnter: instructorsOnlyGuard
+      beforeEnter: authenticatedInstructorsOnly,
+      meta: {
+        breadcrumbPathComponents: [{text: 'Students', href: '/instructor/students'}]
+      }
     }
   ]
 });
+
+export default router;

@@ -9,7 +9,7 @@ from django.db import transaction
 from peer_review.etl import persist_students, persist_sections, persist_submissions, persist_assignments
 from peer_review.models import CanvasCourse, CanvasStudent, CanvasAssignment, PeerReview, PeerReviewDistribution
 
-log = logging.getLogger(__name__)
+log = logging.getLogger('management_commands')
 
 
 def make_distribution(students, submissions, n=3):
@@ -132,12 +132,12 @@ def review_distribution_task(utc_timestamp, force_distribution=False):
 
                 except Exception as ex:
                     # TODO expose failed prompt distribution to health check
-                    log.info('Skipping review distribution for prompt %d due to error' % prompt.id, ex)
+                    log.exception('Skipping review distribution for prompt %d due to error' % prompt.id)
 
                 log.info('Finished distributing reviews for prompt %d' % prompt.id)
     except Exception as ex:
         # TODO expose failed "all" distribution to health check
-        log.error('Review distribution failed due to uncaught exception', ex)
+        log.exception('Review distribution failed due to uncaught exception')
         raise ex
 
     log.info('Finished review distribution that began at %s' % utc_timestamp.isoformat())

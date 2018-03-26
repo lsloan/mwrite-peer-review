@@ -83,3 +83,6 @@ yarn-error.log*
 frontend/test/unit/coverage/
 frontend/test/e2e/reports/
 selenium-debug.log
+mwrite_dev.sql
+
+profiler_harnesses/

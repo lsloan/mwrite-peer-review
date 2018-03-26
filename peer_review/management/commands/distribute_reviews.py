@@ -4,7 +4,7 @@ from dateutil.tz import tzutc
 from django.core.management import BaseCommand, CommandError
 from peer_review.distribution import review_distribution_task
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger('management_commands')
 
 
 class Command(BaseCommand):
@@ -15,4 +15,4 @@ class Command(BaseCommand):
             review_distribution_task(datetime.now(tzutc()))
         except Exception as ex:
             logger.exception('Uncaught exception when running review distribution task')
-            raise CommandError('Failed to start review distribution') from ex
+            raise CommandError('Failed to distribute peer reviews') from ex
