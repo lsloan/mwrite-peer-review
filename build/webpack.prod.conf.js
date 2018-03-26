@@ -34,7 +34,8 @@ const webpackConfig = merge(baseWebpackConfig, {
     // TODO see if we can move this to base and use environment variables
     new webpack.DefinePlugin({
       'process.env': env,
-      '__API_URL__': '\'' + process.env['MPR_API_URL'] + '\''
+      '__API_URL__': '\'' + process.env['MPR_API_URL'] + '\'',
+      '__GA_TRACKING_ID__': '\'' + process.env['MPR_GOOGLE_ANALYTICS_TRACKING_ID'] + '\''
     }),
     new UglifyJsPlugin({
       uglifyOptions: {

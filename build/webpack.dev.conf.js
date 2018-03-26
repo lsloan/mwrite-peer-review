@@ -47,7 +47,8 @@ const devWebpackConfig = merge(baseWebpackConfig, {
   plugins: [
     new webpack.DefinePlugin({
       'process.env': require('../config/client/dev.env'),
-      '__API_URL__': '\'http://localhost:8000\''
+      '__API_URL__': '\'http://localhost:8000\'',
+      '__GA_TRACKING_ID__': '\'' + process.env['MPR_GOOGLE_ANALYTICS_TRACKING_ID'] + '\''
     }),
     new webpack.HotModuleReplacementPlugin(),
     new webpack.NamedModulesPlugin(), // HMR shows correct file names in console on update.
