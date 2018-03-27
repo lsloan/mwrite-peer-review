@@ -4,7 +4,7 @@
       <h1>{{courseName}} Students</h1>
     </div>
     <div class='mdl-cell align-with-table'>
-      <mdl-select label='Section Filter' v-model='selected' id='section-select' :options='possibleSections'>
+      <mdl-select class='clickable' label='Section Filter' v-model='selected' id='section-select' :options='possibleSections'>
       </mdl-select>
     </div>
     <div class='mdl-cell align-with-table'>
@@ -165,6 +165,12 @@ var alphabeticalSort = function(a, b) {
 </script>
 
 <style scoped>
+@media (max-width: 480px) {
+  .align-with-table {
+    width: 100%;
+  }
+}
+
 h1 {
   font-size: 30px;
   font-weight: 700;
@@ -196,7 +202,7 @@ td {
   cursor: pointer;
 }
 
-#section-select {
+.clickable >>> input:hover {
   cursor: pointer;
 }
 
