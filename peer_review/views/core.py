@@ -531,7 +531,8 @@ class SingleReviewDetailView(HasRoleMixin, TemplateView):
         course_id = int(kwargs['course_id'])
         context = {'title': CanvasCourse.objects.get(id=course_id).name,
                    'prompt_title': submission.assignment.title,
-                   'user_is_instructor': user_is_instructor}
+                   'user_is_instructor': user_is_instructor,
+                   'review': details}
         if user_is_instructor:
             context['course_id'] = course_id
         return context
