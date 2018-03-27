@@ -1,15 +1,13 @@
 import Vue from 'vue';
 import Router from 'vue-router';
-import multiguard from 'vue-router-multiguard';
 
-import {redirectToRoleDashboard, ensureUserDetailsArePresent, instructorsOnlyGuard} from './guards';
+import {redirectToRoleDashboard, authenticatedInstructorsOnly, authenticatedStudentsOnly} from './guards';
 import StudentList from '@/components/StudentList';
 import Error from '@/components/Error';
 import InstructorDashboard from '@/components/InstructorDashboard';
+import StudentDashboard from '@/components/StudentDashboard';
 
 Vue.use(Router);
-
-const authenticatedInstructorsOnly = multiguard([ensureUserDetailsArePresent, instructorsOnlyGuard]);
 
 const router = new Router({
   routes: [
@@ -41,6 +39,11 @@ const router = new Router({
       meta: {
         breadcrumbPathComponents: [{text: 'Students', href: '/instructor/students'}]
       }
+    },
+    {
+      path: '/student/dashboard',
+      component: StudentDashboard,
+      beforeEnter: authenticatedStudentsOnly
     }
   ]
 });
