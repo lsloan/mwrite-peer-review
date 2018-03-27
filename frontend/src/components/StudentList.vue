@@ -10,7 +10,7 @@
     <div class='mdl-cell align-with-table'>
       <div class='mdl-textfield flexbox'>
         <input v-model='nameFilter' class="mdl-textfield__input clickable" type="text" placeholder='Search for a student' id='name-filter'>
-        <i class="material-icons">search</i>
+        <i class="material-icons" id='glass'>search</i>
       </div>
     </div>
     <div class='mdl-cell mdl-cell--12-col'>
@@ -62,6 +62,8 @@ export default {
       var formattedData = [];
       formattedData = origData.map(convertDataFormat);
       console.log('new data ', formattedData);
+      formattedData.sort(alphabeticalSort);
+      console.log('SORTED data', formattedData);
       return formattedData;
     },
     filteredData() {
@@ -150,6 +152,16 @@ const convertDataFormat = (rowData) => {
 
   return {name: fullName, section: sectionNamesIds};
 };
+
+var alphabeticalSort = function(a, b) {
+  if(a.name.toLowerCase() < b.name.toLowerCase()) {
+    return -1;
+  }
+  if(a.name.toLowerCase() > b.name.toLowerCase()) {
+    return 1;
+  }
+  return 0;
+};
 </script>
 
 <style scoped>
@@ -186,6 +198,14 @@ td {
 
 #section-select {
   cursor: pointer;
+}
+
+#name-filter {
+  z-index: 10;
+}
+
+#glass {
+  margin-left: -30px;
 }
 
 .flexbox {
