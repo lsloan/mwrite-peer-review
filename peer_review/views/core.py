@@ -502,14 +502,14 @@ class SingleReviewDetailView(HasRoleMixin, TemplateView):
         retrieved_submission = retrieve('submission_grade', course_id, assignment_id, user_id)
         print ('Score', retrieved_submission['score'])
 
-    def post_score_lti(self):
+    def post_score_lti(self, score=None):
         request = OutcomeRequest()
         request.consumer_key = self.request.session['lti_launch_params']['oauth_consumer_key']
         request.consumer_secret = settings.LTI_CONSUMER_SECRETS.get(request.consumer_key)
         request.lis_outcome_service_url = self.request.session['lti_launch_params']['lis_outcome_service_url']
         request.lis_result_sourcedid = self.request.session['lti_launch_params']['lis_result_sourcedid']
         request.operation = REPLACE_REQUEST
-        response = request.post_replace_result(0.92)
+        response = request.post_replace_result(score)
         print (response.is_success())
 
     def get_context_data(self, **kwargs):
@@ -522,11 +522,11 @@ class SingleReviewDetailView(HasRoleMixin, TemplateView):
             raise PermissionDenied
 
         peer_review_ids = PeerReview.objects.filter(submission=submission).values_list('id', flat=True)
-        # rubric = submission.assignment.rubric_for_prompt
-        # details = [(criterion,
-        #             PeerReviewComment.objects.filter(criterion=criterion, peer_review_id__in=peer_review_ids)
-        #                                      .order_by('peer_review__submission__author_id'))
-        #            for criterion in rubric.criteria.all()]
+        rubric = submission.assignment.rubric_for_prompt
+        details = [(criterion,
+                    PeerReviewComment.objects.filter(criterion=criterion, peer_review_id__in=peer_review_ids)
+                                             .order_by('peer_review__submission__author_id'))
+                   for criterion in rubric.criteria.all()]
 
         course_id = int(kwargs['course_id'])
         context = {'title': CanvasCourse.objects.get(id=course_id).name,
@@ -534,8 +534,6 @@ class SingleReviewDetailView(HasRoleMixin, TemplateView):
                    'user_is_instructor': user_is_instructor}
         if user_is_instructor:
             context['course_id'] = course_id
-        # self.post_score_lti()
-        self.post_score_canvas(94.0)
         return context
 
 
