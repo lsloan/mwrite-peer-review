@@ -13,7 +13,7 @@
         <i class="material-icons" id='glass'>search</i>
       </div>
     </div>
-    <div class='mdl-cell mdl-cell--12-col'>
+    <div class='mdl-cell mdl-cell--12-col x-scrollable'>
       <table class='mdl-data-table mdl-js-data-table'>
         <thead>
           <tr class='no-top-border'>
@@ -165,12 +165,6 @@ var alphabeticalSort = function(a, b) {
 </script>
 
 <style scoped>
-@media (max-width: 480px) {
-  .align-with-table {
-    width: 100%;
-  }
-}
-
 h1 {
   font-size: 30px;
   font-weight: 700;
@@ -216,5 +210,21 @@ td {
 
 .flexbox {
   display: flex;
+}
+
+.x-scrollable {
+  overflow-x: scroll;
+}
+
+@media screen and (max-width: 480px) {
+  .align-with-table {
+    width: 100%;
+    padding-left: 0px;
+  }
+
+  .mdl-textfield {
+    width: 100%;
+    min-width: 200px;
+  }
 }
 </style>
