@@ -9,8 +9,8 @@
     </div>
     <div class='mdl-cell align-with-table'>
       <div class='mdl-textfield flexbox'>
-        <input v-model='nameFilter' class="mdl-textfield__input clickable" type="text" placeholder='Search for a student' id='name-filter'>
-        <i class="material-icons" id='glass'>search</i>
+        <input v-model='nameFilter' class='mdl-textfield__input clickable' type='text' placeholder='Search for a student' id='name-filter'>
+        <i class='material-icons' id='glass'>search</i>
       </div>
     </div>
     <div class='mdl-cell mdl-cell--12-col x-scrollable'>
@@ -38,7 +38,6 @@
 </template>
 
 <script>
-// import api from '@/services/api';
 import VueMdl from 'vue-mdl';
 import Vue from 'vue';
 Vue.use(VueMdl);
@@ -67,14 +66,11 @@ export default {
       return formattedData;
     },
     filteredData() {
+      // should be an 'AND' filter
       var filteredData = [];
       const parsedData = this.formatData;
-      console.log('section selected:', this.selected);
-      console.log('name selected:', this.nameFilter);
-      // should be an 'AND' filter
 
       if(this.selected === '0' && this.nameFilter === '') {
-        console.log('NO filter');
         return parsedData;
       }
 
@@ -85,7 +81,6 @@ export default {
         if(sectionSelected !== '0' && nameSelected !== '') {
           // both criteria selected
           // must filter by both using AND
-          console.log('filter by BOTH');
           return (row['section']['ids'].includes(parseInt(sectionSelected)) && (row['name'].toLowerCase()).includes(nameSelected.toLowerCase()));
         }
         if(sectionSelected !== '0') {
@@ -107,7 +102,6 @@ export default {
 
         for(var i = 0; i < sections.length; i++) {
           if(!acc.hasOwnProperty(sections[i]['id'])) {
-            // console.log('adding section');
             acc[sections[i]['id']] = sections[i]['name'];
           }
         }
@@ -153,7 +147,7 @@ const convertDataFormat = (rowData) => {
   return {name: fullName, section: sectionNamesIds};
 };
 
-var alphabeticalSort = function(a, b) {
+const alphabeticalSort = function(a, b) {
   if(a.name.toLowerCase() < b.name.toLowerCase()) {
     return -1;
   }
