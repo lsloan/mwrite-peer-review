@@ -6,6 +6,8 @@ import StudentList from '@/components/StudentList';
 import Error from '@/components/Error';
 import InstructorDashboard from '@/components/InstructorDashboard';
 import StudentDashboard from '@/components/StudentDashboard';
+import Modal from '@/components/Modal';
+import SampleModalChild from '@/components/SampleModalChild';
 
 Vue.use(Router);
 
@@ -43,7 +45,15 @@ const router = new Router({
     {
       path: '/student/dashboard',
       component: StudentDashboard,
-      beforeEnter: authenticatedStudentsOnly
+      beforeEnter: authenticatedStudentsOnly,
+      children: [
+        {
+          path: 'sample/:id',
+          name: 'SampleModalChild',
+          component: Modal,
+          props: (route) => ({component: SampleModalChild, childProps: {id: route.params.id}})
+        }
+      ]
     }
   ]
 });
