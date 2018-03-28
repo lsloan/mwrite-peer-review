@@ -9,7 +9,8 @@ module.exports = {
     browser: true,
   },
   globals: {
-    '__API_URL__': true
+    '__API_URL__': true,
+    '__GA_TRACKING_ID__': true
   },
   extends: [
     // https://github.com/vuejs/eslint-plugin-vue#priority-a-essential-error-prevention

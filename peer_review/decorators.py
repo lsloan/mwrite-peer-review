@@ -94,3 +94,12 @@ def authorized_json_endpoint(**kwargs):
             return decorators(request, *args, **kwargs)
         return wrapper
     return decorator
+
+
+def json_body(view):
+    def wrapper(*args, **kwargs):
+        request = args[0]
+        body = json.loads(request.body)
+        new_args = args + (body,)
+        return view(*new_args, **kwargs)
+    return wrapper

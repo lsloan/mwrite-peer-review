@@ -38,7 +38,7 @@ def getenv_csv(var, default=''):
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 DEBUG = getenv_bool('MPR_DEBUG_MODE')
 SECRET_KEY = 'unused'
-APP_HOST = None
+APP_HOST = os.environ['MPR_APP_HOST']
 
 EMAIL_HOST = os.environ['MPR_EMAIL_HOST']
 EMAIL_PORT = os.environ['MPR_EMAIL_PORT']
@@ -46,7 +46,7 @@ SERVER_EMAIL = os.environ['MPR_SERVER_FROM_EMAIL']
 ADMINS = list(map(lambda email: ('', email), getenv_csv('MPR_SERVER_TO_EMAILS')))
 
 # Storage configuration
-MEDIA_ROOT = None
+MEDIA_ROOT = os.environ['MPR_SUBMISSIONS_PATH']
 
 # LTI configuration
 LTI_CONSUMER_SECRETS = None
@@ -54,8 +54,8 @@ LTI_APP_REDIRECT = None
 LTI_ENFORCE_SSL = False  # TODO want this to be True in prod; add config for X-Forwarded etc.
 
 # Canvas API configuration
-CANVAS_API_URL = None
-CANVAS_API_TOKEN = None
+CANVAS_API_URL = os.environ['MPR_CANVAS_API_URL']
+CANVAS_API_TOKEN = os.environ['MPR_CANVAS_API_TOKEN']
 
 # Application definition
 INSTALLED_APPS = ['peer_review']

@@ -18,10 +18,11 @@ using the OpenShift Container Platform is also provided.
 The included Dockerfiles support ARGs that allow aspects of the build to be modified.  You can also
 pass these as environment variables in OpenShift.
 
-| Variable              | Dockerfile | Description                                                                                              |
-| --------------------- | ---------- | -------------------------------------------------------------------------------------------------------- |
-| MPR_WORKING_DIRECTORY | api, jobs  | The source and working directory for the API and jobs containers; optional (defaults to `/usr/src/app`). |
-| MPR_API_URL           | frontend   | The API URL for the frontend to use; **required**.                                                       |
+| Variable                         | Dockerfile  | Description                                                                                              |
+| -------------------------------- | ----------  | -------------------------------------------------------------------------------------------------------- |
+| MPR_WORKING_DIRECTORY            | api, jobs   | The source and working directory for the API and jobs containers; optional (defaults to `/usr/src/app`). |
+| MPR_API_URL                      | frontend    | The API URL for the frontend to use; **required**.                                                       |
+| MPR_GOOGLE_ANALYTICS_TRACKING_ID | tracking ID | Google analytics tracking ID                                                                             |
 
 ## Runtime Environment
 
