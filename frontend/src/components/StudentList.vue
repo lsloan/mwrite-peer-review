@@ -22,7 +22,12 @@
           </tr>
         </thead>
         <tbody>
-          <tr v-for='row in filteredData' :key='row.index'>
+          <tr v-if='is_loading'>
+            <td colspan='2'>
+              Loading... Please wait
+            </td>
+          </tr>
+          <tr v-for='row in filteredPaginatedData' :key='row.index'>
             <td class='mdl-data-table__cell--non-numeric clickable'>{{row.name}}</td>
             <td class='mdl-data-table__cell--non-numeric'>
               <span v-for='(section, index) in row.section.names' :key='index'>{{section}}
@@ -49,7 +54,10 @@ export default {
       json_data: [],
       parsedData: [],
       selected: '0',
-      nameFilter: ''
+      nameFilter: '',
+      rows_per_page: 10,
+      current_page: 1,
+      is_loading: true
     };
   },
   computed: {
@@ -96,6 +104,15 @@ export default {
 
       return filteredData;
     },
+    filteredPaginatedData() {
+      const allFilteredData = this.filteredData;
+
+      var startIndex = this.rows_per_page * (this.current_page - 1);
+      var endIndex = this.rows_per_page * this.current_page - 1;
+      // returns data to be displayed in current page
+      // if endIndex is past the end of allFilteredData, javascript's slice treats it as up to end of array 
+      return allFilteredData.slice(startIndex, endIndex + 1);
+    },
     possibleSections() {
       var allSections = this.json_data.reduce(function(acc, next) {
         var sections = next['sections'];
@@ -122,10 +139,12 @@ export default {
   },
   methods: {
     getStudents() {
+      this.is_loading = true;
       const { courseId } = this.$store.state.userDetails;
       this.$api.get('/course/{0}/students', courseId).then((response) => {
         console.log('response: ', response.data);
         this.json_data = response.data;
+        this.is_loading = false;
       });
     }
   },
