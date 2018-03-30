@@ -39,6 +39,24 @@
         </tbody>
       </table>
     </div>
+    <div>DEBUG: current page: {{current_page}}, last page: {{lastPage}}</div>
+    <div class='flexbox' v-if='is_loading === false'>
+      <button type='button' v-on:click='goToPrevPage'>Prev</button>
+      <button type='button' v-on:click='goToPage(1)'>1</button>
+      <div v-if='(current_page > 3)'>...</div>
+      <button type='button' v-if='(current_page !== 1 && current_page !== 2)' v-on:click='goToPage(current_page - 1)'>
+        {{current_page - 1}}
+      </button>
+      <button type='button' v-if='(current_page !== 1 && current_page !== lastPage)' >
+        {{current_page}}
+      </button>
+      <button type='button' v-if='(current_page !== lastPage && current_page !== (lastPage-1))' v-on:click='goToPage(current_page + 1)'>
+        {{current_page + 1}}
+      </button>
+      <div type='button' v-if='(current_page < lastPage - 2)'>...</div>
+      <button type='button' v-on:click='goToPage(lastPage)'>{{lastPage}}</button>
+      <button type='button' v-on:click='goToNextPage'>Next</button>
+    </div>
   </div>
 </template>
 
@@ -55,7 +73,7 @@ export default {
       parsedData: [],
       selected: '0',
       nameFilter: '',
-      rows_per_page: 10,
+      rows_per_page: 5,
       current_page: 1,
       is_loading: true
     };
@@ -110,8 +128,11 @@ export default {
       var startIndex = this.rows_per_page * (this.current_page - 1);
       var endIndex = this.rows_per_page * this.current_page - 1;
       // returns data to be displayed in current page
-      // if endIndex is past the end of allFilteredData, javascript's slice treats it as up to end of array 
+      // if endIndex is past the end of allFilteredData, javascript's slice treats it as up to end of array
       return allFilteredData.slice(startIndex, endIndex + 1);
+    },
+    lastPage() {
+      return Math.ceil(this.filteredData.length / this.rows_per_page);
     },
     possibleSections() {
       var allSections = this.json_data.reduce(function(acc, next) {
@@ -146,6 +167,21 @@ export default {
         this.json_data = response.data;
         this.is_loading = false;
       });
+    },
+    goToNextPage() {
+      if(this.current_page < this.lastPage) {
+        this.current_page = this.current_page + 1;
+      }
+    },
+    goToPrevPage() {
+      if(this.current_page > 1) {
+        this.current_page = this.current_page - 1;
+      }
+    },
+    goToPage(pageNum) {
+      if(pageNum >= 1 && pageNum <= this.lastPage) {
+        this.current_page = pageNum;
+      }
     }
   },
   created: function() {
@@ -227,6 +263,10 @@ td {
 
 .x-scrollable {
   overflow-x: scroll;
+}
+
+button {
+  cursor: pointer;
 }
 
 @media screen and (max-width: 480px) {
