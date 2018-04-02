@@ -1,15 +1,16 @@
 import logging
 
 from rolepermissions.roles import get_user_roles
+from django.core.exceptions import PermissionDenied
 
 import peer_review.etl as etl
-from peer_review.models import CanvasStudent
+from peer_review.models import CanvasStudent, PeerReview
 from peer_review.queries import ReviewDetails
 from peer_review.api.util import merge_validations
 from peer_review.util import to_camel_case, keymap_all
 from peer_review.decorators import authorized_json_endpoint, authenticated_json_endpoint
 
-logger = logging.getLogger(__name__)
+log = logging.getLogger(__name__)
 
 
 @authenticated_json_endpoint
@@ -43,3 +44,14 @@ def all_peer_review_assignment_details(request, course_id):
     details_with_validations = merge_validations(details, validations)
 
     return keymap_all(to_camel_case, details_with_validations)
+
+
+@authorized_json_endpoint(roles=['student'])
+def assigned_work(request, course_id, student_id):
+    logged_in_user_id = request.session['lti_launch_params']['custom_canvas_user_id']
+    if logged_in_user_id != student_id:
+        log.warning('User %d tried to access completed work for student %d without permission'
+                    % (logged_in_user_id, student_id))
+        raise PermissionDenied
+
+    return PeerReview.review_status_for_student(student_id)
