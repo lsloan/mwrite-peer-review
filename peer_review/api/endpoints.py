@@ -49,7 +49,7 @@ def all_peer_review_assignment_details(request, course_id):
 def raise_if_not_current_user(request, user_id):
     logged_in_user_id = request.session['lti_launch_params']['custom_canvas_user_id']
     if logged_in_user_id != user_id:
-        log.warning('User %d tried to access information for user %d without permission'
+        log.warning('User %s tried to access information for user %s without permission'
                     % (logged_in_user_id, user_id))
         raise PermissionDenied
 
