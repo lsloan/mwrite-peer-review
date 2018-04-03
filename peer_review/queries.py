@@ -211,6 +211,7 @@ class StudentDashboardStatus:
 
         return thread_last(qs,
                            (groupby, lambda pr: pr.submission.assignment_id),
+                           (valfilter, lambda prs: some(lambda pr: pr.review_is_complete, prs)),
                            (lambda d: d.items(),),
                            (map, StudentDashboardStatus._make_completed_prompt),
                            (StudentDashboardStatus._sort_and_format,))
