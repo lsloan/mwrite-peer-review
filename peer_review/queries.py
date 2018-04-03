@@ -7,9 +7,6 @@ from django.db.models import BooleanField, Subquery, OuterRef, Count, Case, When
 from peer_review.util import some, fetchall_dicts
 from peer_review.models import PeerReview, Criterion, PeerReviewComment
 
-import logging
-log = logging.getLogger(__name__)
-
 
 class InstructorDashboardStatus:
     query = """
@@ -133,7 +130,6 @@ class StudentDashboardStatus:
         prompt_data['prompt_id'] = peer_reviews[0].submission.assignment.id
 
         reviews_by_reviewer = groupby(lambda pr: pr.student_is_reviewer, peer_reviews)
-        log.debug('reviews = %s' % reviews_by_reviewer)
         reviews_given = reviews_by_reviewer.get(True) or []
         reviews_received = reviews_by_reviewer.get(False) or []
 
