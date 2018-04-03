@@ -188,7 +188,6 @@ class StudentDashboardStatus:
                            (map, transform),
                            (StudentDashboardStatus._sort_and_format,))
 
-
     @staticmethod
     def assigned_work(student_id):
         qs = PeerReview.objects.filter(student_id=student_id) \
