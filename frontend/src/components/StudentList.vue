@@ -40,21 +40,23 @@
       </table>
     </div>
     <div>DEBUG: current page: {{current_page}}, last page: {{lastPage}}</div>
-    <div class='flexbox' v-if='is_loading === false'>
+    <div class='flexbox pagination-container' v-if='is_loading === false'>
       <button type='button' v-on:click='goToPrevPage'>Prev</button>
-      <button type='button' v-on:click='goToPage(1)'>1</button>
+      <button type='button' v-if='(current_page !== 1)' v-on:click='goToPage(1)'>1</button>
       <div v-if='(current_page > 3)'>...</div>
       <button type='button' v-if='(current_page !== 1 && current_page !== 2)' v-on:click='goToPage(current_page - 1)'>
         {{current_page - 1}}
       </button>
-      <button type='button' v-if='(current_page !== 1 && current_page !== lastPage)' >
+      <button type='button' class='current-page' >
         {{current_page}}
       </button>
       <button type='button' v-if='(current_page !== lastPage && current_page !== (lastPage-1))' v-on:click='goToPage(current_page + 1)'>
         {{current_page + 1}}
       </button>
       <div type='button' v-if='(current_page < lastPage - 2)'>...</div>
-      <button type='button' v-on:click='goToPage(lastPage)'>{{lastPage}}</button>
+      <button type='button' v-if='(lastPage != 1 && current_page != lastPage)' v-on:click='goToPage(lastPage)'>
+        {{lastPage}}
+      </button>
       <button type='button' v-on:click='goToNextPage'>Next</button>
     </div>
   </div>
@@ -267,6 +269,21 @@ td {
 
 button {
   cursor: pointer;
+}
+
+.pagination-container > button {
+  margin: 5px;
+  padding: 5px;
+  min-width: 10px;
+  min-height: 10px;
+}
+
+.pagination-container > button:hover {
+  color: red;
+}
+
+.current-page {
+  background-color: gray;
 }
 
 @media screen and (max-width: 480px) {
