@@ -4,7 +4,7 @@ from rolepermissions.roles import get_user_roles
 from django.core.exceptions import PermissionDenied
 
 import peer_review.etl as etl
-from peer_review.models import CanvasStudent, PeerReview
+from peer_review.models import CanvasStudent
 from peer_review.queries import InstructorDashboardStatus, StudentDashboardStatus
 from peer_review.api.util import merge_validations
 from peer_review.util import to_camel_case, keymap_all
