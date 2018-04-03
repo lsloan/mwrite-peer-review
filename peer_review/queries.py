@@ -184,18 +184,27 @@ class StudentDashboardStatus:
             )
 
     @staticmethod
+    def _unflatten(qs, filter_predicate, transform):
+        return thread_last(qs,
+                           (groupby, lambda pr: pr.submission.assignment_id),
+                           (valfilter, lambda prs: some(filter_predicate, prs)),
+                           (lambda d: d.items(),),
+                           (map, transform),
+                           (StudentDashboardStatus._sort_and_format,))
+
+
+    @staticmethod
     def assigned_work(student_id):
         qs = PeerReview.objects.filter(student_id=student_id) \
             .select_related('submission__assignment__rubric_for_prompt')
         qs = StudentDashboardStatus._review_completion_status(qs) \
             .order_by('submission__assignment_id', 'id')
 
-        return thread_last(qs,
-                           (groupby, lambda pr: pr.submission.assignment_id),
-                           (valfilter, lambda prs: some(lambda pr: not pr.review_is_complete, prs)),
-                           (lambda d: d.items(),),
-                           (map, StudentDashboardStatus._make_assigned_prompt),
-                           (StudentDashboardStatus._sort_and_format,))
+        return StudentDashboardStatus._unflatten(
+            qs,
+            lambda pr: not pr.review_is_complete,
+            StudentDashboardStatus._make_assigned_prompt
+        )
 
     @staticmethod
     def completed_work(student_id):
@@ -209,9 +218,8 @@ class StudentDashboardStatus:
             )
         qs = StudentDashboardStatus._review_completion_status(qs)
 
-        return thread_last(qs,
-                           (groupby, lambda pr: pr.submission.assignment_id),
-                           (valfilter, lambda prs: some(lambda pr: pr.review_is_complete, prs)),
-                           (lambda d: d.items(),),
-                           (map, StudentDashboardStatus._make_completed_prompt),
-                           (StudentDashboardStatus._sort_and_format,))
+        return StudentDashboardStatus._unflatten(
+            qs,
+            lambda pr: pr.review_is_complete,
+            StudentDashboardStatus._make_completed_prompt
+        )
