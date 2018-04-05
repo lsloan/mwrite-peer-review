@@ -39,48 +39,27 @@
         </tbody>
       </table>
     </div>
-    <div>DEBUG: current page: {{current_page}}, last page: {{lastPage}}</div>
     <div class='flexbox pagination-container' v-if='is_loading === false'>
       <button type='button' v-on:click='goToPrevPage'>Prev</button>
-      <button type='button' v-if='(current_page !== 1)' v-on:click='goToPage(1)'>1</button>
-      <div v-if='(current_page > 3)'>...</div>
-      <button type='button' v-if='(current_page !== 1 && current_page !== 2)' v-on:click='goToPage(current_page - 1)'>
-        {{current_page - 1}}
+      <button type='button' v-if='(current_page - num_page_show > 1)' v-on:click='goToPage(1)'>
+        1
+      </button>
+      <div v-if='(current_page - num_page_show > 2)'>...</div>
+      <button type='button' v-for='page in customRange(current_page - num_page_show, current_page)' v-bind:key='page' v-on:click='goToPage(page)'>
+        {{page}}
       </button>
       <button type='button' class='current-page' >
-        {{current_page}}
+          {{current_page}}
       </button>
-      <button type='button' v-if='(current_page !== lastPage && current_page !== (lastPage-1))' v-on:click='goToPage(current_page + 1)'>
-        {{current_page + 1}}
+      <button type='button' v-for='page in customRange(current_page + 1,current_page + num_page_show + 1)' v-bind:key='page' v-on:click='goToPage(page)'>
+        {{page}}
       </button>
-      <div type='button' v-if='(current_page < lastPage - 2)'>...</div>
-      <button type='button' v-if='(lastPage != 1 && current_page != lastPage)' v-on:click='goToPage(lastPage)'>
+      <div v-if='(current_page + num_page_show < lastPage - 1)'>...</div>
+      <button type='button' v-if='(current_page + num_page_show < lastPage)' v-on:click='goToPage(lastPage)'>
         {{lastPage}}
       </button>
       <button type='button' v-on:click='goToNextPage'>Next</button>
     </div>
-    <div>TESTING:</div>
-  <div class='flexbox pagination-container' v-if='is_loading === false'>
-    <button type='button' v-on:click='goToPrevPage'>Prev</button>
-    <button type='button' v-if='(current_page - num_page_show > 1)' v-on:click='goToPage(1)'>
-      1
-    </button>
-    <div v-if='(current_page - num_page_show > 2)'>...</div>
-    <button type='button' v-for='page in customRange(current_page - num_page_show, current_page)' v-bind:key='page' v-on:click='goToPage(page)'>
-      {{page}}
-    </button>
-    <button type='button' class='current-page' >
-        {{current_page}}
-    </button>
-    <button type='button' v-for='page in customRange(current_page + 1,current_page + num_page_show + 1)' v-bind:key='page' v-on:click='goToPage(page)'>
-      {{page}}
-    </button>
-    <div v-if='(current_page + num_page_show < lastPage - 1)'>...</div>
-    <button type='button' v-if='(current_page + num_page_show < lastPage)' v-on:click='goToPage(lastPage)'>
-      {{lastPage}}
-    </button>
-    <button type='button' v-on:click='goToNextPage'>Next</button>
-  </div>
   </div>
 </template>
 
