@@ -62,8 +62,8 @@ export default {
     }
 
     .modal-container {
-        width: 70vw;
-        height: 70vh;
+        width: 50vw;
+        height: 60vh;
         margin: 0 auto;
         background-color: rgb(255, 255, 255);
         border-radius: 2px;
@@ -93,7 +93,7 @@ export default {
     }
 
     .modal-body {
-        padding: 20px 20px;
+        padding: 10px 20px;
         flex: 1;
         min-height: 0;
         overflow-y: auto;
