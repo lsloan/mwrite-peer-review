@@ -59,6 +59,28 @@
       </button>
       <button type='button' v-on:click='goToNextPage'>Next</button>
     </div>
+    <div>TESTING:</div>
+  <div class='flexbox pagination-container' v-if='is_loading === false'>
+    <button type='button' v-on:click='goToPrevPage'>Prev</button>
+    <button type='button' v-if='(current_page - num_page_show > 1)' v-on:click='goToPage(1)'>
+      1
+    </button>
+    <div v-if='(current_page - num_page_show > 2)'>...</div>
+    <button type='button' v-for='page in customRange(current_page - num_page_show, current_page)' v-bind:key='page' v-on:click='goToPage(page)'>
+      {{page}}
+    </button>
+    <button type='button' class='current-page' >
+        {{current_page}}
+    </button>
+    <button type='button' v-for='page in customRange(current_page + 1,current_page + num_page_show + 1)' v-bind:key='page' v-on:click='goToPage(page)'>
+      {{page}}
+    </button>
+    <div v-if='(current_page + num_page_show < lastPage - 1)'>...</div>
+    <button type='button' v-if='(current_page + num_page_show < lastPage)' v-on:click='goToPage(lastPage)'>
+      {{lastPage}}
+    </button>
+    <button type='button' v-on:click='goToNextPage'>Next</button>
+  </div>
   </div>
 </template>
 
@@ -77,7 +99,8 @@ export default {
       nameFilter: '',
       rows_per_page: 5,
       current_page: 1,
-      is_loading: true
+      is_loading: true,
+      num_page_show: 2
     };
   },
   computed: {
@@ -184,6 +207,19 @@ export default {
       if(pageNum >= 1 && pageNum <= this.lastPage) {
         this.current_page = pageNum;
       }
+    },
+    customRange(startNum, endNum) {
+      var range = [];
+      for(var i = startNum; i < endNum; i++) {
+        if(i < 1) {
+          continue;
+        }
+        if(i > this.lastPage) {
+          return range;
+        }
+        range.push(i);
+      }
+      return range;
     }
   },
   created: function() {
