@@ -39,25 +39,17 @@
         </tbody>
       </table>
     </div>
+    
     <div class='flexbox pagination-container' v-if='is_loading === false'>
       <button type='button' v-on:click='goToPrevPage'>Prev</button>
-      <button type='button' v-if='(current_page - num_page_show > 1)' v-on:click='goToPage(1)'>
-        1
-      </button>
-      <div v-if='(current_page - num_page_show > 2)'>...</div>
-      <button type='button' v-for='page in customRange(current_page - num_page_show, current_page)' v-bind:key='page' v-on:click='goToPage(page)'>
-        {{page}}
-      </button>
-      <button type='button' class='current-page' >
-          {{current_page}}
-      </button>
-      <button type='button' v-for='page in customRange(current_page + 1,current_page + num_page_show + 1)' v-bind:key='page' v-on:click='goToPage(page)'>
-        {{page}}
-      </button>
-      <div v-if='(current_page + num_page_show < lastPage - 1)'>...</div>
-      <button type='button' v-if='(current_page + num_page_show < lastPage)' v-on:click='goToPage(lastPage)'>
-        {{lastPage}}
-      </button>
+
+      <div v-for='(currentButton, index) in buttonsToShow' v-bind:key='index'>
+        <span v-if='currentButton==="..."'>{{currentButton}}</span>
+        <button v-else type='button' v-on:click='goToPage(currentButton)' v-bind:class='{"current-page":(currentButton == current_page)}'>
+          {{currentButton}}
+        </button>
+      </div>
+
       <button type='button' v-on:click='goToNextPage'>Next</button>
     </div>
   </div>
@@ -79,7 +71,7 @@ export default {
       rows_per_page: 5,
       current_page: 1,
       is_loading: true,
-      num_page_show: 2
+      num_page_show: 3
     };
   },
   computed: {
@@ -160,6 +152,34 @@ export default {
 
       console.log('sectionsList:', sectionsList);
       return sectionsList;
+    },
+    buttonsToShow() {
+      var pagesArray = [];
+
+      if(this.current_page - this.num_page_show > 1) {
+        pagesArray.push(1);
+      }
+      if(this.current_page - this.num_page_show > 2) {
+        pagesArray.push('...');
+      }
+      var blockBefore = this.customRange(this.current_page - this.num_page_show, this.current_page);
+
+      pagesArray = pagesArray.concat(blockBefore);
+
+      pagesArray.push(this.current_page);
+
+      var blockAfter = this.customRange(this.current_page + 1, this.current_page + this.num_page_show + 1);
+
+      pagesArray = pagesArray.concat(blockAfter);
+
+      if(this.current_page + this.num_page_show < this.lastPage - 1) {
+        pagesArray.push('...');
+      }
+      if(this.current_page + this.num_page_show < this.lastPage) {
+        pagesArray.push(this.lastPage);
+      }
+
+      return pagesArray;
     }
   },
   methods: {
@@ -198,6 +218,9 @@ export default {
         }
         range.push(i);
       }
+      // var startNum = this.current_page - this.num_page_show
+      // for(var i = ; i < this.current_page)
+
       return range;
     }
   },
@@ -286,19 +309,23 @@ button {
   cursor: pointer;
 }
 
-.pagination-container > button {
-  margin: 5px;
-  padding: 5px;
-  min-width: 10px;
-  min-height: 10px;
+.pagination-container button {
+  margin: 0.5em;
+  padding: 0.5em;
+  min-width: 2em;
+  min-height: 2em;
 }
 
-.pagination-container > button:hover {
+.pagination-container button:hover {
   color: red;
 }
 
 .current-page {
   background-color: gray;
+}
+
+.page-gap {
+  cursor: text;
 }
 
 @media screen and (max-width: 480px) {
