@@ -44,8 +44,8 @@
       <button type='button' v-on:click='goToPrevPage'>Prev</button>
 
       <div v-for='(currentButton, index) in buttonsToShow' v-bind:key='index'>
-        <span v-if='currentButton==="..."'>{{currentButton}}</span>
-        <button v-else type='button' v-on:click='goToPage(currentButton)' v-bind:class='{"current-page":(currentButton == current_page)}'>
+        <span v-if='currentButton==="..."' class='page-gap'>{{currentButton}}</span>
+        <button v-else type='button' v-on:click='goToPage(currentButton)' v-bind:class='{"current-page":(currentButton == current_page)}' :disabled='currentButton == current_page'>
           {{currentButton}}
         </button>
       </div>
@@ -320,8 +320,14 @@ button {
   color: red;
 }
 
-.current-page {
-  background-color: gray;
+button.current-page {
+  background-color: lightgray;
+  color: black;
+}
+
+button.current-page:hover {
+  color: black;
+  cursor: text;
 }
 
 .page-gap {
