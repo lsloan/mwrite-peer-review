@@ -4,8 +4,10 @@
       <h1>{{courseName}} Students</h1>
     </div>
     <div class='mdl-cell align-with-table'>
-      <mdl-select class='clickable' label='Section Filter' v-model='selected' id='section-select' :options='possibleSections'>
-      </mdl-select>
+      <!--<mdl-select class='clickable' label='Section Filter' v-model='selected' id='section-select' :options='possibleSections'>
+      </mdl-select> !-->
+      <dropdown id='section-select' label='Section Filter' v-model='selected' :options='possibleSections' :disabled='false'>
+      </dropdown>
     </div>
     <div class='mdl-cell align-with-table'>
       <div class='mdl-textfield flexbox'>
@@ -58,6 +60,7 @@
 <script>
 import VueMdl from 'vue-mdl';
 import Vue from 'vue';
+import Dropdown from '@/components/Dropdown';
 Vue.use(VueMdl);
 
 export default {
@@ -66,13 +69,16 @@ export default {
     return {
       json_data: [],
       parsedData: [],
-      selected: '0',
+      selected: {'value': '0', 'name': 'All Students'},
       nameFilter: '',
-      rows_per_page: 5,
+      rows_per_page: 20,
       current_page: 1,
       is_loading: true,
       num_page_show: 3
     };
+  },
+  components: {
+    Dropdown
   },
   computed: {
     courseName() {
@@ -92,12 +98,21 @@ export default {
       var filteredData = [];
       const parsedData = this.formatData;
 
-      if(this.selected === '0' && this.nameFilter === '') {
+      console.log('FILTER: ', this.selected);
+
+      const sectionSelected = this.selected.value;
+      const nameSelected = this.nameFilter;
+
+      if(sectionSelected === '0' && nameSelected === '') {
         return parsedData;
       }
 
-      const sectionSelected = this.selected;
-      const nameSelected = this.nameFilter;
+      // if(this.selected === '0' && this.nameFilter === '') {
+      //   return parsedData;
+      // }
+
+      // const sectionSelected = this.selected;
+      // const nameSelected = this.nameFilter;
 
       filteredData = parsedData.filter(function(row) {
         if(sectionSelected !== '0' && nameSelected !== '') {
@@ -310,14 +325,14 @@ button {
 }
 
 .pagination-container button {
-  margin: 0.5em;
-  padding: 0.5em;
-  min-width: 2em;
-  min-height: 2em;
+  margin: 0.75em;
+  padding: 0.75em;
+  min-width: 3em;
+  min-height: 3em;
 }
 
 .pagination-container button:hover {
-  color: red;
+  background-color: lightgray;
 }
 
 button.current-page {
@@ -332,6 +347,8 @@ button.current-page:hover {
 
 .page-gap {
   cursor: text;
+  min-width: 3em;
+  min-height: 3em;
 }
 
 @media screen and (max-width: 480px) {
