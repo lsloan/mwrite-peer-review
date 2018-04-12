@@ -8,6 +8,7 @@ import InstructorDashboard from '@/components/InstructorDashboard';
 import StudentDashboard from '@/components/StudentDashboard';
 import Modal from '@/components/Modal';
 import ReviewsGiven from '@/components/ReviewsGiven';
+import ReviewsReceived from '@/components/ReviewsReceived';
 
 Vue.use(Router);
 
@@ -52,6 +53,12 @@ const router = new Router({
           name: 'ReviewsGiven',
           component: Modal,
           props: (route) => ({component: ReviewsGiven, childProps: route.params})
+        },
+        {
+          path: 'student/:studentId/reviews/:rubricId/received/',
+          name: 'ReviewsReceived',
+          component: Modal,
+          props: (route) => ({component: ReviewsReceived, childProps: route.params})
         }
       ]
     }
