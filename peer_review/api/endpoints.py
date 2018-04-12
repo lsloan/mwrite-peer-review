@@ -1,4 +1,5 @@
 import logging
+from collections import OrderedDict
 
 from toolz.itertoolz import groupby
 from toolz.functoolz import thread_last
@@ -7,7 +8,7 @@ from django.db.models import Subquery
 from django.core.exceptions import PermissionDenied
 
 import peer_review.etl as etl
-from peer_review.models import CanvasStudent, PeerReviewComment, Criterion
+from peer_review.models import CanvasStudent, PeerReview, Criterion
 from peer_review.queries import InstructorDashboardStatus, StudentDashboardStatus
 from peer_review.api.util import merge_validations
 from peer_review.util import to_camel_case, keymap_all
@@ -71,42 +72,36 @@ def completed_work(request, course_id, student_id):
     return StudentDashboardStatus.completed_work(student_id)
 
 
-def _denormalize_comments(comments_qs):
-    comments_by_author_id = groupby(lambda c: c.peer_review.submission.author_id, comments_qs)
+def _denormalize_reviews(reviews):
 
-    comments = []
-    for i, entry in enumerate(comments_by_author_id.items(), start=1):
-        author_id, comments_for_author = entry
-        data = {
-            'id': i,
-            'title': 'Student %d' % i,
-            'entries': [
-                {'id': comment.id,
-                 'heading': comment.criterion.description,
-                 'content': comment.comment}
-                for comment in comments_for_author
-            ]
-        }
-        comments.append(data)
+    peer_review_ids = sorted(r.id for r in reviews)
+    student_numbers = {pr_id: i for i, pr_id in enumerate(peer_review_ids)}
 
     return {
-        'title': comments_qs[0].peer_review.submission.assignment.title,
-        'entries': comments
+        'title': reviews[0].submission.assignment.title,
+        'entries': [
+            {
+                'id': review.id,
+                'student_id': student_numbers[review.id],
+                'entries': [{'id': comment.id,
+                             'heading': comment.criterion.description,
+                             'content': comment.comment}
+                            for comment in review.comments.all().order_by('criterion_id')]
+            }
+            for review in reviews
+            if review.comments.exists()
+        ]
     }
 
 
 @authorized_json_endpoint(roles=['student'])
 def reviews_given(request, course_id, student_id, rubric_id):
-    comments = PeerReviewComment.objects.filter(
-        criterion_id__in=Subquery(
-            Criterion.objects.filter(rubric_id=rubric_id).values('id')
-        ),
-        peer_review__student_id=student_id,
-        peer_review__submission__assignment__course_id=course_id
-    ) \
-        .select_related('peer_review__student') \
-        .select_related('peer_review__submission') \
-        .select_related('criterion') \
-        .order_by('peer_review__student_id', 'peer_review__id', 'criterion_id')
+    reviews = PeerReview.objects.filter(
+        student_id=student_id,
+        submission__assignment__course_id=course_id,
+        submission__assignment__rubric_for_prompt=rubric_id
+    )\
+        .prefetch_related('comments')\
+        .order_by('id')
 
-    return _denormalize_comments(comments)
+    return _denormalize_reviews(reviews)
