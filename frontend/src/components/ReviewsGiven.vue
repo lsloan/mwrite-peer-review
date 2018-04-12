@@ -17,7 +17,10 @@ export default {
   },
   methods: {
     setData({entries, title}) {
-      this.reviewEntries = entries;
+      this.reviewEntries = entries.map(e => {
+        e.title = `Student ${e.studentId + 1}`;
+        return e;
+      });
       this.title = title;
       this.$emit('title-resolved', this.title);
     }
