@@ -20,8 +20,13 @@ urlpatterns = [
     url(r'^course/(?P<course_id>[0-9]+)/', include([
 
         url(r'^students/', api.all_students),
-        url(r'^reviews/student/(?P<student_id>[0-9]+)/assigned', api.assigned_work),
-        url(r'^reviews/student/(?P<student_id>[0-9]+)/completed', api.completed_work),
+
+        url(r'^reviews/student/(?P<student_id>[0-9]+)/', include([
+            url(r'^assigned', api.assigned_work),
+            url(r'^completed', api.completed_work),
+            url(r'^given/(?P<rubric_id>[0-9]+)', api.reviews_given)
+        ])),
+
         url(r'^peer_review/all', api.all_peer_review_assignment_details),
 
         ### old URLs below this point
