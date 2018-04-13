@@ -2,13 +2,25 @@
     <div>
         <div class="controls">
             <span>View by:</span>
-            <button @click="viewBy = 'student'">Student</button>
-            <button @click="viewBy = 'criterion'">Criteria</button>
+            <div class="control-button-container">
+                <button
+                    :class="{'control-button': true, 'control-button--active': viewBy === 'reviewer'}"
+                    @click="viewBy = 'reviewer'">
+                    Student
+                </button>
+                <button
+                    :class="{'control-button': true, 'control-button--active': viewBy === 'criterion'}"
+                    @click="viewBy = 'criterion'">
+                    Criteria
+                </button>
+            </div>
         </div>
-        <keep-alive>
-            <reviews-by-reviewer v-if="viewBy === 'student'" :data="data"/>
-            <reviews-by-criterion v-else-if="viewBy === 'criterion'" :data="data"/>
-        </keep-alive>
+        <div class="reviews-body">
+            <keep-alive>
+                <reviews-by-reviewer v-if="viewBy === 'reviewer'" :data="data"/>
+                <reviews-by-criterion v-else-if="viewBy === 'criterion'" :data="data"/>
+            </keep-alive>
+        </div>
     </div>
 </template>
 
@@ -23,14 +35,14 @@ export default {
   components: {ReviewsByReviewer, ReviewsByCriterion},
   data() {
     return {
-      viewBy: 'student',
+      viewBy: 'reviewer',
       unfilteredData: null
     };
   },
   computed: {
     data() {
       if(this.unfilteredData) {
-        if(this.viewBy === 'student') {
+        if(this.viewBy === 'reviewer') {
           const commentsByReviewer = groupBy(entry => entry.reviewerId, this.unfilteredData.entries);
           return Object.entries(commentsByReviewer).map(entry => {
             const [reviewerId, comments] = entry;
@@ -57,10 +69,6 @@ export default {
   },
   methods: {
     setData(data) {
-      // TODO remove this
-      console.log(data);
-      window.data = data;
-
       this.unfilteredData = data;
       this.$emit('title-resolved', this.unfilteredData.title);
     }
@@ -74,5 +82,37 @@ export default {
 </script>
 
 <style scoped>
+    .reviews-body, .controls {
+        padding: 10px 20px;
+    }
+
+    .controls {
+        background-color: #5D72C8;
+        height: 32px;
+        line-height: 32px;
+        color: white;
+        font-size: 0;
+    }
+
+    .controls > span {
+        font-size: 14px;
+    }
+
+    .control-button-container {
+        display: inline;
+        margin-left: 8px;
+    }
+
+    .control-button {
+        border: 1px solid white;
+        background-color: #5D72C8;
+        color: white;
+        padding: 5px 15px 6px 15px;
+    }
+
+    .control-button--active {
+        background-color: white;
+        color: black;
+    }
 
 </style>
