@@ -59,7 +59,8 @@ export default {
             const [criterionId, comments] = entry;
             return {
               id: criterionId,
-              title: `Criterion ${comments[0].criterionId + 1}`,
+              title: `Criterion ${criterionId + 1}`, // TODO normalize criterion IDs
+              criterion: comments[0].criterion,
               entries: comments.map(c => ({id: c.commentId, reviewerName: `Student ${c.reviewerId + 1}`, text: c.comment}))
             };
           });
@@ -82,11 +83,12 @@ export default {
 </script>
 
 <style scoped>
-    .reviews-body, .controls {
-        padding: 10px 20px;
+    .reviews-body {
+        padding: 30px 20px;
     }
 
     .controls {
+        padding: 10px 20px;
         background-color: #5D72C8;
         height: 32px;
         line-height: 32px;
