@@ -127,6 +127,7 @@ def reviews_received(request, course_id, student_id, rubric_id):
                 'reviewer_id': student_numbers[comment.peer_review_id],
                 'criterion_id': comment.criterion_id,
                 'criterion': comment.criterion.description,
+                'comment_id': comment.id,
                 'comment': comment.comment
             }
             for comment in comments
