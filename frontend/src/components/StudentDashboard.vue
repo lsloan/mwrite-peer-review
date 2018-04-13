@@ -6,6 +6,9 @@
         <div class="mdl-grid">
             <!-- TODO "completed work" section goes here -->
         </div>
+        <router-link :to="{name: 'ReviewsGiven', params: {studentId: studentId, rubricId: 1}}">
+            open sample reviews given modal
+        </router-link>
         <router-link :to="{name: 'ReviewsReceived', params: {studentId: studentId, rubricId: 1}}">
             open sample reviews received modal
         </router-link>
