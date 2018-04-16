@@ -1,79 +1,27 @@
 <template>
-    <div>
-        <mdl-tabs v-model="selectedTab" class="tabs">
-            <mdl-tab v-for="entry in data" :key="entry.id" :tab="entry.title">
-                <div v-for="subEntry in entry.entries" :key="subEntry.id">
-                    <p class="heading">{{ subEntry.heading }}</p>
-                    <p>{{ subEntry.content }}</p>
-                </div>
-            </mdl-tab>
-        </mdl-tabs>
-
-        <div v-if="!showEvaluation">
-            <div v-if="!selectedEvaluationSubmitted">
-                <button @click="showEvaluation = true">Rate This Evaluation</button>
+    <mdl-tabs v-model="selectedTab" class="tabs">
+        <mdl-tab v-for="entry in data" :key="entry.id" :tab="entry.title">
+            <div v-for="subEntry in entry.entries" :key="subEntry.id">
+                <p class="heading">{{ subEntry.heading }}</p>
+                <p>{{ subEntry.content }}</p>
             </div>
-            <div v-else>
-                <p>Submitted</p>
-            </div>
-        </div>
-        <div v-else>
-            <label>
-                Please rate the overall usefulness of this review
-                <mdl-radio v-model="usefulness" val="1">Very unuseful</mdl-radio>
-                <mdl-radio v-model="usefulness" val="2">Unuseful</mdl-radio>
-                <mdl-radio v-model="usefulness" val="3">Somewhat useful</mdl-radio>
-                <mdl-radio v-model="usefulness" val="4">Useful</mdl-radio>
-                <mdl-radio v-model="usefulness" val="5">Very useful</mdl-radio>
-            </label>
-            <mdl-textfield
-                v-model="evaluationComment"
-                label="Please provide any additional feedback on this review"/>
-            <button @click="submitEvaluation">Submit</button>
-            <button @click="showEvaluation = false">Cancel</button>
-        </div>
-
-    </div>
+            <review-evaluation :entry="entry"/>
+        </mdl-tab>
+    </mdl-tabs>
 </template>
 
 <script>
-import {MdlTab, MdlTabs, MdlRadio} from 'vue-mdl';
+import {MdlTab, MdlTabs} from 'vue-mdl';
+import ReviewEvaluation from '@/components/ReviewEvaluation';
 
 export default {
   name: 'reviews-by-reviewer',
   props: ['data'],
-  components: {MdlTab, MdlTabs, MdlRadio},
+  components: {MdlTab, MdlTabs, ReviewEvaluation},
   data() {
     return {
-      selectedTab: '',
-      showEvaluation: false,
-      usefulness: null,
-      evaluationComment: null
+      selectedTab: ''
     };
-  },
-  computed: {
-    selectedPeerReviewId() {
-      if(this.data) {
-        const entry = this.data.find(e => e.title === this.selectedTab);
-        return entry.peerReviewId;
-      }
-    },
-    selectedEvaluationSubmitted() {
-      if(this.data) {
-        const entry = this.data.find(e => e.title === this.selectedTab);
-        return entry.evaluationSubmitted;
-      }
-    }
-  },
-  methods: {
-    submitEvaluation() {
-      const {courseId, userId} = this.$store.state.userDetails;
-      const data = {
-        usefulness: this.usefulness,
-        comment: this.evaluationComment
-      };
-      this.$api.post('/course/{}/reviews/student/{}/evaluation/{}', data, courseId, userId, this.selectedPeerReviewId);
-    }
   },
   watch: {
     data() {
