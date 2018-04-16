@@ -53,7 +53,8 @@ const makeCriterionCommentEntry = comment => ({
 });
 
 const makeReviewerEntry = entry => {
-  const [reviewerId, comments] = entry;
+  const [reviewerIdStr, comments] = entry;
+  const reviewerId = parseInt(reviewerIdStr);
   return {
     id: reviewerId,
     title: `Student ${comments[0].reviewerId + 1}`,
@@ -62,7 +63,8 @@ const makeReviewerEntry = entry => {
 };
 
 const makeCriterionEntry = entry => {
-  const [criterionId, comments] = entry;
+  const [criterionIdStr, comments] = entry;
+  const criterionId = parseInt(criterionIdStr);
   return {
     id: criterionId,
     title: `Criterion ${criterionId + 1}`,
