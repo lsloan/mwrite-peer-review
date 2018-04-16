@@ -67,13 +67,12 @@ export default {
   },
   methods: {
     submitEvaluation() {
-      console.log(
-        'would have submitted',
-        this.usefulness,
-        'and',
-        this.evaluationComment,
-        'for', this.selectedPeerReviewId
-      );
+      const {courseId, userId} = this.$store.state.userDetails;
+      const data = {
+        usefulness: this.usefulness,
+        comment: this.evaluationComment
+      };
+      this.$api.post('/course/{}/reviews/student/{}/evaluation/{}', data, courseId, userId, this.selectedPeerReviewId);
     }
   },
   watch: {
