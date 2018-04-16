@@ -142,4 +142,8 @@ export default {
         color: black;
     }
 
+    .control-button:focus {
+        outline: 0;
+    }
+
 </style>
