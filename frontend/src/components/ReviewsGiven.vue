@@ -1,5 +1,7 @@
 <template>
-    <reviews-by-reviewer :data="reviewEntries"/>
+    <div class="reviews-body">
+        <reviews-by-reviewer :data="reviewEntries"/>
+    </div>
 </template>
 
 <script>
@@ -34,4 +36,7 @@ export default {
 </script>
 
 <style scoped>
+    .reviews-body {
+        padding: 10px 20px;
+    }
 </style>
