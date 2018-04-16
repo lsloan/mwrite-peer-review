@@ -2,7 +2,7 @@ import logging
 from itertools import chain
 
 from rolepermissions.roles import get_user_roles
-from django.core.exceptions import PermissionDenied
+from django.core.exceptions import PermissionDenied, ObjectDoesNotExist
 
 import peer_review.etl as etl
 from peer_review.models import CanvasStudent, PeerReview, Rubric
@@ -120,23 +120,27 @@ def reviews_received(request, course_id, student_id, rubric_id):
     criterion_ids = set(c.criterion_id for c in comments)
     criterion_numbers = {cr_id: i for i, cr_id in enumerate(criterion_ids)}
 
+    entries = []
+    for comment in comments:
+        try:
+            comment.peer_review.evaluation
+            evaluation_submitted = True
+        except ObjectDoesNotExist:
+            evaluation_submitted = False
+
+        entries.append({
+            'peer_review_id': comment.peer_review_id,
+            'evaluation_submitted': evaluation_submitted,
+            'reviewer_id': student_numbers[comment.peer_review_id],
+            'criterion_id': criterion_numbers[comment.criterion_id],
+            'criterion': comment.criterion.description,
+            'comment_id': comment.id,
+            'comment': comment.comment
+        })
+
     prompt_title = Rubric.objects.get(id=rubric_id).reviewed_assignment.title
 
     return {
         'title': prompt_title,
-        'entries': [
-            {
-                'peer_review_id': comment.peer_review_id,
-                'reviewer_id': student_numbers[comment.peer_review_id],
-                'criterion_id': criterion_numbers[comment.criterion_id],
-                'criterion': comment.criterion.description,
-                'comment_id': comment.id,
-                'comment': comment.comment
-            }
-            for comment in comments
-        ]
+        'entries': entries
     }
-
-
-
-
