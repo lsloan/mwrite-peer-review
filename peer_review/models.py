@@ -175,6 +175,25 @@ class PeerReview(models.Model):
         unique_together = (('student', 'submission'),)
 
 
+class PeerReviewEvaluation(models.Model):
+
+    USEFULNESS_CHOICES = [
+        (1, 'Very unuseful'),
+        (2, 'Unuseful'),
+        (3, 'Somewhat useful'),
+        (4, 'Useful'),
+        (5, 'Very useful')
+    ]
+
+    id = models.AutoField(primary_key=True)
+    usefulness = models.IntegerField(choices=USEFULNESS_CHOICES)
+    comment = models.TextField()
+    peer_review = models.OneToOneField(PeerReview, on_delete=models.CASCADE, related_name='evaluation')
+
+    class Meta:
+        db_table = 'peer_review_evaluations'
+
+
 # noinspection PyClassHasNoInit
 class PeerReviewComment(models.Model):
 
