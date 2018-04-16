@@ -27,7 +27,54 @@
 <script>
 import ReviewsByReviewer from '@/components/ReviewsByReviewer';
 import ReviewsByCriterion from '@/components/ReviewsByCriterion';
-import {groupBy} from 'ramda';
+import {partial, sortBy, groupBy} from 'ramda';
+
+const denormalize = (identity, transform, data) => {
+  const groups = groupBy(identity, data);
+  const entries = Object.entries(groups).map(transform);
+  return sortBy(identity, entries);
+};
+
+const reviewerIdentity = entry => entry.reviewerId;
+const criterionIdentity = entry => entry.criterionId;
+
+const makeReviewerCommentEntry = comment => ({
+  id: comment.commentId,
+  criterionId: comment.criterionId,
+  heading: comment.criterion,
+  content: comment.comment
+});
+
+const makeCriterionCommentEntry = comment => ({
+  id: comment.commentId,
+  reviewerId: comment.reviewerId,
+  heading: `Student ${comment.reviewerId + 1}`,
+  content: comment.comment
+});
+
+const makeReviewerEntry = entry => {
+  const [reviewerId, comments] = entry;
+  return {
+    id: reviewerId,
+    title: `Student ${comments[0].reviewerId + 1}`,
+    entries: sortBy(c => c.criterionId, comments.map(makeReviewerCommentEntry))
+  };
+};
+
+const makeCriterionEntry = entry => {
+  const [criterionId, comments] = entry;
+  return {
+    id: criterionId,
+    title: `Criterion ${criterionId + 1}`,
+    criterion: comments[0].criterion,
+    entries: sortBy(c => c.reviewerId, comments.map(makeCriterionCommentEntry))
+  };
+};
+
+const denormalizers = {
+  reviewer: partial(denormalize, [reviewerIdentity, makeReviewerEntry]),
+  criterion: partial(denormalize, [criterionIdentity, makeCriterionEntry])
+};
 
 export default {
   name: 'reviews-received',
@@ -42,29 +89,7 @@ export default {
   computed: {
     data() {
       if(this.unfilteredData) {
-        if(this.viewBy === 'reviewer') {
-          const commentsByReviewer = groupBy(entry => entry.reviewerId, this.unfilteredData.entries);
-          return Object.entries(commentsByReviewer).map(entry => {
-            const [reviewerId, comments] = entry;
-            return {
-              id: reviewerId,
-              title: `Student ${comments[0].reviewerId + 1}`,
-              entries: comments.map(c => ({id: c.commentId, heading: c.criterion, content: c.comment})) // TODO sort comments?
-            };
-          });
-        }
-        else if(this.viewBy === 'criterion') {
-          const commentsByCriterion = groupBy(entry => entry.criterionId, this.unfilteredData.entries);
-          return Object.entries(commentsByCriterion).map(entry => {
-            const [criterionId, comments] = entry;
-            return {
-              id: criterionId,
-              title: `Criterion ${criterionId + 1}`, // TODO normalize criterion IDs
-              criterion: comments[0].criterion,
-              entries: comments.map(c => ({id: c.commentId, reviewerName: `Student ${c.reviewerId + 1}`, text: c.comment}))
-            };
-          });
-        }
+        return denormalizers[this.viewBy](this.unfilteredData.entries);
       }
     }
   },

@@ -4,8 +4,8 @@
             <p class="criterion-name">{{ entry.title }}</p>
             <p class="criterion-description">{{ entry.criterion }}</p>
             <p class="student-review" v-for="comment in entry.entries" :key="comment.id">
-                <span class="student-name">{{ comment.reviewerName }}:</span>
-                <span>{{ comment.text }}</span>
+                <span class="student-name">{{ comment.heading }}:</span>
+                <span>{{ comment.content }}</span>
             </p>
         </div>
     </div>
