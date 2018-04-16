@@ -116,7 +116,10 @@ def reviews_received(request, course_id, student_id, rubric_id):
     peer_review_ids = [r.id for r in reviews]
     student_numbers = {pr_id: i for i, pr_id in enumerate(peer_review_ids)}
 
-    comments = list(chain(*map(lambda r: r.comments.all(), reviews)))  # TODO sort comments?
+    comments = list(chain(*map(lambda r: r.comments.all(), reviews)))
+    criterion_ids = set(c.criterion_id for c in comments)
+    criterion_numbers = {cr_id: i for i, cr_id in enumerate(criterion_ids)}
+
     prompt_title = Rubric.objects.get(id=rubric_id).reviewed_assignment.title
 
     return {
@@ -125,7 +128,7 @@ def reviews_received(request, course_id, student_id, rubric_id):
             {
                 'peer_review_id': comment.peer_review_id,
                 'reviewer_id': student_numbers[comment.peer_review_id],
-                'criterion_id': comment.criterion_id,
+                'criterion_id': criterion_numbers[comment.criterion_id],
                 'criterion': comment.criterion.description,
                 'comment_id': comment.id,
                 'comment': comment.comment
