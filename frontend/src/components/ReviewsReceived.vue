@@ -58,6 +58,8 @@ const makeReviewerEntry = entry => {
   return {
     id: reviewerId,
     title: `Student ${comments[0].reviewerId + 1}`,
+    peerReviewId: comments[0].peerReviewId,
+    evaluationSubmitted: comments[0].evaluationSubmitted,
     entries: sortBy(c => c.criterionId, comments.map(makeReviewerCommentEntry))
   };
 };
