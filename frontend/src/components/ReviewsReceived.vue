@@ -113,7 +113,7 @@ export default {
 
 <style scoped>
     .reviews-body {
-        padding: 30px 20px;
+        padding: 15px 20px;
     }
 
     .controls {
