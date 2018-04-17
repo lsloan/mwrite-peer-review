@@ -1,11 +1,12 @@
 <template>
   <div>
-    <label :for="id">{{ label }}</label>
-    <button :id="id" type="button" class="mdl-button mdl-js-button"     :disabled="disabled">
+    <label>{{ label }}</label>
+    <button class='dropdown-button' type='button' :disabled="disabled">
       <span>{{ displayName }}</span>
+      <i class='material-icons'>arrow_drop_down</i>
     </button>
-    <ul :for="id" class="mdl-menu mdl-js-menu">
-      <li tabindex="0" class="mdl-menu__item" v-for="option in options" :key="option.value" @click="$emit('input', option)">
+    <ul v-if='showDropdown' class='menu'>
+      <li class='menu-item' tabindex="0" v-for="option in options" :key="option.value" @click="selectInput(option)" @keyup.enter="selectInput(option)">
           {{ option.name }}
       </li>
     </ul>
@@ -16,6 +17,12 @@
 
 export default {
   name: 'Dropdown',
+  props: ['id', 'value', 'options', 'label', 'disabled', 'empty-caption'],
+  data() {
+    return {
+      showDropdown: true
+    };
+  },
   computed: {
     displayName: function() {
       console.log('DROPDOWN: value: ', this.value, ' and ', this.value.name);
@@ -23,18 +30,31 @@ export default {
       return (this.value && this.value.name) || this.emptyCaption;
     }
   },
-  props: ['id', 'value', 'options', 'label', 'disabled', 'empty-caption'],
-  mounted: function() {
-    // eslint-disable-next-line no-undef
-    componentHandler.upgradeElement(this.$el.querySelector('button'));
+  methods: {
+    selectInput(option) {
+      this.$emit('input', option);
+    }
   }
-
 };
 </script>
 
 <style scoped>
-.mdl-button {
-  border-bottom: solid thin lightgray;
+.dropdown-button {
+  border-bottom: 1px solid rgba(0,0,0,.12);
   margin-left: 5px;
+}
+
+.menu {
+  position: absolute;
+  list-style: none;
+  top: 0;
+  left: 0;
+  height: auto;
+  width: auto;
+  min-width: 124px;
+  padding: 8px 0;
+  margin: 0;
+/*  opacity: 0;
+  z-index: -1;*/
 }
 </style>

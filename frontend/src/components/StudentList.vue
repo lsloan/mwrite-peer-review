@@ -6,8 +6,10 @@
     <div class='mdl-cell align-with-table'>
       <!--<mdl-select class='clickable' label='Section Filter' v-model='selected' id='section-select' :options='possibleSections'>
       </mdl-select> !-->
-      <dropdown id='section-select' label='Section Filter' v-model='selected' :options='possibleSections' :disabled='false'>
-      </dropdown>
+      <div class='mdl-textfield'>
+        <dropdown id='section-select' label='Section Filter' v-model='selected' :options='possibleSections' :disabled='false'>
+        </dropdown>
+      </div>
     </div>
     <div class='mdl-cell align-with-table'>
       <div class='mdl-textfield flexbox'>
@@ -107,13 +109,6 @@ export default {
         return parsedData;
       }
 
-      // if(this.selected === '0' && this.nameFilter === '') {
-      //   return parsedData;
-      // }
-
-      // const sectionSelected = this.selected;
-      // const nameSelected = this.nameFilter;
-
       filteredData = parsedData.filter(function(row) {
         if(sectionSelected !== '0' && nameSelected !== '') {
           // both criteria selected
@@ -194,6 +189,19 @@ export default {
         pagesArray.push(this.lastPage);
       }
 
+      while(pagesArray.length < (2 * this.num_page_show + 5) && this.lastPage > (2 * this.num_page_show + 5)) {
+        console.log('in while loop buttons');
+        // fill up to get 11 boxes
+        if(pagesArray[1] === '...') {
+          // this means the current page is too close to the last page
+          pagesArray.splice(2, 0, pagesArray[2] - 1);
+        }
+        if(pagesArray[(pagesArray.length - 2)] === '...') {
+          // this means the current page is too close to the 1st page
+          pagesArray.splice((pagesArray.length - 2), 0, pagesArray[(pagesArray.length - 3)] + 1);
+        }
+      }
+
       return pagesArray;
     }
   },
@@ -237,6 +245,12 @@ export default {
       // for(var i = ; i < this.current_page)
 
       return range;
+    }
+  },
+  watch: {
+    filteredData() {
+      // reset current page
+      this.current_page = 1;
     }
   },
   created: function() {
@@ -331,6 +345,10 @@ button {
   min-height: 3em;
 }
 
+.pagination-container {
+  margin: auto;
+}
+
 .pagination-container button:hover {
   background-color: lightgray;
 }
@@ -347,8 +365,17 @@ button.current-page:hover {
 
 .page-gap {
   cursor: text;
-  min-width: 3em;
-  min-height: 3em;
+  display: inline-block;
+  margin: auto;
+  padding: 0.75em;
+  text-align: center;
+  vertical-align: text-top;
+}
+
+.mdl-textfield {
+  width: 100%;
+  min-width: 200px;
+  height: 100%;
 }
 
 @media screen and (max-width: 480px) {
@@ -357,9 +384,10 @@ button.current-page:hover {
     padding-left: 0px;
   }
 
-  .mdl-textfield {
+  /*.mdl-textfield {
     width: 100%;
     min-width: 200px;
-  }
+    height: 100%;
+  }*/
 }
 </style>
