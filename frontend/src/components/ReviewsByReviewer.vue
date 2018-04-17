@@ -5,7 +5,7 @@
                 <p class="heading">{{ subEntry.heading }}</p>
                 <p>{{ subEntry.content }}</p>
             </div>
-            <review-evaluation :entry="entry"/>
+            <review-evaluation v-if="allowEvaluation" :entry="entry"/>
         </mdl-tab>
     </mdl-tabs>
 </template>
@@ -16,7 +16,7 @@ import ReviewEvaluation from '@/components/ReviewEvaluation';
 
 export default {
   name: 'reviews-by-reviewer',
-  props: ['data'],
+  props: ['data', 'allow-evaluation'],
   components: {MdlTab, MdlTabs, ReviewEvaluation},
   data() {
     return {
