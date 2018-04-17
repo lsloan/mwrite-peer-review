@@ -1,25 +1,27 @@
 <template>
-    <div v-if="evaluationSubmitted">
-        <p>Submitted</p>
-    </div>
-    <div v-else>
-        <div v-if="!showEvaluation">
-            <button @click="showEvaluation = true">Rate This Evaluation</button>
+    <div class="evaluation-container">
+        <div v-if="evaluationSubmitted">
+            <p>Submitted</p>
         </div>
         <div v-else>
-            <label>
-                Please rate the overall usefulness of this review
-                <mdl-radio v-model="usefulness" val="1">Very unuseful</mdl-radio>
-                <mdl-radio v-model="usefulness" val="2">Unuseful</mdl-radio>
-                <mdl-radio v-model="usefulness" val="3">Somewhat useful</mdl-radio>
-                <mdl-radio v-model="usefulness" val="4">Useful</mdl-radio>
-                <mdl-radio v-model="usefulness" val="5">Very useful</mdl-radio>
-            </label>
-            <mdl-textfield
-                v-model="evaluationComment"
-                label="Please provide any additional feedback on this review"/>
-            <button @click="submitEvaluation(entry)">Submit</button>
-            <button @click="showEvaluation = false">Cancel</button>
+            <div v-if="!showEvaluation">
+                <button class="evaluation-button" @click="showEvaluation = true">Rate This Evaluation</button>
+            </div>
+            <div v-else>
+                <label>
+                    Please rate the overall usefulness of this review
+                    <mdl-radio v-model="usefulness" val="1">Very unuseful</mdl-radio>
+                    <mdl-radio v-model="usefulness" val="2">Unuseful</mdl-radio>
+                    <mdl-radio v-model="usefulness" val="3">Somewhat useful</mdl-radio>
+                    <mdl-radio v-model="usefulness" val="4">Useful</mdl-radio>
+                    <mdl-radio v-model="usefulness" val="5">Very useful</mdl-radio>
+                </label>
+                <mdl-textfield
+                    v-model="evaluationComment"
+                    label="Please provide any additional feedback on this review"/>
+                <button @click="submitEvaluation(entry)">Submit</button>
+                <button @click="showEvaluation = false">Cancel</button>
+            </div>
         </div>
     </div>
 </template>
@@ -62,4 +64,20 @@ export default {
 </script>
 
 <style scoped>
+    .evaluation-container {
+        margin-top: 35px;
+    }
+
+    .evaluation-button {
+        border: 1px solid #4157AF;
+        background-color: white;
+        color: #4157AF;
+        padding: 10px 18px 11px 18px;
+        text-transform: uppercase;
+        font-size: 14px;
+    }
+
+    .evaluation-button:focus {
+        outline: 0;
+    }
 </style>
