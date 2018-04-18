@@ -5,17 +5,19 @@
                 <p class="heading">{{ subEntry.heading }}</p>
                 <p>{{ subEntry.content }}</p>
             </div>
+            <review-evaluation v-if="allowEvaluation" :entry="entry"/>
         </mdl-tab>
     </mdl-tabs>
 </template>
 
 <script>
 import {MdlTab, MdlTabs} from 'vue-mdl';
+import ReviewEvaluation from '@/components/ReviewEvaluation';
 
 export default {
   name: 'reviews-by-reviewer',
-  props: ['data'],
-  components: {MdlTab, MdlTabs},
+  props: ['data', 'allow-evaluation'],
+  components: {MdlTab, MdlTabs, ReviewEvaluation},
   data() {
     return {
       selectedTab: ''

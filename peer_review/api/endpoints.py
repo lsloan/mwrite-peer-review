@@ -2,14 +2,15 @@ import logging
 from itertools import chain
 
 from rolepermissions.roles import get_user_roles
-from django.core.exceptions import PermissionDenied
+from django.core.exceptions import PermissionDenied, ObjectDoesNotExist
+from django.views.decorators.http import require_POST
 
 import peer_review.etl as etl
-from peer_review.models import CanvasStudent, PeerReview, Rubric
+from peer_review.models import CanvasStudent, PeerReview, Rubric, PeerReviewEvaluation
 from peer_review.queries import InstructorDashboardStatus, StudentDashboardStatus
 from peer_review.api.util import merge_validations
 from peer_review.util import to_camel_case, keymap_all
-from peer_review.decorators import authorized_json_endpoint, authenticated_json_endpoint
+from peer_review.decorators import authorized_json_endpoint, authenticated_json_endpoint, json_body
 
 log = logging.getLogger(__name__)
 
@@ -57,6 +58,14 @@ def raise_if_not_current_user(request, user_id):
         raise PermissionDenied
 
 
+def raise_if_peer_review_not_for_student(request, student_id, peer_review_id):
+    if not PeerReview.objects.filter(id=peer_review_id, submission__author_id=student_id).exists():
+        logged_in_user_id = request.session['lti_launch_params']['custom_canvas_user_id']
+        log.warning('User %s tried to submit an invalid peer review evaluation for user %s and peer review %s'
+                    % (logged_in_user_id, student_id, peer_review_id))
+        raise PermissionDenied
+
+
 @authorized_json_endpoint(roles=['student'])
 def assigned_work(request, course_id, student_id):
     raise_if_not_current_user(request, student_id)
@@ -93,6 +102,8 @@ def _denormalize_reviews(reviews):
 
 @authorized_json_endpoint(roles=['student'])
 def reviews_given(request, course_id, student_id, rubric_id):
+    raise_if_not_current_user(request, student_id)
+
     reviews = PeerReview.objects.filter(
         student_id=student_id,
         submission__assignment__course_id=course_id,
@@ -106,6 +117,8 @@ def reviews_given(request, course_id, student_id, rubric_id):
 
 @authorized_json_endpoint(roles=['student'])
 def reviews_received(request, course_id, student_id, rubric_id):
+    raise_if_not_current_user(request, student_id)
+
     reviews = PeerReview.objects.filter(
         submission__assignment__course_id=course_id,
         submission__assignment__rubric_for_prompt__id=rubric_id,
@@ -120,23 +133,43 @@ def reviews_received(request, course_id, student_id, rubric_id):
     criterion_ids = set(c.criterion_id for c in comments)
     criterion_numbers = {cr_id: i for i, cr_id in enumerate(criterion_ids)}
 
+    entries = []
+    for comment in comments:
+        try:
+            comment.peer_review.evaluation
+            evaluation_submitted = True
+        except ObjectDoesNotExist:
+            evaluation_submitted = False
+
+        entries.append({
+            'peer_review_id': comment.peer_review_id,
+            'evaluation_submitted': evaluation_submitted,
+            'reviewer_id': student_numbers[comment.peer_review_id],
+            'criterion_id': criterion_numbers[comment.criterion_id],
+            'criterion': comment.criterion.description,
+            'comment_id': comment.id,
+            'comment': comment.comment
+        })
+
     prompt_title = Rubric.objects.get(id=rubric_id).reviewed_assignment.title
 
     return {
         'title': prompt_title,
-        'entries': [
-            {
-                'peer_review_id': comment.peer_review_id,
-                'reviewer_id': student_numbers[comment.peer_review_id],
-                'criterion_id': criterion_numbers[comment.criterion_id],
-                'criterion': comment.criterion.description,
-                'comment_id': comment.id,
-                'comment': comment.comment
-            }
-            for comment in comments
-        ]
+        'entries': entries
     }
 
 
+@require_POST
+@json_body
+@authorized_json_endpoint(roles=['student'])
+def submit_peer_review_evaluation(request, body, course_id, student_id, peer_review_id):
+    raise_if_not_current_user(request, student_id)
+    raise_if_peer_review_not_for_student(request, student_id, peer_review_id)
 
+    PeerReviewEvaluation.objects.create(
+        peer_review_id=peer_review_id,
+        usefulness=body['usefulness'],
+        comment=body['comment']
+    )
 
+    return True

@@ -17,7 +17,7 @@
         </div>
         <div class="reviews-body">
             <keep-alive>
-                <reviews-by-reviewer v-if="viewBy === 'reviewer'" :data="data"/>
+                <reviews-by-reviewer v-if="viewBy === 'reviewer'" :data="data" :allow-evaluation="true"/>
                 <reviews-by-criterion v-else-if="viewBy === 'criterion'" :data="data"/>
             </keep-alive>
         </div>
@@ -58,6 +58,8 @@ const makeReviewerEntry = entry => {
   return {
     id: reviewerId,
     title: `Student ${comments[0].reviewerId + 1}`,
+    peerReviewId: comments[0].peerReviewId,
+    evaluationSubmitted: comments[0].evaluationSubmitted,
     entries: sortBy(c => c.criterionId, comments.map(makeReviewerCommentEntry))
   };
 };
@@ -111,7 +113,7 @@ export default {
 
 <style scoped>
     .reviews-body {
-        padding: 30px 20px;
+        padding: 15px 20px;
     }
 
     .controls {
