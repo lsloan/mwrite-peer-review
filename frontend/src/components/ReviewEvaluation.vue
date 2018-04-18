@@ -11,11 +11,28 @@
                 <div class="form-section">
                     <fieldset class="usefulness-fields">
                         <legend class="form-label">Please rate the overall usefulness of this review</legend>
-                        <mdl-radio v-model="usefulness" val="1">Very unuseful</mdl-radio>
-                        <mdl-radio v-model="usefulness" val="2">Unuseful</mdl-radio>
-                        <mdl-radio v-model="usefulness" val="3">Somewhat useful</mdl-radio>
-                        <mdl-radio v-model="usefulness" val="4">Useful</mdl-radio>
-                        <mdl-radio v-model="usefulness" val="5">Very useful</mdl-radio>
+                        <div class="radio-controls">
+                            <div class="radio-control">
+                                <input id="usefulness-choice-1" type="radio" v-model="usefulness" value="1"/>
+                                <label for="usefulness-choice-1">Very unuseful</label>
+                            </div>
+                            <div class="radio-control">
+                                <input id="usefulness-choice-2" type="radio" v-model="usefulness" value="2"/>
+                                <label for="usefulness-choice-2">Unuseful</label>
+                            </div>
+                            <div class="radio-control">
+                                <input id="usefulness-choice-3" type="radio" v-model="usefulness" value="3"/>
+                                <label for="usefulness-choice-3">Somewhat useful</label>
+                            </div>
+                            <div class="radio-control">
+                                <input id="usefulness-choice-4" type="radio" v-model="usefulness" value="4"/>
+                                <label for="usefulness-choice-4">Useful</label>
+                            </div>
+                            <div class="radio-control">
+                                <input id="usefulness-choice-5" type="radio" v-model="usefulness" value="5"/>
+                                <label for="usefulness-choice-5">Very useful</label>
+                            </div>
+                        </div>
                     </fieldset>
                 </div>
                 <div class="form-section">
@@ -36,12 +53,9 @@
 </template>
 
 <script>
-import {MdlRadio} from 'vue-mdl';
-
 export default {
   name: 'ReviewEvaluation',
   props: ['entry'],
-  components: {MdlRadio},
   data() {
     return {
       showEvaluation: false,
@@ -103,7 +117,7 @@ export default {
 
     .feedback-input {
         width: 100%;
-        padding: 0px;
+        padding: 0;
     }
 
     .evaluation-button {
@@ -118,4 +132,19 @@ export default {
     .evaluation-button:focus {
         outline: 0;
     }
+
+    .radio-controls {
+        display: flex;
+        flex-direction: row;
+    }
+
+    .radio-control {
+        flex-grow: 1;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        font-size: 13px;
+        text-align: center;
+    }
+
 </style>
