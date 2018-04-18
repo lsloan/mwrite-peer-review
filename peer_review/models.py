@@ -187,7 +187,7 @@ class PeerReviewEvaluation(models.Model):
 
     id = models.AutoField(primary_key=True)
     usefulness = models.IntegerField(choices=USEFULNESS_CHOICES)
-    comment = models.TextField()
+    comment = models.TextField(null=True, blank=True)
     peer_review = models.OneToOneField(PeerReview, on_delete=models.CASCADE, related_name='evaluation')
 
     class Meta:
