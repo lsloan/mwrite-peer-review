@@ -7,7 +7,7 @@
             <div v-if="!showEvaluation">
                 <button class="evaluation-button" @click="showEvaluation = true">Rate This Evaluation</button>
             </div>
-            <form v-else class="evaluation-card" v-on:submit.prevent="submitEvaluation(entry)">
+            <form v-else class="evaluation-card" v-on:submit.prevent>
                 <div class="form-section">
                     <fieldset class="usefulness-fields">
                         <legend class="form-label">Please rate the overall usefulness of this review</legend>
@@ -44,8 +44,18 @@
                     </label>
                 </div>
                 <div class="form-section">
-                    <input type="submit" value="Submit"/>
-                    <button @click="showEvaluation = false">Cancel</button>
+                    <mdl-button
+                        colored
+                        raised
+                        :disabled="!usefulness"
+                        @click.native="submitEvaluation(entry)">
+                        Submit
+                    </mdl-button>
+                    <mdl-button
+                        colored
+                        @click.native="showEvaluation = false">
+                        Cancel
+                    </mdl-button>
                 </div>
             </form>
         </div>
@@ -53,9 +63,14 @@
 </template>
 
 <script>
+import { MdlButton } from 'vue-mdl';
+
 export default {
   name: 'ReviewEvaluation',
   props: ['entry'],
+  components: {
+    MdlButton
+  },
   data() {
     return {
       showEvaluation: false,
