@@ -1,7 +1,8 @@
 <template>
     <div class="evaluation-container">
-        <div v-if="evaluationSubmitted">
-            <p>Submitted</p>
+        <div v-if="evaluationSubmitted" class="evaluation-complete">
+            <i class="material-icons evaluation-complete-icon">done</i>
+            <span>Submitted</span>
         </div>
         <div v-else>
             <div v-if="!showEvaluation">
@@ -106,6 +107,18 @@ export default {
         margin-top: 35px;
     }
 
+    .evaluation-complete {
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        text-transform: uppercase;
+        color: #52A763;
+    }
+
+    .evaluation-complete-icon {
+        margin-right: 8px;
+    }
+
     .evaluation-card {
         border: 1px solid lightgray;
         border-top: 4px solid #4157AF;
@@ -161,5 +174,4 @@ export default {
         font-size: 13px;
         text-align: center;
     }
-
 </style>
