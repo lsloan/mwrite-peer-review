@@ -26,22 +26,22 @@
                         <span v-else>anytime</span>
                     </div>
                 </div>
-                <div class="reviews-container">
-                    <div v-for="review in prompt.reviews" :key="review.reviewId" class="submission-container">
-                        <div class="submission-for-review">
-                            <div class="student-name-container">Student {{ review.reviewId }}</div>
-                            <div class="review-status-container">
-                                <div v-if="review.reviewIsComplete" class="review-complete-container">
-                                    <i class="material-icons evaluation-complete-icon">done</i>
-                                    <span>Submitted</span>
-                                </div>
-                                <div v-else class="review-start-container">
-                                    <!-- TODO replace with <router-link/> once review submission page is ported to Vue-->
-                                    <!-- TODO use peer review ID instead of submission ID? -->
-                                    <mdl-anchor-button colored :href="apiUrl + '/course/'+ courseId + '/review/submission/' + review.submissionId">
-                                        Start Review
-                                    </mdl-anchor-button>
-                                </div>
+                <div class="reviews-container mdl-grid">
+                    <div v-for="review in prompt.reviews" :key="review.reviewId" class="submission-for-review mdl-cell mdl-cell--4-col">
+                        <div class="student-name-container">Student {{ review.reviewId }}</div>
+                        <div class="review-status-container">
+                            <div v-if="review.reviewIsComplete" class="review-complete-container">
+                                <i class="material-icons evaluation-complete-icon">done</i>
+                                <span>Submitted</span>
+                            </div>
+                            <div v-else class="review-start-container">
+                                <!-- TODO replace with <router-link/> once review submission page is ported to Vue-->
+                                <!-- TODO use peer review ID instead of submission ID? -->
+                                <mdl-anchor-button
+                                    colored
+                                    :href="apiUrl + '/course/'+ courseId + '/review/submission/' + review.submissionId">
+                                    Start Review
+                                </mdl-anchor-button>
                             </div>
                         </div>
                     </div>
@@ -130,9 +130,8 @@ export default {
     }
 
     .reviews-container {
-        display: flex;
-        flex-direction: row;
-        align-items: center;
+        padding: 10px;
+        width: 98%
     }
 
     .submission-container {
@@ -144,9 +143,7 @@ export default {
         padding: 20px 25px;
     }
 
-    .submission-for-review {
-        display: inline-block;
-        width: 100%;
+    .mdl-grid > .submission-for-review {
         background-color: white;
         font-size: 14px;
         box-shadow: 0 2px 2px 0 rgba(0,0,0,.14), 0 3px 1px -2px rgba(0,0,0,.2), 0 1px 5px 0 rgba(0,0,0,.12);
