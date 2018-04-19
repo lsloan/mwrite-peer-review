@@ -27,19 +27,21 @@
                     </div>
                 </div>
                 <div class="reviews-container">
-                    <div v-for="review in prompt.reviews" :key="review.id" class="submission-for-review">
-                        <div class="student-name-container">Student {{ review.id }}</div>
-                        <div class="review-status-container">
-                            <div v-if="review.reviewIsComplete" class="review-complete-container">
-                                <i class="material-icons evaluation-complete-icon">done</i>
-                                <span>Submitted</span>
-                            </div>
-                            <div v-else class="review-start-container">
-                                <!-- TODO replace with <router-link/> once review submission page is ported to Vue-->
-                                <!-- TODO use peer review ID instead of submission ID? -->
-                                <a :href="apiUrl + '/course/'+ courseId + '/review/submission/' + review.submissionId">
-                                    Start Review
-                                </a>
+                    <div v-for="review in prompt.reviews" :key="review.reviewId" class="submission-container">
+                        <div class="submission-for-review">
+                            <div class="student-name-container">Student {{ review.reviewId }}</div>
+                            <div class="review-status-container">
+                                <div v-if="review.reviewIsComplete" class="review-complete-container">
+                                    <i class="material-icons evaluation-complete-icon">done</i>
+                                    <span>Submitted</span>
+                                </div>
+                                <div v-else class="review-start-container">
+                                    <!-- TODO replace with <router-link/> once review submission page is ported to Vue-->
+                                    <!-- TODO use peer review ID instead of submission ID? -->
+                                    <mdl-anchor-button colored :href="apiUrl + '/course/'+ courseId + '/review/submission/' + review.submissionId">
+                                        Start Review
+                                    </mdl-anchor-button>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -61,13 +63,14 @@
 </template>
 
 <script>
-import { MdlCard } from 'vue-mdl';
+import { MdlCard, MdlAnchorButton } from 'vue-mdl';
 import DateFormat from '@/mixins/date-format';
 
 export default {
   name: 'student-dashboard',
   components: {
-    MdlCard
+    MdlCard,
+    MdlAnchorButton
   },
   mixins: [DateFormat],
   data() {
@@ -102,6 +105,7 @@ export default {
 
     .assigned-review-card {
         background-color: #F0F0F0;
+        min-height: initial;
     }
 
     .assigned-review-header {
@@ -124,4 +128,56 @@ export default {
     .due-date-container > span, .due-date-container > .material-icons {
         margin-right: 6px;
     }
+
+    .reviews-container {
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+    }
+
+    .submission-container {
+        flex-grow: 1;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        padding: 20px 25px;
+    }
+
+    .submission-for-review {
+        display: inline-block;
+        background-color: white;
+        font-size: 14px;
+        box-shadow: 0 2px 2px 0 rgba(0,0,0,.14), 0 3px 1px -2px rgba(0,0,0,.2), 0 1px 5px 0 rgba(0,0,0,.12);
+    }
+
+    .student-name-container {
+        border-bottom: 1px solid lightgray;
+        font-weight: bold;
+        padding: 8px;
+    }
+
+    .review-status-container {
+        text-transform: uppercase;
+        padding: 0 8px;
+    }
+
+    .review-start-container > a.mdl-button {
+        padding: 0;
+        height: 38px;
+    }
+
+    .review-complete-container {
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        text-transform: uppercase;
+        color: #52A763;
+        padding: 9px 0;
+    }
+
+    .review-complete-container > i.material-icons {
+        font-size: 16px;
+        margin-right: 4px;
+    }
+
 </style>
