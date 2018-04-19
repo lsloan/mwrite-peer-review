@@ -64,6 +64,8 @@
 
 <script>
 import { MdlCard, MdlAnchorButton } from 'vue-mdl';
+import { sortBy } from 'ramda';
+import moment from 'moment';
 import DateFormat from '@/mixins/date-format';
 
 export default {
@@ -79,6 +81,20 @@ export default {
       promptsForReview: []
     };
   },
+  methods: {
+    setPromptsForReview(data) {
+      const dataWithSortedReviews = data.map(prompt => {
+        prompt.reviews = sortBy(r => r.reviewId, prompt.reviews);
+        return prompt;
+      });
+
+      this.promptsForReview = dataWithSortedReviews.sort((a, b) => {
+        const dateA = moment.utc(a.dueDateUtc);
+        const dateB = moment.utc(b.dueDateUtc);
+        return dateA.diff(dateB);
+      });
+    }
+  },
   computed: {
     courseId() {
       return this.$store.state.userDetails.courseId;
@@ -89,9 +105,7 @@ export default {
   },
   mounted() {
     this.$api.get('/course/{}/reviews/student/{}/assigned', this.courseId, this.studentId)
-      .then(response => {
-        this.promptsForReview = response.data;
-      });
+      .then(response => this.setPromptsForReview(response.data));
   }
 };
 </script>
