@@ -7,23 +7,41 @@
             </div>
             <div class="mdl-cell mdl-cell--2-col mdl-cell--1-col-tablet mdl-cell--1-col-phone"></div>
         </div>
-        <div class="mdl-grid" v-if="assignedReviews.length === 0">
+        <div class="mdl-grid" v-if="promptsForReview.length === 0">
             <div class="mdl-cell mdl-cell--2-col mdl-cell--1-col-tablet mdl-cell--1-col-phone"></div>
             <div class="mdl-cell mdl-cell--8-col mdl-cell--6-col-tablet mdl-cell--2-col-phone">
                 <p>You have no reviews to complete at this time.</p>
             </div>
             <div class="mdl-cell mdl-cell--2-col mdl-cell--1-col-tablet mdl-cell--1-col-phone"></div>
         </div>
-        <div class="mdl-grid" v-else v-for="(review, i) in assignedReviews" :key="i">  <!-- TODO use real prompt IDs for :key -->
+        <div class="mdl-grid" v-else v-for="prompt in promptsForReview" :key="prompt.id">
             <div class="mdl-cell mdl-cell--2-col mdl-cell--1-col-tablet mdl-cell--1-col-phone"></div>
             <div class="assigned-review-card mdl-card mdl-shadow--2dp mdl-cell mdl-cell--8-col mdl-cell--6-col-tablet mdl-cell--2-col-phone">
                 <div class="assigned-review-header">
-                    <span>{{ review.promptName }}</span>
+                    <span>{{ prompt.promptName }}</span>
                     <div class="due-date-container">
                         <i class="material-icons">query_builder</i>
                         <span>Due</span>
-                        <span v-if="review.dueDateUtc">{{ review.dueDateUtc | utcToLocal('MMMM D h:mm A') }}</span>
+                        <span v-if="prompt.dueDateUtc">{{ prompt.dueDateUtc | utcToLocal('MMMM D h:mm A') }}</span>
                         <span v-else>anytime</span>
+                    </div>
+                </div>
+                <div class="reviews-container">
+                    <div v-for="review in prompt.reviews" :key="review.id" class="submission-for-review">
+                        <div class="student-name-container">Student {{ review.id }}</div>
+                        <div class="review-status-container">
+                            <div v-if="review.reviewIsComplete" class="review-complete-container">
+                                <i class="material-icons evaluation-complete-icon">done</i>
+                                <span>Submitted</span>
+                            </div>
+                            <div v-else class="review-start-container">
+                                <!-- TODO replace with <router-link/> once review submission page is ported to Vue-->
+                                <!-- TODO use peer review ID instead of submission ID? -->
+                                <a :href="apiUrl + '/course/'+ courseId + '/review/submission/' + review.submissionId">
+                                    Start Review
+                                </a>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -54,19 +72,22 @@ export default {
   mixins: [DateFormat],
   data() {
     return {
-      assignedReviews: []
+      apiUrl: __API_URL__, // TODO remove this when review submission page is ported to VueJS
+      promptsForReview: []
     };
   },
   computed: {
+    courseId() {
+      return this.$store.state.userDetails.courseId;
+    },
     studentId() {
       return this.$store.state.userDetails.userId;
     }
   },
   mounted() {
-    const {courseId, userId} = this.$store.state.userDetails;
-    this.$api.get('/course/{}/reviews/student/{}/assigned', courseId, userId)
+    this.$api.get('/course/{}/reviews/student/{}/assigned', this.courseId, this.studentId)
       .then(response => {
-        this.assignedReviews = response.data;
+        this.promptsForReview = response.data;
       });
   }
 };
