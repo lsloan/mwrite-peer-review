@@ -27,8 +27,8 @@
                     </div>
                 </div>
                 <div class="reviews-container mdl-grid">
-                    <div v-for="review in prompt.reviews" :key="review.reviewId" class="submission-for-review mdl-cell mdl-cell--4-col">
-                        <div class="student-name-container">Student {{ review.reviewId }}</div>
+                    <div v-for="(review, index) in prompt.reviews" :key="review.reviewId" class="submission-for-review mdl-cell mdl-cell--4-col">
+                        <div class="student-name-container">Student {{ index + 1 }}</div>
                         <div class="review-status-container">
                             <div v-if="review.reviewIsComplete" class="review-complete-container">
                                 <i class="material-icons evaluation-complete-icon">done</i>
