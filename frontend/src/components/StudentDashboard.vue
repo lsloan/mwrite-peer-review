@@ -137,6 +137,7 @@ export default {
 
     .submission-container {
         flex-grow: 1;
+        flex-shrink: 1;
         display: flex;
         flex-direction: column;
         align-items: center;
@@ -145,6 +146,7 @@ export default {
 
     .submission-for-review {
         display: inline-block;
+        width: 100%;
         background-color: white;
         font-size: 14px;
         box-shadow: 0 2px 2px 0 rgba(0,0,0,.14), 0 3px 1px -2px rgba(0,0,0,.2), 0 1px 5px 0 rgba(0,0,0,.12);
@@ -159,6 +161,9 @@ export default {
     .review-status-container {
         text-transform: uppercase;
         padding: 0 8px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
     }
 
     .review-start-container > a.mdl-button {
@@ -179,5 +184,4 @@ export default {
         font-size: 16px;
         margin-right: 4px;
     }
-
 </style>
