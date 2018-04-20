@@ -20,15 +20,7 @@
 </template>
 
 <script>
-import moment from 'moment';
-import PeerReviewAssignmentCard from './PeerReviewAssignmentCard';
-
-const convertDateStringsToMoments = assignment => {
-  const {dueDate, openDate} = assignment;
-  assignment.dueDate = dueDate ? moment(dueDate).local() : null;
-  assignment.openDate = openDate ? moment(openDate).local() : null;
-  return assignment;
-};
+import PeerReviewAssignmentCard from '@/components/PeerReviewAssignmentCard';
 
 export default {
   components: {PeerReviewAssignmentCard},
@@ -41,7 +33,7 @@ export default {
   mounted() {
     const { courseId } = this.$store.state.userDetails;
     this.$api.get('/course/{0}/peer_review/all', courseId).then(response => {
-      this.reviewAssignments = response.data.map(convertDateStringsToMoments);
+      this.reviewAssignments = response.data;
     });
   }
 };

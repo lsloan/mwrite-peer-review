@@ -98,6 +98,7 @@ class StudentDashboardStatus:
     def _make_review(peer_review):
         return {
             'review_id': peer_review.id,
+            'submission_id': peer_review.submission.id,  # TODO remove this when review submission is ported to VueJS
             'review_is_complete': peer_review.review_is_complete
         }
 
@@ -107,6 +108,7 @@ class StudentDashboardStatus:
         prompt_name = peer_reviews[0].submission.assignment.title
         due_date_utc = peer_reviews[0].submission.assignment.rubric_for_prompt.passback_assignment.due_date_utc
         return {
+            'prompt_id':    prompt_id,
             'prompt_name':  prompt_name,
             'due_date_utc': due_date_utc,
         }
