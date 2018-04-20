@@ -34,15 +34,15 @@
                                 <i class="material-icons evaluation-complete-icon">done</i>
                                 <span>Submitted</span>
                             </div>
-                            <div v-else class="review-start-container">
-                                <!-- TODO replace with <router-link/> once review submission page is ported to Vue-->
-                                <!-- TODO use peer review ID instead of submission ID? -->
-                                <mdl-anchor-button
-                                    colored
-                                    :href="apiUrl + '/course/'+ courseId + '/review/submission/' + review.submissionId">
-                                    Start Review
-                                </mdl-anchor-button>
-                            </div>
+                            <!-- TODO replace with <router-link/> once review submission page is ported to Vue-->
+                            <!-- TODO use peer review ID instead of submission ID? -->
+                            <mdl-anchor-button
+                                v-else
+                                class="start-review-button"
+                                colored
+                                :href="apiUrl + '/course/'+ courseId + '/review/submission/' + review.submissionId">
+                                Start Review
+                            </mdl-anchor-button>
                         </div>
                     </div>
                 </div>
@@ -157,20 +157,21 @@ export default {
     .student-name-container {
         border-bottom: 1px solid lightgray;
         font-weight: bold;
-        padding: 8px;
+        padding: 14px 8px;
     }
 
     .review-status-container {
         text-transform: uppercase;
-        padding: 0 8px;
+        padding: 0;
         display: flex;
         flex-direction: column;
         align-items: center;
     }
 
-    .review-start-container > a.mdl-button {
+    .start-review-button {
         padding: 0;
         height: 38px;
+        width: 100%;
     }
 
     .review-complete-container {
