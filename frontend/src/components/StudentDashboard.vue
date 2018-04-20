@@ -1,6 +1,7 @@
 <template>
     <div>
         <reviews-assigned :prompts="prompts"/>
+        <reviews-completed :reviews="completedReviews"/>
 
         <div class="mdl-grid">
             <!-- TODO "completed work" section goes here -->
@@ -20,6 +21,7 @@ import { sortBy } from 'ramda';
 import moment from 'moment';
 import { MdlCard, MdlAnchorButton } from 'vue-mdl';
 import ReviewsAssigned from '@/components/ReviewsAssigned';
+import ReviewsCompleted from '@/components/ReviewsCompleted';
 
 const byDateAscending = (a, b) => {
   const dateA = moment.utc(a.dueDateUtc);
@@ -37,22 +39,24 @@ export default {
   components: {
     MdlCard,
     MdlAnchorButton,
-    ReviewsAssigned
+    ReviewsAssigned,
+    ReviewsCompleted
   },
   data() {
     return {
-      prompts: []
+      prompts: [],
+      completedReviews: []
     };
   },
   methods: {
     setPromptsForReview(data) {
       this.prompts = data.map(sortReviews).sort(byDateAscending);
+    },
+    setCompletedReviews(data) {
+      this.completedReviews = data.sort(byDateAscending);
     }
   },
   computed: {
-    courseId() {
-      return this.$store.state.userDetails.courseId;
-    },
     studentId() {
       return this.$store.state.userDetails.userId; // TODO remove after implementing completed work section?
     }
@@ -61,6 +65,8 @@ export default {
     const {courseId, userId} = this.$store.state.userDetails;
     this.$api.get('/course/{}/reviews/student/{}/assigned', courseId, userId)
       .then(response => this.setPromptsForReview(response.data));
+    this.$api.get('/course/{}/reviews/student/{}/completed', courseId, userId)
+      .then(response => this.setCompletedReviews(response.data));
   }
 };
 </script>
