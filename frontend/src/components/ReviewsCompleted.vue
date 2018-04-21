@@ -27,13 +27,13 @@
                             </div>
                         </div>
                         <div class="mdl-card__supporting-text">
-                            <div>
+                            <div class="completed-work__sub-container completed-work__sub-container--left">
                                 <span>{{ review.reviews.received.completed }}</span>
                                 <span>/</span>
                                 <span>{{ review.reviews.received.total }}</span>
                                 <span>reviews received</span>
                             </div>
-                            <div>
+                            <div class="completed-work__sub-container completed-work__sub-container--right">
                                 <span>{{ review.reviews.given.completed }}</span>
                                 <span>/</span>
                                 <span>{{ review.reviews.given.total }}</span>
@@ -137,11 +137,15 @@ export default {
         display: inline;
     }
 
-    .mdl-card__supporting-text:first-child {
+    .completed-work__sub-container {
+        font-size: 14px;
+    }
+
+    .completed-work__sub-container--left {
         margin-right: auto;
     }
 
-    .mdl-card__supporting-text:last-child {
+    .completed-work__sub-container--right {
         margin-left: auto;
     }
 
