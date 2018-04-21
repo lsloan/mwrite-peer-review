@@ -98,6 +98,7 @@ export default {
 
     .mdl-grid {
         background-color: #F0F0F0;
+        padding: 0;
     }
 
     .mdl-card {
