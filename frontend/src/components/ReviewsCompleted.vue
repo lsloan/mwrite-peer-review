@@ -168,6 +168,10 @@ export default {
     }
 
     .mdl-card__actions > .mdl-button {
-        flex-grow: 1;
+        flex: 1 1 auto;
+    }
+
+    .mdl-button {
+        height: initial;
     }
 </style>
