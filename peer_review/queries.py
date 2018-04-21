@@ -130,6 +130,7 @@ class StudentDashboardStatus:
         _, peer_reviews = entry
         prompt_data = StudentDashboardStatus._make_data(entry)
         prompt_data['prompt_id'] = peer_reviews[0].submission.assignment.id
+        prompt_data['rubric_id'] = peer_reviews[0].submission.assignment.rubric_for_prompt.id
 
         reviews_by_reviewer = groupby(lambda pr: pr.student_is_reviewer, peer_reviews)
         reviews_given = reviews_by_reviewer.get(True) or []
