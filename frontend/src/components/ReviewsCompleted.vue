@@ -14,7 +14,7 @@
                 <!-- TODO need a case for no completed reviews -->
                 <div class="mdl-grid">
                     <!-- TODO maybe use rubric ID? more semantically relevant-->
-                    <div v-for="review in reviews" :key="review.promptId"
+                    <div v-for="review in reviews" :key="review.rubricId"
                          class="mdl-card mdl-shadow--2dp mdl-cell mdl-cell--6-col mdl-cell--8-col-tablet mdl-cell--4-col-phone">
                         <div class="mdl-card__title">
                             <h2 class="">{{ review.promptName }}</h2>
@@ -41,8 +41,16 @@
                             </div>
                         </div>
                         <div class="mdl-card__actions mdl-card--border">
-                            <mdl-anchor-button colored>Reviews I Received</mdl-anchor-button>
-                            <mdl-anchor-button colored>Reviews I Gave</mdl-anchor-button>
+                            <router-link
+                                class="mdl-button mdl-js-button mdl-button--colored"
+                                :to="{name: 'ReviewsReceived', params: {studentId: studentId, rubricId: review.rubricId}}">
+                                Reviews I Received
+                            </router-link>
+                            <router-link
+                                class="mdl-button mdl-js-button mdl-button--colored"
+                                :to="{name: 'ReviewsGiven', params: {studentId: studentId, rubricId: review.rubricId}}">
+                                Reviews I Gave
+                            </router-link>
                         </div>
                     </div>
                 </div>
@@ -71,6 +79,11 @@ export default {
   props: ['reviews'],
   components: {
     MdlAnchorButton
+  },
+  computed: {
+    studentId() {
+      return this.$store.state.userDetails.userId;
+    }
   },
   mixins: [DateFormat]
 };
