@@ -41,12 +41,12 @@
                             </div>
                         </div>
                         <div class="mdl-card__actions mdl-card--border">
-                            <router-link
+                            <router-link v-if="review.reviews.received.completed > 0"
                                 class="mdl-button mdl-js-button mdl-button--colored"
                                 :to="{name: 'ReviewsReceived', params: {studentId: studentId, rubricId: review.rubricId}}">
                                 Reviews I Received
                             </router-link>
-                            <router-link
+                            <router-link v-if="review.reviews.given.completed > 0"
                                 class="mdl-button mdl-js-button mdl-button--colored"
                                 :to="{name: 'ReviewsGiven', params: {studentId: studentId, rubricId: review.rubricId}}">
                                 Reviews I Gave
