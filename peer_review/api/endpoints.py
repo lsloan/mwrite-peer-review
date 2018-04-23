@@ -6,7 +6,7 @@ from django.core.exceptions import PermissionDenied, ObjectDoesNotExist
 from django.views.decorators.http import require_POST
 
 import peer_review.etl as etl
-from peer_review.models import CanvasStudent, PeerReview, Rubric, PeerReviewEvaluation
+from peer_review.models import CanvasCourse, CanvasStudent, PeerReview, Rubric, PeerReviewEvaluation
 from peer_review.queries import InstructorDashboardStatus, StudentDashboardStatus
 from peer_review.api.util import merge_validations
 from peer_review.util import to_camel_case, keymap_all
@@ -28,12 +28,34 @@ def logged_in_user_details(request):
     }
 
 
+# TODO refactor this based on what we're actually using on the new students list implementation
 @authorized_json_endpoint(roles=['instructor'])
 def all_students(request, course_id):
     etl.persist_sections(course_id)
     etl.persist_students(course_id)
-    students = CanvasStudent.objects.filter(course_id=course_id)
-    return [student.to_dict(levels=2) for student in students]
+
+    course_model = CanvasCourse.objects.get(id=course_id)
+    course = {'id': course_model.id, 'name': course_model.name}
+
+    students = []
+    for student in CanvasStudent.objects.filter(course_id=course_id):
+        sections = []
+        for section in student.sections.filter(course_id=course_id):
+            sections.append({
+                'id': section.id,
+                'name': section.name,
+                'course': course
+            })
+        students.append({
+            'id': student.id,
+            'sortable_name': student.sortable_name,
+            'full_name': student.full_name,
+            'username': student.username,
+            'sections': sections,
+            'course': course
+        })
+
+    return students
 
 
 @authorized_json_endpoint(roles=['instructor'])
