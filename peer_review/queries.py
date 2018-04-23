@@ -192,8 +192,8 @@ class StudentDashboardStatus:
                            (StudentDashboardStatus._sort_and_format,))
 
     @staticmethod
-    def assigned_work(student_id):
-        qs = PeerReview.objects.filter(student_id=student_id) \
+    def assigned_work(course_id, student_id):
+        qs = PeerReview.objects.filter(student_id=student_id, submission__assignment__course__id=course_id) \
             .select_related('submission__assignment__rubric_for_prompt')
         qs = StudentDashboardStatus._review_completion_status(qs) \
             .order_by('submission__assignment_id', 'id')
