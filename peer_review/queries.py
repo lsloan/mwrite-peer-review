@@ -205,8 +205,11 @@ class StudentDashboardStatus:
         )
 
     @staticmethod
-    def completed_work(student_id):
-        qs = PeerReview.objects.filter(Q(student_id=student_id) | Q(submission__author_id=student_id)) \
+    def completed_work(course_id, student_id):
+        filter_query = \
+            Q(submission__assignment__course__id=course_id) & \
+            (Q(student_id=student_id) | Q(submission__author_id=student_id))
+        qs = PeerReview.objects.filter(filter_query) \
             .annotate(
                 student_is_reviewer=Case(
                     When(student_id=student_id, then=Value(True)),

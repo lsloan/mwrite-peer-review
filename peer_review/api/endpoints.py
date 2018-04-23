@@ -75,7 +75,7 @@ def assigned_work(request, course_id, student_id):
 @authorized_json_endpoint(roles=['student'])
 def completed_work(request, course_id, student_id):
     raise_if_not_current_user(request, student_id)
-    return StudentDashboardStatus.completed_work(student_id)
+    return StudentDashboardStatus.completed_work(course_id, student_id)
 
 
 def _denormalize_reviews(reviews):
