@@ -432,6 +432,8 @@ class AssignmentStatus(HasRoleMixin, TemplateView):
     # TODO see how much of this can be accomplished with aggregation via the ORM
     def get_context_data(self, **kwargs):
 
+        course_id = int(kwargs['course_id'])
+
         try:
             rubric = Rubric.objects.get(id=kwargs['rubric_id'])
         except Rubric.DoesNotExist:
@@ -453,9 +455,9 @@ class AssignmentStatus(HasRoleMixin, TemplateView):
                                              .count()
 
             if rubric.sections.all():
-                author_sections = submission.author.sections.filter(id__in=rubric.sections.values_list('id', flat=True))
+                author_sections = submission.author.sections.filter(id__in=rubric.sections.values_list('id', flat=True), course_id=course_id)
             else:
-                author_sections = submission.author.sections.all()
+                author_sections = submission.author.sections.filter(course_id=course_id)
 
             for section in author_sections:
                 sections.add(section)
@@ -473,7 +475,7 @@ class AssignmentStatus(HasRoleMixin, TemplateView):
         sections = list(sections)
         sections.sort(key=lambda s: s.name)
 
-        course = CanvasCourse.objects.get(id=int(kwargs['course_id']))
+        course = CanvasCourse.objects.get(id=course_id)
         return {
             'course_id': course.id,
             'title':     course.name,
