@@ -432,6 +432,8 @@ class AssignmentStatus(HasRoleMixin, TemplateView):
     # TODO see how much of this can be accomplished with aggregation via the ORM
     def get_context_data(self, **kwargs):
 
+        course_id = int(kwargs['course_id'])
+
         try:
             rubric = Rubric.objects.get(id=kwargs['rubric_id'])
         except Rubric.DoesNotExist:
@@ -453,9 +455,9 @@ class AssignmentStatus(HasRoleMixin, TemplateView):
                                              .count()
 
             if rubric.sections.all():
-                author_sections = submission.author.sections.filter(id__in=rubric.sections.values_list('id', flat=True))
+                author_sections = submission.author.sections.filter(id__in=rubric.sections.values_list('id', flat=True), course_id=course_id)
             else:
-                author_sections = submission.author.sections.all()
+                author_sections = submission.author.sections.filter(course_id=course_id)
 
             for section in author_sections:
                 sections.add(section)
@@ -473,7 +475,7 @@ class AssignmentStatus(HasRoleMixin, TemplateView):
         sections = list(sections)
         sections.sort(key=lambda s: s.name)
 
-        course = CanvasCourse.objects.get(id=int(kwargs['course_id']))
+        course = CanvasCourse.objects.get(id=course_id)
         return {
             'course_id': course.id,
             'title':     course.name,
@@ -620,14 +622,15 @@ class AllStudentsReviews(HasRoleMixin, TemplateView):
     template_name = 'reviews_for_all_students.html'
 
     def get_context_data(self, **kwargs):
-        course = CanvasCourse.objects.get(id=int(kwargs['course_id']))
+        course_id = int(kwargs['course_id'])
+        course = CanvasCourse.objects.get(id=course_id)
         canvas_students = CanvasStudent.objects.filter(
             id__in=course.sections.all().values_list('students', flat=True)
         )
 
         student_data = []
         for student in canvas_students:
-            sections = student.sections.all()
+            sections = student.sections.filter(course__id=course_id)
             student_data.append({
                 'id': student.id,
                 'name': student.sortable_name,
