@@ -620,14 +620,15 @@ class AllStudentsReviews(HasRoleMixin, TemplateView):
     template_name = 'reviews_for_all_students.html'
 
     def get_context_data(self, **kwargs):
-        course = CanvasCourse.objects.get(id=int(kwargs['course_id']))
+        course_id = int(kwargs['course_id'])
+        course = CanvasCourse.objects.get(id=course_id)
         canvas_students = CanvasStudent.objects.filter(
             id__in=course.sections.all().values_list('students', flat=True)
         )
 
         student_data = []
         for student in canvas_students:
-            sections = student.sections.all()
+            sections = student.sections.filter(course__id=course_id)
             student_data.append({
                 'id': student.id,
                 'name': student.sortable_name,
