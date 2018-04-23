@@ -24,8 +24,8 @@
                     {% block nav_links %}{% endblock %}
                 </div>
             </header>
-            
-            <main class="mdl-layout__content">
+
+            <main class="mdl-layout__content" data-frontend-landing-url="{{ frontend_landing_url }}">
                 {% block content %}{% endblock %}
             </main>
         </div>
