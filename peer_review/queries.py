@@ -192,8 +192,8 @@ class StudentDashboardStatus:
                            (StudentDashboardStatus._sort_and_format,))
 
     @staticmethod
-    def assigned_work(student_id):
-        qs = PeerReview.objects.filter(student_id=student_id) \
+    def assigned_work(course_id, student_id):
+        qs = PeerReview.objects.filter(student_id=student_id, submission__assignment__course__id=course_id) \
             .select_related('submission__assignment__rubric_for_prompt')
         qs = StudentDashboardStatus._review_completion_status(qs) \
             .order_by('submission__assignment_id', 'id')
@@ -205,8 +205,11 @@ class StudentDashboardStatus:
         )
 
     @staticmethod
-    def completed_work(student_id):
-        qs = PeerReview.objects.filter(Q(student_id=student_id) | Q(submission__author_id=student_id)) \
+    def completed_work(course_id, student_id):
+        filter_query = \
+            Q(submission__assignment__course__id=course_id) & \
+            (Q(student_id=student_id) | Q(submission__author_id=student_id))
+        qs = PeerReview.objects.filter(filter_query) \
             .annotate(
                 student_is_reviewer=Case(
                     When(student_id=student_id, then=Value(True)),

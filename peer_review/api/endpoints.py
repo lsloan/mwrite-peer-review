@@ -69,13 +69,13 @@ def raise_if_peer_review_not_for_student(request, student_id, peer_review_id):
 @authorized_json_endpoint(roles=['student'])
 def assigned_work(request, course_id, student_id):
     raise_if_not_current_user(request, student_id)
-    return StudentDashboardStatus.assigned_work(student_id)
+    return StudentDashboardStatus.assigned_work(course_id, student_id)
 
 
 @authorized_json_endpoint(roles=['student'])
 def completed_work(request, course_id, student_id):
     raise_if_not_current_user(request, student_id)
-    return StudentDashboardStatus.completed_work(student_id)
+    return StudentDashboardStatus.completed_work(course_id, student_id)
 
 
 def _denormalize_reviews(reviews):
