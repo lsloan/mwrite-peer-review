@@ -519,9 +519,10 @@ class ReviewsForAStudentView(HasRoleMixin, TemplateView):
 
     def get_context_data(self, **kwargs):
 
+        course_id = kwargs['course_id']
         student = CanvasStudent.objects.get(id=kwargs['student_id'])
 
-        assignments = CanvasSubmission.objects.filter(author__id=student.id).values('assignment')
+        assignments = CanvasSubmission.objects.filter(author__id=student.id, assignment__course__id=course_id).values('assignment')
         rubrics = Rubric.objects.filter(reviewed_assignment__in=assignments)
 
         reviews = []
@@ -651,7 +652,8 @@ class OverviewForAStudent(HasRoleMixin, TemplateView):
         student_id = kwargs['student_id']
         student = CanvasStudent.objects.get(id=student_id)
 
-        assignments = CanvasSubmission.objects.filter(author__id=student_id).values('assignment')
+        course_id = kwargs['course_id']
+        assignments = CanvasSubmission.objects.filter(author__id=student_id, assignment__course__id=course_id).values('assignment')
         rubrics = Rubric.objects.filter(reviewed_assignment__in=assignments)
 
         reviews = []
