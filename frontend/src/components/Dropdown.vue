@@ -1,12 +1,12 @@
 <template>
   <div>
     <label>{{ label }}</label>
-    <button class='dropdown-button' type='button' :disabled="disabled">
+    <button class='dropdown-button' type='button' :disabled='disabled' @click='toggleDropdown'>
       <span>{{ displayName }}</span>
       <i class='material-icons'>arrow_drop_down</i>
     </button>
     <ul v-if='showDropdown' class='menu'>
-      <li class='menu-item' tabindex="0" v-for="option in options" :key="option.value" @click="selectInput(option)" @keyup.enter="selectInput(option)">
+      <li class='menu-item' tabindex='0' v-for='option in options' :key='option.value' @click='selectInput(option)' @keyup.enter='selectInput(option)'>
           {{ option.name }}
       </li>
     </ul>
@@ -33,6 +33,10 @@ export default {
   methods: {
     selectInput(option) {
       this.$emit('input', option);
+      this.showDropdown = false;
+    },
+    toggleDropdown() {
+      this.showDropdown = !this.showDropdown;
     }
   }
 };
@@ -45,15 +49,7 @@ export default {
 }
 
 .menu {
-  position: absolute;
-  list-style: none;
-  top: 0;
-  left: 0;
-  height: auto;
-  width: auto;
-  min-width: 124px;
-  padding: 8px 0;
-  margin: 0;
+  list-style-type: none;
 /*  opacity: 0;
   z-index: -1;*/
 }
