@@ -31,8 +31,10 @@
               <mdl-spinner single-color></mdl-spinner>
             </td>
           </tr>
-          <tr v-for='row in filteredPaginatedData' :key='row.index'>
-            <td class='mdl-data-table__cell--non-numeric clickable'>{{row.name}}</td>
+          <tr v-on:click='goToStudent(row.id)' v-for='row in filteredPaginatedData' :key='row.index'>
+            <td class='mdl-data-table__cell--non-numeric clickable'>
+              <a class='plain-link' :href='studentLink(row.id)'>{{row.name}}</a>
+            </td>
             <td class='mdl-data-table__cell--non-numeric'>
               <span v-for='(section, index) in row.section.names' :key='index'>{{section}}
                 <span v-if='index < row.section.names.length -1'>,&nbsp;
@@ -76,7 +78,8 @@ export default {
       rows_per_page: 20,
       current_page: 1,
       is_loading: true,
-      num_page_show: 3
+      num_page_show: 3,
+      apiUrl: __API_URL__
     };
   },
   components: {
@@ -85,6 +88,9 @@ export default {
   computed: {
     courseName() {
       return this.$store.state.userDetails.courseName;
+    },
+    courseId() {
+      return this.$store.state.userDetails.courseId;
     },
     formatData() {
       const origData = this.json_data;
@@ -245,6 +251,12 @@ export default {
       // for(var i = ; i < this.current_page)
 
       return range;
+    },
+    studentLink(studentId) {
+      return `${this.apiUrl}/course/${this.courseId}/review/student/${studentId}`;
+    },
+    goToStudent(studentId) {
+      window.location = this.studentLink(studentId);
     }
   },
   watch: {
@@ -268,7 +280,7 @@ const convertDataFormat = (rowData) => {
 
   var fullName = rowData['sortableName'] + ' (' + rowData['username'] + ')';
 
-  return {name: fullName, section: sectionNamesIds};
+  return {name: fullName, section: sectionNamesIds, id: rowData['id']};
 };
 
 const alphabeticalSort = function(a, b) {
@@ -380,6 +392,11 @@ button.current-page:hover {
 
 .centralized {
   text-align: center;
+}
+
+.plain-link, .plain-link:hover, .plain-link:focus {
+  color: black;
+  text-decoration: none;
 }
 
 @media screen and (max-width: 480px) {
