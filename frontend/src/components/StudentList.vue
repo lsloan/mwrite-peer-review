@@ -27,8 +27,8 @@
         </thead>
         <tbody>
           <tr v-if='is_loading'>
-            <td colspan='2'>
-              Loading... Please wait
+            <td colspan='2' class='centralized'>
+              <mdl-spinner single-color></mdl-spinner>
             </td>
           </tr>
           <tr v-for='row in filteredPaginatedData' :key='row.index'>
@@ -376,6 +376,10 @@ button.current-page:hover {
   width: 100%;
   min-width: 200px;
   height: 100%;
+}
+
+.centralized {
+  text-align: center;
 }
 
 @media screen and (max-width: 480px) {

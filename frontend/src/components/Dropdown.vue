@@ -20,7 +20,7 @@ export default {
   props: ['id', 'value', 'options', 'label', 'disabled', 'empty-caption'],
   data() {
     return {
-      showDropdown: true
+      showDropdown: false
     };
   },
   computed: {
