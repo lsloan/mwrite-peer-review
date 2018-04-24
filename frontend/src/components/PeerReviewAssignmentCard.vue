@@ -39,7 +39,7 @@
                     </template>
                     <template v-else>Rubric has not been created</template>
 
-                    <template v-if="dueDate">{{ openDate | formatMoment(dateFormat) }}</template>
+                    <template v-if="dueDate">{{ openDate | utcToLocal(dateFormat) }}</template>
                     <template v-else>anytime</template>
 
                 </span>
@@ -49,7 +49,7 @@
         <div class="mdl-card__supporting-text">
             <div class="icon-container">
                 <i class="material-icons icon-24px">query_builder</i>
-                <span class="icon-caption">Due by {{ dueDate | formatMoment(dateFormat) }}</span>
+                <span class="icon-caption">Due by {{ dueDate | utcToLocal(dateFormat) }}</span>
             </div>
         </div>
 
@@ -71,6 +71,7 @@
 
 <script>
 import {validationInfoAsIssues} from '../services/validation';
+import DateFormat from '@/mixins/date-format';
 
 export default {
   name: 'peer-review-assignment-card',
@@ -84,11 +85,7 @@ export default {
     'date-format',
     'validation-info'
   ],
-  filters: {
-    formatMoment(m, format) {
-      return m ? m.format(format) : '';
-    }
-  },
+  mixins: [DateFormat],
   computed: {
     rubricActionUrl() {
       // TODO remove __API_URL__ when these views are ported to VueJS

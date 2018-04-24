@@ -1,9 +1,14 @@
+from toolz.itertoolz import groupby
+from toolz.dicttoolz import valfilter
+from toolz.functoolz import thread_last
 from django.db import connection
+from django.db.models import BooleanField, Subquery, OuterRef, Count, Case, When, Value, F, Q
 
-from peer_review.util import fetchall_dicts
+from peer_review.util import some, fetchall_dicts
+from peer_review.models import PeerReview, Criterion, PeerReviewComment
 
 
-class ReviewDetails:
+class InstructorDashboardStatus:
     query = """
     SELECT
       total_reviews.rubric_id,
@@ -86,3 +91,136 @@ class ReviewDetails:
             cursor.execute(cls.query, [course_id, assignment_ids])
             data = fetchall_dicts(cursor)
         return cls._format_details(data)
+
+
+class StudentDashboardStatus:
+    @staticmethod
+    def _make_review(peer_review):
+        return {
+            'review_id': peer_review.id,
+            'submission_id': peer_review.submission.id,  # TODO remove this when review submission is ported to VueJS
+            'review_is_complete': peer_review.review_is_complete
+        }
+
+    @staticmethod
+    def _make_data(entry):
+        prompt_id, peer_reviews = entry
+        prompt_name = peer_reviews[0].submission.assignment.title
+        due_date_utc = peer_reviews[0].submission.assignment.rubric_for_prompt.passback_assignment.due_date_utc
+        return {
+            'prompt_id':    prompt_id,
+            'prompt_name':  prompt_name,
+            'due_date_utc': due_date_utc,
+        }
+
+    @staticmethod
+    def _make_assigned_prompt(entry):
+        _, peer_reviews = entry
+        prompt_data = StudentDashboardStatus._make_data(entry)
+        prompt_data['reviews'] = sorted(map(StudentDashboardStatus._make_review, peer_reviews),
+                                        key=lambda r: r['review_id'])
+        return prompt_data
+
+    @staticmethod
+    def _make_completed_prompt(entry):
+
+        def complete_review_pred(pr):
+            return pr.review_is_complete
+
+        _, peer_reviews = entry
+        prompt_data = StudentDashboardStatus._make_data(entry)
+        prompt_data['prompt_id'] = peer_reviews[0].submission.assignment.id
+        prompt_data['rubric_id'] = peer_reviews[0].submission.assignment.rubric_for_prompt.id
+
+        reviews_by_reviewer = groupby(lambda pr: pr.student_is_reviewer, peer_reviews)
+        reviews_given = reviews_by_reviewer.get(True) or []
+        reviews_received = reviews_by_reviewer.get(False) or []
+
+        prompt_data['reviews'] = {
+            'given': {
+                'completed': sum(1 for _ in filter(complete_review_pred, reviews_given)),
+                'total':     len(reviews_given)
+            },
+            'received': {
+                'completed': sum(1 for _ in filter(complete_review_pred, reviews_received)),
+                'total':     len(reviews_received)
+            }
+        }
+
+        return prompt_data
+
+    @staticmethod
+    def _sort_and_format(data):
+        sorted_data = sorted(data, key=lambda r: r['due_date_utc'])
+        for review in sorted_data:
+            review['due_date_utc'] = review['due_date_utc'].strftime('%Y-%m-%d %H:%M:%SZ')
+        return sorted_data
+
+    @staticmethod
+    def _review_completion_status(qs):
+        return qs.annotate(
+                number_of_criteria=Subquery(
+                    Criterion.objects.filter(rubric_id=OuterRef('submission__assignment__rubric_for_prompt__id'))
+                        .values('rubric')
+                        .annotate(count=Count('id'))
+                        .values('count')
+                )
+            ) \
+            .annotate(
+                number_of_comments=Subquery(
+                    PeerReviewComment.objects.filter(peer_review__id=OuterRef('id'))
+                        .values('peer_review')
+                        .annotate(count=Count('id'))
+                        .values('count')
+                )
+            ) \
+            .annotate(
+                review_is_complete=Case(
+                    When(number_of_comments=F('number_of_criteria'), then=Value(True)),
+                    default=Value(False),
+                    output_field=BooleanField()
+                )
+            )
+
+    @staticmethod
+    def _unflatten(qs, filter_predicate, transform):
+        return thread_last(qs,
+                           (groupby, lambda pr: pr.submission.assignment_id),
+                           (valfilter, lambda prs: some(filter_predicate, prs)),
+                           (lambda d: d.items(),),
+                           (map, transform),
+                           (StudentDashboardStatus._sort_and_format,))
+
+    @staticmethod
+    def assigned_work(course_id, student_id):
+        qs = PeerReview.objects.filter(student_id=student_id, submission__assignment__course__id=course_id) \
+            .select_related('submission__assignment__rubric_for_prompt')
+        qs = StudentDashboardStatus._review_completion_status(qs) \
+            .order_by('submission__assignment_id', 'id')
+
+        return StudentDashboardStatus._unflatten(
+            qs,
+            lambda pr: not pr.review_is_complete,
+            StudentDashboardStatus._make_assigned_prompt
+        )
+
+    @staticmethod
+    def completed_work(course_id, student_id):
+        filter_query = \
+            Q(submission__assignment__course__id=course_id) & \
+            (Q(student_id=student_id) | Q(submission__author_id=student_id))
+        qs = PeerReview.objects.filter(filter_query) \
+            .annotate(
+                student_is_reviewer=Case(
+                    When(student_id=student_id, then=Value(True)),
+                    default=Value(False),
+                    output_field=BooleanField()
+                )
+            )
+        qs = StudentDashboardStatus._review_completion_status(qs)
+
+        return StudentDashboardStatus._unflatten(
+            qs,
+            lambda pr: pr.review_is_complete,
+            StudentDashboardStatus._make_completed_prompt
+        )

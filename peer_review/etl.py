@@ -95,10 +95,12 @@ def _convert_assignment(section_name_getter, assignment):
 
 def persist_course(course_id):
     raw_course = retrieve('course', course_id)
-    course, _ = CanvasCourse.objects.get_or_create(defaults={
-        'id': course_id,
-        'name': raw_course['name']
-    })
+    course, _ = CanvasCourse.objects.get_or_create(
+        id=course_id,
+        defaults={
+            'name': raw_course['name']
+        }
+    )
     return course
 
 
