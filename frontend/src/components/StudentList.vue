@@ -35,7 +35,7 @@
             <td class='mdl-data-table__cell--non-numeric clickable'>
               <a class='plain-link' :href='studentLink(row.id)'>{{row.name}}</a>
             </td>
-            <td class='mdl-data-table__cell--non-numeric'>
+            <td class='mdl-data-table__cell--non-numeric clickable'>
               <span v-for='(section, index) in row.section.names' :key='index'>{{section}}
                 <span v-if='index < row.section.names.length -1'>,&nbsp;
                 </span>
