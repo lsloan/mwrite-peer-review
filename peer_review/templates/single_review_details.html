@@ -8,8 +8,8 @@
 {% block nav_links %}
     {% if user_is_instructor %}
         <nav class="mdl-navigation">
-            <a class="mdl-navigation__link peer_review" href="/course/{{ course_id }}/dashboard/instructor">PEER REVIEW</a>
-            <a class="mdl-navigation__link students" href="/course/{{ course_id }}/review/students">STUDENTS</a>
+            <a class="mdl-navigation__link peer_review" href="{{ frontend_landing_url }}/#/instructor/dashboard">PEER REVIEW</a>
+            <a class="mdl-navigation__link students" href="{{ frontend_landing_url }}/#/instructor/students">STUDENTS</a>
         </nav>
     {% endif %}
 {% endblock %}

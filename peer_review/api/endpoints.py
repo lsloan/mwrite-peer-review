@@ -19,11 +19,13 @@ log = logging.getLogger(__name__)
 def logged_in_user_details(request):
     roles = [role.get_name() for role in get_user_roles(request.user)]
     course_id = request.session['lti_launch_params']['custom_canvas_course_id']
+    course_name = CanvasCourse.objects.get(id=course_id).name
     user_id = request.session['lti_launch_params']['custom_canvas_user_id']
     return {
         'username': request.user.username,
         'user_id': int(user_id),
         'course_id': int(course_id),
+        'course_name': course_name,
         'roles': roles
     }
 

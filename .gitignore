@@ -86,3 +86,4 @@ selenium-debug.log
 mwrite_dev.sql
 
 profiler_harnesses/
+*.cprof
