@@ -3,7 +3,7 @@
     <div class='mdl-cell mdl-cell--12-col'>
       <h1>{{courseName}} Students</h1>
     </div>
-    <div class='mdl-cell align-with-table'>
+    <div class='mdl-cell mdl-cell--3-col mdl-cell--3-col-tablet mdl-cell--4-col-phone'>
       <!--<mdl-select class='clickable' label='Section Filter' v-model='selected' id='section-select' :options='possibleSections'>
       </mdl-select> !-->
       <div class='mdl-textfield'>
@@ -11,12 +11,13 @@
         </dropdown>
       </div>
     </div>
-    <div class='mdl-cell align-with-table'>
+    <div class='mdl-cell mdl-cell--3-col mdl-cell--3-col-tablet mdl-cell--4-col-phone'>
       <div class='mdl-textfield flexbox'>
         <input v-model='nameFilter' class='mdl-textfield__input clickable' type='text' placeholder='Search for a student' id='name-filter'>
         <i class='material-icons' id='glass'>search</i>
       </div>
     </div>
+    <div class='mdl-cell mdl-cell--6-col mdl-cell--2-col-tablet mdl-cell--hide-phone'></div>
     <div class='mdl-cell mdl-cell--12-col x-scrollable'>
       <table class='mdl-data-table mdl-js-data-table'>
         <thead>
@@ -385,9 +386,13 @@ button.current-page:hover {
 }
 
 .mdl-textfield {
-  width: 100%;
-  min-width: 200px;
   height: 100%;
+  width: initial;
+  padding: 10px 0;
+}
+
+.mdl-textfield__input {
+  width: initial;
 }
 
 .centralized {
