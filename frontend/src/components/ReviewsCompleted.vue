@@ -159,13 +159,10 @@ export default {
 
     .mdl-card__actions {
         display: flex;
+        flex-wrap: wrap;
     }
 
     .mdl-card__actions > .mdl-button {
         flex: 1 1 auto;
-    }
-
-    .mdl-button {
-        height: initial;
     }
 </style>
