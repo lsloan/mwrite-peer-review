@@ -141,6 +141,10 @@ export default {
         padding: 5px 15px 6px 15px;
     }
 
+    .control-button:hover {
+        cursor: pointer;
+    }
+
     .control-button--active {
         background-color: white;
         color: black;
