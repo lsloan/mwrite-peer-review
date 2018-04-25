@@ -27,13 +27,13 @@
                             </div>
                         </div>
                         <div class="mdl-card__supporting-text">
-                            <div class="completed-work__sub-container completed-work__sub-container--left">
+                            <div class="completed-work__sub-container">
                                 <span>{{ review.reviews.received.completed }}</span>
                                 <span>/</span>
                                 <span>{{ review.reviews.received.total }}</span>
                                 <span>reviews received</span>
                             </div>
-                            <div class="completed-work__sub-container completed-work__sub-container--right">
+                            <div class="completed-work__sub-container">
                                 <span>{{ review.reviews.given.completed }}</span>
                                 <span>/</span>
                                 <span>{{ review.reviews.given.total }}</span>
@@ -108,6 +108,7 @@ export default {
 
     .mdl-card__title {
         padding: 14px 14px 8px 14px;
+        display: block;
     }
 
     .mdl-card__title > h2 {
@@ -122,6 +123,7 @@ export default {
 
     .mdl-card__title > h2 {
         font-weight: bold;
+        margin-bottom: 7px;
     }
 
     .mdl-card__title i, .mdl-card__title span {
@@ -136,42 +138,31 @@ export default {
         align-items: center;
     }
 
-    .due-date-container span, .due-date-container > .material-icons {
+    .due-date-container span {
         margin-left: 6px;
     }
 
     .mdl-card__supporting-text {
-        padding: 14px;
+        padding: 4px 14px;
         display: flex;
         width: 100%;
         box-sizing: border-box;
     }
 
-    .mdl-card__supporting-text > div {
-        display: inline;
+    .mdl-card__supporting-text {
+        display: initial;
     }
 
     .completed-work__sub-container {
         font-size: 14px;
     }
 
-    .completed-work__sub-container--left {
-        margin-right: auto;
-    }
-
-    .completed-work__sub-container--right {
-        margin-left: auto;
-    }
-
     .mdl-card__actions {
         display: flex;
+        flex-wrap: wrap;
     }
 
     .mdl-card__actions > .mdl-button {
         flex: 1 1 auto;
-    }
-
-    .mdl-button {
-        height: initial;
     }
 </style>
