@@ -278,7 +278,7 @@ const convertDataFormat = (rowData) => {
     return acc;
   }, {names: [], ids: []});
 
-  var fullName = rowData['sortableName'] + ' (' + rowData['username'] + ')';
+  var fullName = rowData['sortableName']; // + ' (' + rowData['username'] + ')';
 
   return {name: fullName, section: sectionNamesIds, id: rowData['id']};
 };
