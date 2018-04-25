@@ -101,6 +101,7 @@ export default {
     setData(data) {
       this.unfilteredData = data;
       this.$emit('title-resolved', this.unfilteredData.title);
+      this.$emit('subtitle-resolved', 'Reviews Received');
     }
   },
   mounted() {

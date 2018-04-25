@@ -25,6 +25,7 @@ export default {
       });
       this.title = title;
       this.$emit('title-resolved', this.title);
+      this.$emit('subtitle-resolved', 'Reviews Given');
     }
   },
   mounted() {
