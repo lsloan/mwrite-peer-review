@@ -5,14 +5,21 @@
                 <div class="modal-container">
 
                     <div class="modal-header">
-                        <span class="modal-title">{{ title }}</span>
+                        <div class="modal-titles-container">
+                            <span class="modal-title">{{ title }}</span>
+                            <span class="modal-subtitle" v-if="subtitle">{{ subtitle }}</span>
+                        </div>
                         <mdl-button @click.native="closeModal" class="modal-close-button mdl-button--icon">
                             <i class="material-icons">close</i>
                         </mdl-button>
                     </div>
 
                     <div class="modal-body">
-                        <component :is="component" v-bind="childProps" v-on:title-resolved="setTitle"/>
+                        <component
+                            :is="component"
+                            v-bind="childProps"
+                            v-on:title-resolved="setTitle"
+                            v-on:subtitle-resolved="setSubtitle"/>
                     </div>
                 </div>
             </div>
@@ -29,7 +36,8 @@ export default {
   components: {MdlButton},
   data() {
     return {
-      title: ''
+      title: '',
+      subtitle: null
     };
   },
   methods: {
@@ -38,6 +46,9 @@ export default {
     },
     setTitle(title) {
       this.title = title;
+    },
+    setSubtitle(subtitle) {
+      this.subtitle = subtitle;
     }
   }
 };
@@ -62,7 +73,7 @@ export default {
     }
 
     .modal-container {
-        width: 50vw;
+        width: 75vw;
         height: 60vh;
         margin: 0 auto;
         background-color: rgb(255, 255, 255);
@@ -84,8 +95,22 @@ export default {
         flex: 0 0 64px;
     }
 
-    .modal-title {
+    .modal-titles-container {
         flex-grow: 1;
+    }
+
+    .modal-title {
+        margin-right: 5px;
+        line-height: 25px;
+    }
+
+    .modal-subtitle {
+        border: 1px solid white;
+        border-radius: 2px;
+        padding: 4px;
+        font-weight: lighter;
+        font-size: 12px;
+        white-space: nowrap;
     }
 
     .modal-close-button {

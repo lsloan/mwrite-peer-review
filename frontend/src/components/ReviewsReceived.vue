@@ -101,6 +101,7 @@ export default {
     setData(data) {
       this.unfilteredData = data;
       this.$emit('title-resolved', this.unfilteredData.title);
+      this.$emit('subtitle-resolved', 'Reviews Received');
     }
   },
   mounted() {
@@ -139,6 +140,10 @@ export default {
         background-color: #5D72C8;
         color: white;
         padding: 5px 15px 6px 15px;
+    }
+
+    .control-button:hover {
+        cursor: pointer;
     }
 
     .control-button--active {
