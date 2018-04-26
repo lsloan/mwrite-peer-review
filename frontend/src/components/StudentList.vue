@@ -1,7 +1,7 @@
 <template>
   <div class="mdl-grid">
     <div class="mdl-cell mdl-cell--12-col">
-      <h1>{{courseName}} Students</h1>
+      <h1 class="title">{{courseName}} Students</h1>
     </div>
     <div class="mdl-cell mdl-cell--3-col mdl-cell--3-col-tablet mdl-cell--4-col-phone">
       <div class="mdl-textfield">
@@ -17,7 +17,7 @@
     </div>
     <div class="mdl-cell mdl-cell--6-col mdl-cell--2-col-tablet mdl-cell--hide-phone"></div>
     <div class="mdl-cell mdl-cell--12-col x-scrollable">
-      <table class="mdl-data-table mdl-js-data-table">
+      <table class="mdl-data-table mdl-js-data-table student-table">
         <thead>
           <tr class="no-top-border">
             <th class="mdl-data-table__cell--non-numeric table-heading">Student Name</th>
@@ -26,15 +26,15 @@
         </thead>
         <tbody>
           <tr v-if="isLoading">
-            <td colspan="2" class="centralized">
+            <td colspan="2" class="centralized student-table-cell">
               <mdl-spinner single-color></mdl-spinner>
             </td>
           </tr>
           <tr v-on:click="goToStudent(row.id)" v-for="row in filteredPaginatedData" :key="row.index">
-            <td class="mdl-data-table__cell--non-numeric clickable">
+            <td class="mdl-data-table__cell--non-numeric clickable student-table-cell">
               <a class="plain-link" :href="studentLink(row.id)">{{row.name}}</a>
             </td>
-            <td class="mdl-data-table__cell--non-numeric clickable">
+            <td class="mdl-data-table__cell--non-numeric clickable student-table-cell">
               <span v-for="(section, index) in row.section.names" :key="index">{{section}}
                 <span v-if="index < row.section.names.length -1">,&nbsp;
                 </span>
@@ -46,16 +46,16 @@
     </div>
 
     <div class="flexbox pagination-container x-scrollable" v-if="isLoading === false">
-      <button type="button" v-on:click="goToPrevPage">Prev</button>
+      <button class="pagination-button" type="button" v-on:click="goToPrevPage">Prev</button>
 
       <div v-for="(currentButton, index) in buttonsToShow" v-bind:key="index">
         <span v-if="currentButton==='...'" class="page-gap">{{currentButton}}</span>
-        <button v-else type="button" v-on:click="goToPage(currentButton)" v-bind:class="{'current-page':(currentButton == currentPage)}" :disabled="currentButton == currentPage">
+        <button class="pagination-button" v-else type="button" v-on:click="goToPage(currentButton)" v-bind:class="{'current-page':(currentButton == currentPage)}" :disabled="currentButton == currentPage">
           {{currentButton}}
         </button>
       </div>
 
-      <button type="button" v-on:click="goToNextPage">Next</button>
+      <button class="pagination-button" type="button" v-on:click="goToNextPage">Next</button>
     </div>
   </div>
 </template>
@@ -131,7 +131,7 @@ export default {
       return Math.ceil(this.filteredData.length / this.rowsPerPage);
     },
     possibleSections() {
-      const allSections = this.jsonData.reduce(function(acc, next) {
+      const allSections = this.jsonData.reduce((acc, next) => {
         const sections = next['sections'];
 
         for(let i = 0; i < sections.length; i++) {
@@ -243,7 +243,7 @@ export default {
 };
 
 const convertDataFormat = (rowData) => {
-  const sectionNamesIds = rowData['sections'].reduce(function(acc, next) {
+  const sectionNamesIds = rowData['sections'].reduce((acc, next) => {
     acc['names'].push(next['name']);
     acc['ids'].push(next['id']);
 
@@ -255,7 +255,7 @@ const convertDataFormat = (rowData) => {
   return {name: fullName, section: sectionNamesIds, id: rowData['id']};
 };
 
-const alphabeticalSort = function(a, b) {
+const alphabeticalSort = (a, b) => {
   if(a.name.toLowerCase() < b.name.toLowerCase()) {
     return -1;
   }
@@ -267,12 +267,12 @@ const alphabeticalSort = function(a, b) {
 </script>
 
 <style scoped>
-h1 {
+.title {
   font-size: 30px;
   font-weight: 700;
 }
 
-table {
+.student-table {
   width: 100%;
   border-style: solid hidden;
 }
@@ -286,12 +286,8 @@ table {
   color: black;
 }
 
-td {
+.student-table-cell {
   font-size: 15px;
-}
-
-.align-with-table {
-  padding-left: 24px;
 }
 
 .clickable:hover {
@@ -318,11 +314,8 @@ td {
   overflow-x: scroll;
 }
 
-button {
+.pagination-button {
   cursor: pointer;
-}
-
-.pagination-container button {
   margin: 0.75em;
   padding: 0.75em;
   min-width: 3em;
@@ -333,7 +326,7 @@ button {
   margin: auto;
 }
 
-.pagination-container button:hover {
+.pagination-button:hover {
   background-color: lightgray;
 }
 
@@ -373,12 +366,5 @@ button.current-page:hover {
 .plain-link, .plain-link:hover, .plain-link:focus {
   color: black;
   text-decoration: none;
-}
-
-@media screen and (max-width: 480px) {
-  .align-with-table {
-    width: 100%;
-    padding-left: 0px;
-  }
 }
 </style>
