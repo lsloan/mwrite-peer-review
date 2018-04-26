@@ -235,10 +235,19 @@ export default {
   watch: {
     filteredData() {
       this.currentPage = 1;
+    },
+    selected() {
+      window.sessionStorage.setItem('savedFilter', JSON.stringify(this.selected));
     }
   },
   created: function() {
     this.getStudents();
+
+    const savedFilter = JSON.parse(window.sessionStorage.getItem('savedFilter'));
+
+    if(savedFilter) {
+      this.selected = savedFilter;
+    }
   }
 };
 
