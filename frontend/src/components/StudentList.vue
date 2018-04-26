@@ -1,44 +1,42 @@
 <template>
-  <div class='mdl-grid'>
-    <div class='mdl-cell mdl-cell--12-col'>
+  <div class="mdl-grid">
+    <div class="mdl-cell mdl-cell--12-col">
       <h1>{{courseName}} Students</h1>
     </div>
-    <div class='mdl-cell mdl-cell--3-col mdl-cell--3-col-tablet mdl-cell--4-col-phone'>
-      <!--<mdl-select class='clickable' label='Section Filter' v-model='selected' id='section-select' :options='possibleSections'>
-      </mdl-select> !-->
-      <div class='mdl-textfield'>
-        <dropdown id='section-select' label='Section Filter' v-model='selected' :options='possibleSections' :disabled='false'>
+    <div class="mdl-cell mdl-cell--3-col mdl-cell--3-col-tablet mdl-cell--4-col-phone">
+      <div class="mdl-textfield">
+        <dropdown id="section-select" label="Section Filter" v-model="selected" :options="possibleSections" :disabled="false">
         </dropdown>
       </div>
     </div>
-    <div class='mdl-cell mdl-cell--3-col mdl-cell--3-col-tablet mdl-cell--4-col-phone'>
-      <div class='mdl-textfield flexbox'>
-        <input v-model='nameFilter' class='mdl-textfield__input clickable' type='text' placeholder='Search for a student' id='name-filter'>
-        <i class='material-icons' id='glass'>search</i>
+    <div class="mdl-cell mdl-cell--3-col mdl-cell--3-col-tablet mdl-cell--4-col-phone">
+      <div class="mdl-textfield flexbox">
+        <input v-model="nameFilter" class="mdl-textfield__input clickable" type="text" placeholder="Search for a student" id="name-filter">
+        <i class="material-icons" id="glass">search</i>
       </div>
     </div>
-    <div class='mdl-cell mdl-cell--6-col mdl-cell--2-col-tablet mdl-cell--hide-phone'></div>
-    <div class='mdl-cell mdl-cell--12-col x-scrollable'>
-      <table class='mdl-data-table mdl-js-data-table'>
+    <div class="mdl-cell mdl-cell--6-col mdl-cell--2-col-tablet mdl-cell--hide-phone"></div>
+    <div class="mdl-cell mdl-cell--12-col x-scrollable">
+      <table class="mdl-data-table mdl-js-data-table">
         <thead>
-          <tr class='no-top-border'>
-            <th class='mdl-data-table__cell--non-numeric table-heading'>Student Name</th>
-            <th class='mdl-data-table__cell--non-numeric table-heading'>Sections</th>
+          <tr class="no-top-border">
+            <th class="mdl-data-table__cell--non-numeric table-heading">Student Name</th>
+            <th class="mdl-data-table__cell--non-numeric table-heading">Sections</th>
           </tr>
         </thead>
         <tbody>
-          <tr v-if='is_loading'>
-            <td colspan='2' class='centralized'>
+          <tr v-if="isLoading">
+            <td colspan="2" class="centralized">
               <mdl-spinner single-color></mdl-spinner>
             </td>
           </tr>
-          <tr v-on:click='goToStudent(row.id)' v-for='row in filteredPaginatedData' :key='row.index'>
-            <td class='mdl-data-table__cell--non-numeric clickable'>
-              <a class='plain-link' :href='studentLink(row.id)'>{{row.name}}</a>
+          <tr v-on:click="goToStudent(row.id)" v-for="row in filteredPaginatedData" :key="row.index">
+            <td class="mdl-data-table__cell--non-numeric clickable">
+              <a class="plain-link" :href="studentLink(row.id)">{{row.name}}</a>
             </td>
-            <td class='mdl-data-table__cell--non-numeric clickable'>
-              <span v-for='(section, index) in row.section.names' :key='index'>{{section}}
-                <span v-if='index < row.section.names.length -1'>,&nbsp;
+            <td class="mdl-data-table__cell--non-numeric clickable">
+              <span v-for="(section, index) in row.section.names" :key="index">{{section}}
+                <span v-if="index < row.section.names.length -1">,&nbsp;
                 </span>
             </span>
             </td>
@@ -47,17 +45,17 @@
       </table>
     </div>
 
-    <div class='flexbox pagination-container' v-if='is_loading === false'>
-      <button type='button' v-on:click='goToPrevPage'>Prev</button>
+    <div class="flexbox pagination-container x-scrollable" v-if="isLoading === false">
+      <button type="button" v-on:click="goToPrevPage">Prev</button>
 
-      <div v-for='(currentButton, index) in buttonsToShow' v-bind:key='index'>
-        <span v-if='currentButton==="..."' class='page-gap'>{{currentButton}}</span>
-        <button v-else type='button' v-on:click='goToPage(currentButton)' v-bind:class='{"current-page":(currentButton == current_page)}' :disabled='currentButton == current_page'>
+      <div v-for="(currentButton, index) in buttonsToShow" v-bind:key="index">
+        <span v-if="currentButton==='...'" class="page-gap">{{currentButton}}</span>
+        <button v-else type="button" v-on:click="goToPage(currentButton)" v-bind:class="{'current-page':(currentButton == currentPage)}" :disabled="currentButton == currentPage">
           {{currentButton}}
         </button>
       </div>
 
-      <button type='button' v-on:click='goToNextPage'>Next</button>
+      <button type="button" v-on:click="goToNextPage">Next</button>
     </div>
   </div>
 </template>
@@ -72,14 +70,14 @@ export default {
   name: 'StudentList',
   data() {
     return {
-      json_data: [],
+      jsonData: [],
       parsedData: [],
       selected: {'value': '0', 'name': 'All Students'},
       nameFilter: '',
-      rows_per_page: 20,
-      current_page: 1,
-      is_loading: true,
-      num_page_show: 3,
+      rowsPerPage: 20,
+      currentPage: 1,
+      isLoading: true,
+      numPageShow: 3,
       apiUrl: __API_URL__
     };
   },
@@ -94,21 +92,12 @@ export default {
       return this.$store.state.userDetails.courseId;
     },
     formatData() {
-      const origData = this.json_data;
-      var formattedData = [];
-      formattedData = origData.map(convertDataFormat);
-      console.log('new data ', formattedData);
-      formattedData.sort(alphabeticalSort);
-      console.log('SORTED data', formattedData);
-      return formattedData;
+      return this.jsonData
+        .map(convertDataFormat)
+        .sort(alphabeticalSort);
     },
     filteredData() {
-      // should be an 'AND' filter
-      var filteredData = [];
       const parsedData = this.formatData;
-
-      console.log('FILTER: ', this.selected);
-
       const sectionSelected = this.selected.value;
       const nameSelected = this.nameFilter;
 
@@ -116,42 +105,36 @@ export default {
         return parsedData;
       }
 
-      filteredData = parsedData.filter(function(row) {
+      return parsedData.filter(row => {
         if(sectionSelected !== '0' && nameSelected !== '') {
-          // both criteria selected
-          // must filter by both using AND
-          return (row['section']['ids'].includes(parseInt(sectionSelected)) && (row['name'].toLowerCase()).includes(nameSelected.toLowerCase()));
+          const includesSection = row['section']['ids'].includes(parseInt(sectionSelected));
+          const includesName = row['name'].toLowerCase().includes(nameSelected.toLowerCase());
+
+          return includesSection && includesName;
         }
         if(sectionSelected !== '0') {
-          // only filter by section
           return row['section']['ids'].includes(parseInt(sectionSelected));
         }
         if(nameSelected !== '') {
-          // only filter by name.
-          // match nameSelected to any substring?
           return (row['name'].toLowerCase()).includes(nameSelected.toLowerCase());
         }
       });
-
-      return filteredData;
     },
     filteredPaginatedData() {
       const allFilteredData = this.filteredData;
+      const startIndex = this.rowsPerPage * (this.currentPage - 1);
+      const endIndex = this.rowsPerPage * this.currentPage - 1;
 
-      var startIndex = this.rows_per_page * (this.current_page - 1);
-      var endIndex = this.rows_per_page * this.current_page - 1;
-      // returns data to be displayed in current page
-      // if endIndex is past the end of allFilteredData, javascript's slice treats it as up to end of array
       return allFilteredData.slice(startIndex, endIndex + 1);
     },
     lastPage() {
-      return Math.ceil(this.filteredData.length / this.rows_per_page);
+      return Math.ceil(this.filteredData.length / this.rowsPerPage);
     },
     possibleSections() {
-      var allSections = this.json_data.reduce(function(acc, next) {
-        var sections = next['sections'];
+      const allSections = this.jsonData.reduce(function(acc, next) {
+        const sections = next['sections'];
 
-        for(var i = 0; i < sections.length; i++) {
+        for(let i = 0; i < sections.length; i++) {
           if(!acc.hasOwnProperty(sections[i]['id'])) {
             acc[sections[i]['id']] = sections[i]['name'];
           }
@@ -160,51 +143,43 @@ export default {
         return acc;
       }, {});
       allSections[0] = 'All students';
-      console.log('possibleSections:', allSections);
-      var sectionsList = [];
 
-      Object.keys(allSections).forEach(function(key) {
-        sectionsList.push({'name': allSections[key], 'value': key});
-      });
-
-      console.log('sectionsList:', sectionsList);
-      return sectionsList;
+      return Object.entries(allSections).map(([id, name]) => ({
+        name: name,
+        value: id
+      }));
     },
     buttonsToShow() {
-      var pagesArray = [];
+      let pagesArray = [];
 
-      if(this.current_page - this.num_page_show > 1) {
+      if(this.currentPage - this.numPageShow > 1) {
         pagesArray.push(1);
       }
-      if(this.current_page - this.num_page_show > 2) {
+      if(this.currentPage - this.numPageShow > 2) {
         pagesArray.push('...');
       }
-      var blockBefore = this.customRange(this.current_page - this.num_page_show, this.current_page);
+      const blockBefore = this.customRange(this.currentPage - this.numPageShow, this.currentPage);
 
       pagesArray = pagesArray.concat(blockBefore);
 
-      pagesArray.push(this.current_page);
+      pagesArray.push(this.currentPage);
 
-      var blockAfter = this.customRange(this.current_page + 1, this.current_page + this.num_page_show + 1);
+      const blockAfter = this.customRange(this.currentPage + 1, this.currentPage + this.numPageShow + 1);
 
       pagesArray = pagesArray.concat(blockAfter);
 
-      if(this.current_page + this.num_page_show < this.lastPage - 1) {
+      if(this.currentPage + this.numPageShow < this.lastPage - 1) {
         pagesArray.push('...');
       }
-      if(this.current_page + this.num_page_show < this.lastPage) {
+      if(this.currentPage + this.numPageShow < this.lastPage) {
         pagesArray.push(this.lastPage);
       }
 
-      while(pagesArray.length < (2 * this.num_page_show + 5) && this.lastPage > (2 * this.num_page_show + 5)) {
-        console.log('in while loop buttons');
-        // fill up to get 11 boxes
+      while(pagesArray.length < (2 * this.numPageShow + 5) && this.lastPage > (2 * this.numPageShow + 5)) {
         if(pagesArray[1] === '...') {
-          // this means the current page is too close to the last page
           pagesArray.splice(2, 0, pagesArray[2] - 1);
         }
         if(pagesArray[(pagesArray.length - 2)] === '...') {
-          // this means the current page is too close to the 1st page
           pagesArray.splice((pagesArray.length - 2), 0, pagesArray[(pagesArray.length - 3)] + 1);
         }
       }
@@ -214,42 +189,39 @@ export default {
   },
   methods: {
     getStudents() {
-      this.is_loading = true;
+      this.isLoading = true;
       const { courseId } = this.$store.state.userDetails;
-      this.$api.get('/course/{0}/students', courseId).then((response) => {
-        console.log('response: ', response.data);
-        this.json_data = response.data;
-        this.is_loading = false;
+      this.$api.get('/course/{0}/students', courseId).then(response => {
+        this.jsonData = response.data;
+        this.isLoading = false;
       });
     },
     goToNextPage() {
-      if(this.current_page < this.lastPage) {
-        this.current_page = this.current_page + 1;
+      if(this.currentPage < this.lastPage) {
+        this.currentPage = this.currentPage + 1;
       }
     },
     goToPrevPage() {
-      if(this.current_page > 1) {
-        this.current_page = this.current_page - 1;
+      if(this.currentPage > 1) {
+        this.currentPage = this.currentPage - 1;
       }
     },
     goToPage(pageNum) {
       if(pageNum >= 1 && pageNum <= this.lastPage) {
-        this.current_page = pageNum;
+        this.currentPage = pageNum;
       }
     },
     customRange(startNum, endNum) {
-      var range = [];
-      for(var i = startNum; i < endNum; i++) {
-        if(i < 1) {
-          continue;
-        }
+      const range = [];
+      if(startNum < 1) {
+        startNum = 1;
+      }
+      for(let i = startNum; i < endNum; i++) {
         if(i > this.lastPage) {
           return range;
         }
         range.push(i);
       }
-      // var startNum = this.current_page - this.num_page_show
-      // for(var i = ; i < this.current_page)
 
       return range;
     },
@@ -262,8 +234,7 @@ export default {
   },
   watch: {
     filteredData() {
-      // reset current page
-      this.current_page = 1;
+      this.currentPage = 1;
     }
   },
   created: function() {
@@ -272,14 +243,14 @@ export default {
 };
 
 const convertDataFormat = (rowData) => {
-  var sectionNamesIds = rowData['sections'].reduce(function(acc, next) {
+  const sectionNamesIds = rowData['sections'].reduce(function(acc, next) {
     acc['names'].push(next['name']);
     acc['ids'].push(next['id']);
 
     return acc;
   }, {names: [], ids: []});
 
-  var fullName = rowData['sortableName']; // + ' (' + rowData['username'] + ')';
+  const fullName = rowData['sortableName'];
 
   return {name: fullName, section: sectionNamesIds, id: rowData['id']};
 };
@@ -320,7 +291,7 @@ td {
 }
 
 .align-with-table {
-    padding-left: 24px;
+  padding-left: 24px;
 }
 
 .clickable:hover {
@@ -409,11 +380,5 @@ button.current-page:hover {
     width: 100%;
     padding-left: 0px;
   }
-
-  /*.mdl-textfield {
-    width: 100%;
-    min-width: 200px;
-    height: 100%;
-  }*/
 }
 </style>
