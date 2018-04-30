@@ -53,6 +53,13 @@
             </div>
         </div>
 
+        <div class="mdl-card__supporting-text" v-if="reviewsInProgress">
+            <div class="icon-container">
+                <i class="material-icons icon-24px">trending_up</i>
+                <span class="icon-caption">{{ numberOfCompletedReviews }} out of {{ numberOfAssignedReviews }} reviews received</span>
+            </div>
+        </div>
+
         <!-- TODO change these <a>s to <router-link>s when these views are ported to VueJS -->
         <div class="mdl-card__actions mdl-card--border">
             <a :href="rubricActionUrl"
@@ -83,7 +90,9 @@ export default {
     'peer-review-assignment-id',
     'peer-review-title',
     'date-format',
-    'validation-info'
+    'validation-info',
+    'number-of-assigned-reviews',
+    'number-of-completed-reviews'
   ],
   mixins: [DateFormat],
   computed: {
