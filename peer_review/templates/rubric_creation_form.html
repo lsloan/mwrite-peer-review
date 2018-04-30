@@ -27,6 +27,7 @@
         <form id="rubric-form"
               @submit.prevent
               action="/course/{{ course_id }}/rubric/assignment/{{ passback_assignment_id }}"
+              data-frontend-landing-url="{{ frontend_landing_url }}"
               data-assignments="{{ potential_prompts_and_rubrics }}"
               data-validation-info="{{ validations }}"
               data-existing-rubric-description="{{ existing_rubric.description }}"

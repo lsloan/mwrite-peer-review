@@ -14,6 +14,10 @@ import os
 import json
 from os import getenv
 
+#######################################################################################################
+# TODO delete this whole file when views are ported to VueJS (since it's just used for collectstatic) #
+#######################################################################################################
+
 
 def read_file_from_env(var):
     filename = os.environ[var]
@@ -36,81 +40,16 @@ def getenv_csv(var, default=''):
 
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-
-SECRET_KEY = 'not_real'
-
-DEBUG = getenv_bool('MWRITE_PEER_REVIEW_DEBUG_MODE')
-
-ALLOWED_HOSTS = getenv_csv('MWRITE_PEER_REVIEW_ALLOWED_HOSTS')
-
-APP_HOST = None
-
-GOOGLE_ANALYTICS_TRACKING_ID = os.environ.get('MWRITE_PEER_REVIEW_GOOGLE_ANALYTICS_TRACKING_ID')
-
-# Storage configuration
-MEDIA_ROOT = None
-
-# LTI configuration
-LTI_CONSUMER_SECRETS = None
-LTI_APP_REDIRECT = None
-LTI_ENFORCE_SSL = False  # TODO want this to be True in prod; add config for X-Forwarded etc.
-
-# Canvas API configuration
-CANVAS_API_URL = None
-CANVAS_API_TOKEN = None
+SECRET_KEY = 'unused'
+DEBUG = getenv_bool('MPR_DEBUG_MODE')
 
 # Application definition
 INSTALLED_APPS = [
-    'django.contrib.admin',
-    'django.contrib.auth',
-    'django.contrib.contenttypes',
-    'django.contrib.sessions',
-    'django.contrib.messages',
-    'whitenoise.runserver_nostatic',
-    'django.contrib.staticfiles',
-    'rolepermissions',
-    'djangolti',
-    'peer_review',
-    'health_check',
-    'health_check.db'
+    'django.contrib.staticfiles',     # TODO should be removed once all views are ported to VueJS
+    'peer_review'
 ]
 
-MIDDLEWARE = [
-    'django.middleware.security.SecurityMiddleware',
-    'whitenoise.middleware.WhiteNoiseMiddleware',
-    'django.contrib.sessions.middleware.SessionMiddleware',
-    'django.middleware.common.CommonMiddleware',
-    'django.middleware.csrf.CsrfViewMiddleware',
-    'django.contrib.auth.middleware.AuthenticationMiddleware',
-    'django.contrib.messages.middleware.MessageMiddleware',
-    'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    'peer_review.middleware.FixedUserAgentMiddleware',
-    'peer_review.middleware.safari_iframe_launch_middleware'
-]
-
-AUTHENTICATION_BACKENDS = [
-    'djangolti.backends.LtiBackend'
-]
-if DEBUG:
-    AUTHENTICATION_BACKENDS += ['django.contrib.auth.backends.ModelBackend']
-    LOGIN_REDIRECT_URL = '/debug/lti'
-
-ROLEPERMISSIONS_MODULE = 'mwrite_peer_review.roles'
-
-SESSION_COOKIE_NAME = 'id'
-SESSION_COOKIE_AGE = 3600
-SESSION_COOKIE_SECURE = not DEBUG
-SESSION_COOKIE_HTTPONLY = True
-SESSION_EXPIRE_AT_BROWSER_CLOSE = True
-SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
-CSRF_HEADER_NAME = 'HTTP_X_CSRF_TOKEN'
-CSRF_COOKIE_HTTPONLY = True
-CSRF_COOKIE_SECURE = not DEBUG
-CSRF_COOKIE_NAME = 'fp'
-X_FRAME_OPTIONS = 'ALLOW-FROM %s' % None
-SAFARI_LAUNCH_COOKIE = 'safari_launch'
-
-ROOT_URLCONF = 'mwrite_peer_review.urls'
+MIDDLEWARE = []
 
 TEMPLATES = [
     {
@@ -123,23 +62,17 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
-                'peer_review.context_processors.google_analytics'
+                'peer_review.context_processors.google_analytics',      # TODO remove after views ported to Vue
+                'peer_review.context_processors.frontend_landing_url'   # TODO remove after views ported to Vue
             ],
         },
     },
 ]
 
-WSGI_APPLICATION = 'mwrite_peer_review.wsgi.application'
-
-
 # Database
 # https://docs.djangoproject.com/en/1.10/ref/settings/#databases
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
-    }
-}
+
+DATABASES = {}
 
 
 # Password validation
@@ -168,17 +101,16 @@ LANGUAGE_CODE = 'en-us'
 USE_I18N = True
 USE_L10N = True
 USE_TZ = True
-TIME_ZONE = None
 TIME_OUTPUT_FORMAT = '%b %-d %-I:%M %p'  # if running on Windows, replace - with #
 
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/1.10/howto/static-files/
 
-# TODO hacky. separate static files into their own artifact
-STATIC_URL = '/'
-STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
-STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
+# TODO should eventually turn off static file handling completely once views are ported to VueJS
+STATIC_URL = '/static/'
+STATIC_ROOT = os.path.join(BASE_DIR, '../staticfiles')
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'  # TODO remove after views ported to Vue
 
 
 LOGGING = {

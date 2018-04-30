@@ -1,14 +1,11 @@
 #!/usr/bin/env bash
 
+set -x
+
 GUNICORN_WORKERS="${GUNICORN_WORKERS:-4}"
 GUNICORN_PORT=8000
 GUNICORN_WORKER_TIMEOUT=${GUNICORN_WORKER_TIMEOUT-30}
-
-printenv >> /etc/environment
-
-set -x
-
-cron
+export DJANGO_SETTINGS_MODULE="${DJANGO_SETTINGS_MODULE:-mwrite_peer_review.settings.api}"
 
 gunicorn \
     --workers="$GUNICORN_WORKERS"        \

@@ -7,7 +7,7 @@
             data: JSON.stringify(data),
             contentType: 'application/json',
             headers: {
-                'X-CSRF-Token': $(_csrfTokenSelector).val()
+                'X-CSRFToken': $(_csrfTokenSelector).val()
             }
         };
     }

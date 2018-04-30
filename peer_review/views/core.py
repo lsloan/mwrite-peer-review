@@ -13,19 +13,20 @@ from dateutil.tz import tzutc
 from django.conf import settings
 from django.db import transaction
 from django.db.models import Q, F, Count, Case, When, Value, BooleanField, Max
-from django.http import HttpResponse, Http404
+from django.http import HttpResponse, Http404, JsonResponse
 from django.shortcuts import redirect
 from django.views.generic import View, TemplateView
 from django.core.exceptions import PermissionDenied
+from rolepermissions.roles import get_user_roles
 from rolepermissions.checkers import has_role
 from rolepermissions.mixins import HasRoleMixin
 from toolz.functoolz import thread_last
 from toolz.itertoolz import unique
 
-from peer_review.etl import persist_assignments, AssignmentValidation
-from peer_review.models import Rubric, Criterion, CanvasAssignment, PeerReviewDistribution, CanvasSubmission, \
-    PeerReview, PeerReviewComment, CanvasStudent, CanvasCourse
+from peer_review.models import *
 from peer_review.util import parse_json_body, some
+from peer_review.decorators import authenticated_json_endpoint
+from peer_review.etl import persist_assignments, AssignmentValidation
 
 logger = logging.getLogger(__name__)
 
@@ -323,8 +324,8 @@ class InstructorDashboardView(HasRoleMixin, TemplateView):
                                                                   is_peer_review_assignment=True) \
                                                           .order_by('due_date_utc')
 
-        reviews = []       
-        prompt_assignments = []                                                   
+        reviews = []
+        prompt_assignments = []
         for assignment in peer_review_assignments:
             rubric = Rubric.objects.filter(passback_assignment=assignment)
             num_reviews = 0
@@ -431,6 +432,8 @@ class AssignmentStatus(HasRoleMixin, TemplateView):
     # TODO see how much of this can be accomplished with aggregation via the ORM
     def get_context_data(self, **kwargs):
 
+        course_id = int(kwargs['course_id'])
+
         try:
             rubric = Rubric.objects.get(id=kwargs['rubric_id'])
         except Rubric.DoesNotExist:
@@ -452,9 +455,9 @@ class AssignmentStatus(HasRoleMixin, TemplateView):
                                              .count()
 
             if rubric.sections.all():
-                author_sections = submission.author.sections.filter(id__in=rubric.sections.values_list('id', flat=True))
+                author_sections = submission.author.sections.filter(id__in=rubric.sections.values_list('id', flat=True), course_id=course_id)
             else:
-                author_sections = submission.author.sections.all()
+                author_sections = submission.author.sections.filter(course_id=course_id)
 
             for section in author_sections:
                 sections.add(section)
@@ -472,7 +475,7 @@ class AssignmentStatus(HasRoleMixin, TemplateView):
         sections = list(sections)
         sections.sort(key=lambda s: s.name)
 
-        course = CanvasCourse.objects.get(id=int(kwargs['course_id']))
+        course = CanvasCourse.objects.get(id=course_id)
         return {
             'course_id': course.id,
             'title':     course.name,
@@ -480,7 +483,7 @@ class AssignmentStatus(HasRoleMixin, TemplateView):
             'rubric':    rubric,
             'sections':  sections
         }
-        
+
 
 class SingleReviewDetailView(HasRoleMixin, TemplateView):
     allowed_roles = ['student', 'instructor']
@@ -518,9 +521,10 @@ class ReviewsForAStudentView(HasRoleMixin, TemplateView):
 
     def get_context_data(self, **kwargs):
 
+        course_id = kwargs['course_id']
         student = CanvasStudent.objects.get(id=kwargs['student_id'])
 
-        assignments = CanvasSubmission.objects.filter(author__id=student.id).values('assignment')
+        assignments = CanvasSubmission.objects.filter(author__id=student.id, assignment__course__id=course_id).values('assignment')
         rubrics = Rubric.objects.filter(reviewed_assignment__in=assignments)
 
         reviews = []
@@ -618,14 +622,15 @@ class AllStudentsReviews(HasRoleMixin, TemplateView):
     template_name = 'reviews_for_all_students.html'
 
     def get_context_data(self, **kwargs):
-        course = CanvasCourse.objects.get(id=int(kwargs['course_id']))
+        course_id = int(kwargs['course_id'])
+        course = CanvasCourse.objects.get(id=course_id)
         canvas_students = CanvasStudent.objects.filter(
             id__in=course.sections.all().values_list('students', flat=True)
         )
 
         student_data = []
         for student in canvas_students:
-            sections = student.sections.all()
+            sections = student.sections.filter(course__id=course_id)
             student_data.append({
                 'id': student.id,
                 'name': student.sortable_name,
@@ -650,7 +655,8 @@ class OverviewForAStudent(HasRoleMixin, TemplateView):
         student_id = kwargs['student_id']
         student = CanvasStudent.objects.get(id=student_id)
 
-        assignments = CanvasSubmission.objects.filter(author__id=student_id).values('assignment')
+        course_id = kwargs['course_id']
+        assignments = CanvasSubmission.objects.filter(author__id=student_id, assignment__course__id=course_id).values('assignment')
         rubrics = Rubric.objects.filter(reviewed_assignment__in=assignments)
 
         reviews = []
@@ -718,7 +724,7 @@ class OverviewDownload(HasRoleMixin, TemplateView):
 
         return response
 
-      
+
 class ReviewsDownload(HasRoleMixin, TemplateView):
     allowed_roles = 'instructor'
 
@@ -733,7 +739,7 @@ class ReviewsDownload(HasRoleMixin, TemplateView):
 
         total_completed = CanvasSubmission.total_completed_by_a_student.__get__(submission)
         comments_completed = PeerReviewComment.objects.filter(peer_review__in=total_completed)
-        
+
         for comment in comments_completed:
             writer.writerow([comment.peer_review.student.sortable_name, comment.peer_review.submission.author.sortable_name, comment.criterion.id, comment.comment])
 

@@ -1,14 +1,16 @@
 import os
 import logging
 import requests
-from functools import partial
 from zipfile import ZipFile
+from functools import partial
+
 from toolz.dicttoolz import dissoc
 from toolz.functoolz import thread_last, memoize
 from toolz.itertoolz import unique, remove
 from django.db import transaction
 from django.conf import settings
 from django.utils.dateparse import parse_datetime
+
 from peer_review.util import to_camel_case
 from peer_review.canvas import retrieve
 from peer_review.models import CanvasAssignment, CanvasSection, CanvasStudent, CanvasCourse, CanvasSubmission, Rubric
@@ -29,8 +31,13 @@ class AssignmentValidation:
         self.number_of_sections = kwargs.get('number_of_sections')
 
     @staticmethod
-    def json_default(validation):
-        return {to_camel_case(k): v for k, v in validation.__dict__.items()}
+    def json_default(validation, camel_case=True):
+        def key_transform(key):
+            if camel_case:
+                return to_camel_case(key)
+            else:
+                return key
+        return {key_transform(k): v for k, v in validation.__dict__.items()}
 
 
 def _due_dates_from_overrides(assignment, overrides):
@@ -88,10 +95,12 @@ def _convert_assignment(section_name_getter, assignment):
 
 def persist_course(course_id):
     raw_course = retrieve('course', course_id)
-    course, _ = CanvasCourse.objects.get_or_create(defaults={
-        'id': course_id,
-        'name': raw_course['name']
-    })
+    course, _ = CanvasCourse.objects.get_or_create(
+        id=course_id,
+        defaults={
+            'name': raw_course['name']
+        }
+    )
     return course
 
 
@@ -139,17 +148,19 @@ def persist_sections(course_id):
             section.save()
 
 
-def _convert_student(raw_student):
+def _convert_student(course_id, raw_student):
     return CanvasStudent(id=raw_student['id'],
                          username=raw_student['login_id'],
                          full_name=raw_student['name'],
-                         sortable_name=raw_student['sortable_name'])
+                         sortable_name=raw_student['sortable_name'],
+                         course_id=course_id)
 
 
 def persist_students(course_id):
     raw_students = retrieve('students', course_id)
     enrollments_by_student_id = {s['id']: s['enrollments'] for s in raw_students}
-    students = list(map(_convert_student, raw_students))
+    student_converter = partial(_convert_student, course_id)
+    students = list(map(student_converter, raw_students))
 
     with transaction.atomic():
         for student in students:

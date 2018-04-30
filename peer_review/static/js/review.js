@@ -22,13 +22,12 @@
         if(areCommentsValid(comments)) {
             var $form = $('form');
             var endpoint = $form.attr('action');
-            var promptId = $form.attr('data-prompt-id');
             postToEndpoint(
                 endpoint,
                 comments,
                 function () {
-                    var courseId = $('#main-container').data('course-id');
-                    window.location.replace('/course/' + courseId + '/dashboard/student?finished=' + promptId);
+                    var frontendBaseUrl = $('[data-frontend-landing-url]').data('frontend-landing-url') + '/#';
+                    window.location.replace(frontendBaseUrl + '/student/dashboard');
                 },
                 function () {
                     showToast('An error occurred.  Please try again later.');

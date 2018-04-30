@@ -46,6 +46,7 @@ class CanvasStudent(models.Model):
     full_name = models.TextField()
     sortable_name = models.TextField()
     username = models.TextField()
+    course = models.ForeignKey(CanvasCourse, on_delete=models.CASCADE)
 
     class Meta:
         db_table = 'canvas_students'
@@ -144,6 +145,25 @@ class PeerReview(models.Model):
     class Meta:
         db_table = 'peer_reviews'
         unique_together = (('student', 'submission'),)
+
+
+class PeerReviewEvaluation(models.Model):
+
+    USEFULNESS_CHOICES = [
+        (1, 'Very unuseful'),
+        (2, 'Unuseful'),
+        (3, 'Somewhat useful'),
+        (4, 'Useful'),
+        (5, 'Very useful')
+    ]
+
+    id = models.AutoField(primary_key=True)
+    usefulness = models.IntegerField(choices=USEFULNESS_CHOICES)
+    comment = models.TextField(null=True, blank=True)
+    peer_review = models.OneToOneField(PeerReview, on_delete=models.CASCADE, related_name='evaluation')
+
+    class Meta:
+        db_table = 'peer_review_evaluations'
 
 
 # noinspection PyClassHasNoInit

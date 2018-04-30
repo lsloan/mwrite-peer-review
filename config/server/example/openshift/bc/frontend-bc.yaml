@@ -1,0 +1,39 @@
+apiVersion: v1
+kind: BuildConfig
+metadata:
+  labels:
+    app: mwrite-peer-review-dev
+  name: mwrite-peer-review-dev-frontend
+  namespace: mwrite-peer-review-dev
+spec:
+  nodeSelector: null
+  output:
+    to:
+      kind: ImageStreamTag
+      name: mwrite-peer-review-dev-frontend:latest
+  postCommit: {}
+  resources: {}
+  runPolicy: Serial
+  source:
+    git:
+      uri: git@github.com:M-Write/mwrite-peer-review.git
+      ref: develop
+    sourceSecret:
+      name: mwrite-peer-review-github-key
+    type: Git
+  strategy:
+    dockerStrategy:
+      dockerfilePath: dockerfiles/frontend.Dockerfile
+      from:
+        kind: ImageStreamTag
+        name: httpd:2.4-alpine
+        namespace: mwrite-peer-review-dev
+      env:
+      - name: MPR_API_URL
+        value: https://api.peer-review-nonprod.mwrite.openshift.dsc.umich.edu
+    type: Source
+  triggers:
+  - type: ConfigChange
+  - imageChange:
+    type: ImageChange
+

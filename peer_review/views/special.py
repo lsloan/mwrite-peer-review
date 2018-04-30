@@ -1,13 +1,14 @@
 import logging
 
-from django import forms, http
+from django import forms
 from django.conf import settings
-from django.utils.encoding import force_text
-from django.views.generic import TemplateView, FormView
+from django.http import HttpResponseForbidden
 from django.template import loader, TemplateDoesNotExist
-from django.contrib.auth.mixins import LoginRequiredMixin
-from django.views.defaults import ERROR_403_TEMPLATE_NAME
+from django.utils.encoding import force_text
 from django.views.decorators.csrf import requires_csrf_token
+from django.views.defaults import ERROR_403_TEMPLATE_NAME
+from django.views.generic import TemplateView, FormView
+from django.contrib.auth.mixins import LoginRequiredMixin
 
 from toolz.functoolz import thread_last
 
@@ -25,7 +26,7 @@ class LtiParamsForm(forms.Form):
 
 class DebugLtiParamsView(LoginRequiredMixin, FormView):
     template_name = 'debug_lti.html'
-    success_url = '/'
+    success_url = settings.LTI_APP_REDIRECT
     form_class = LtiParamsForm
 
     def get_form(self, form_class=None):
@@ -85,7 +86,7 @@ def permission_denied(request, exception, template_name=ERROR_403_TEMPLATE_NAME)
         if template_name != ERROR_403_TEMPLATE_NAME:
             # Reraise if it's a missing custom template.
             raise
-        return http.HttpResponseForbidden('<h1>403 Forbidden</h1>', content_type='text/html')
-    return http.HttpResponseForbidden(
+        return HttpResponseForbidden('<h1>403 Forbidden</h1>', content_type='text/html')
+    return HttpResponseForbidden(
         template.render(request=request, context={'exception': force_text(exception)})
     )
