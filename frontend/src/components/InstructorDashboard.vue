@@ -10,6 +10,8 @@
             :due-date="assignment.dueDate"
             :open-date="assignment.openDate"
             :validation-info="assignment.validationInfo"
+            :number-of-assigned-reviews="assignment.numberOfAssignedReviews"
+            :number-of-completed-reviews="assignment.numberOfCompletedReviews"
             date-format="MMMM D h:mm A"/>
     </div>
     <div v-else-if="reviewAssignments && reviewAssignments.length === 0" class="mdl-grid">
