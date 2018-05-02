@@ -120,7 +120,7 @@ These should be created in roughly the following order:
     N.B. The file data should be base64 encoded; you can create the different files as below:
     * `secret.key` -- secret key file for Django; generate with
         ```bash
-        $ python -c "import string,random; uni=string.ascii_letters+string.digits+string.punctuation; print ''.join([random.SystemRandom().choice(uni) for i in range(random.randint(45,50))])" >> secret.key
+        $ python -c "import string,random; uni=string.ascii_letters+string.digits+string.punctuation; print(''.join([random.SystemRandom().choice(uni) for i in range(random.randint(45,50))]))" >> secret.key
         ```
     * `lti_credentials.json`
         ```bash
