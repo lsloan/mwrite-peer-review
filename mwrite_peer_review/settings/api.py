@@ -186,7 +186,10 @@ TIME_OUTPUT_FORMAT = '%b %-d %-I:%M %p'  # if running on Windows, replace - with
 
 # TODO should eventually turn off static file handling completely once views are ported to VueJS
 STATIC_URL = '/static/'
-STATIC_ROOT = os.path.join(BASE_DIR, '../../staticfiles')
+if DEBUG:
+    STATIC_ROOT = os.path.join(BASE_DIR, '../../staticfiles')
+else:
+    STATIC_ROOT = os.path.join(BASE_DIR, '../staticfiles')  # TODO ugly dirty hack. clean up
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'  # TODO remove after views ported to Vue
 
 
