@@ -149,8 +149,14 @@ def persist_sections(course_id):
 
 
 def _convert_student(course_id, raw_student):
-    return CanvasStudent(id=raw_student['id'],
-                         username=raw_student['login_id'],
+    student_id = raw_student['id']
+    if 'login_id' in raw_student:
+        username = raw_student['login_id']
+    else:
+        username = str(student_id)
+
+    return CanvasStudent(id=student_id,
+                         username=username,
                          full_name=raw_student['name'],
                          sortable_name=raw_student['sortable_name'],
                          course_id=course_id)
