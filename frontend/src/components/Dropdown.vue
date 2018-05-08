@@ -1,6 +1,6 @@
 <template>
   <div>
-    <!--<label :for='id'>{{ label }}</label>-->
+    <!--<label :for='id'>{{ label }}</label>-->  <!-- TODO add this back for screen readers only -->
     <div class='dropdown-container'>
       <button :id ='id' class='dropdown-button' type='button' :disabled='disabled' @click='toggleDropdown'>
         <span class='selected-option'>{{ displayName }}</span>
@@ -27,8 +27,6 @@ export default {
   },
   computed: {
     displayName: function() {
-      console.log('DROPDOWN: value: ', this.value, ' and ', this.value.name);
-      console.log('DROPDOWN return val: ', (this.value && this.value.name));
       return (this.value && this.value.name) || this.emptyCaption;
     }
   },
