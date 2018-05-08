@@ -44,9 +44,10 @@
                             <a class="plain-link" :href="makeRowLink(row.id)">{{row.name}}</a>
                         </td>
                         <td class="mdl-data-table__cell--non-numeric clickable student-table-cell">
-              <span v-for="(section, index) in row.section.names" :key="index">{{section}}
-                <span v-if="index < row.section.names.length -1">,&nbsp;</span>
-              </span>
+                        <span v-for="(section, index) in row.sections.names" :key="index">
+                            {{section}}
+                            <span v-if="index < row.sections.names.length -1">,&nbsp;</span>
+                        </span>
                         </td>
                     </tr>
                 </tbody>
@@ -73,29 +74,6 @@
 <script>
 import {MdlSpinner} from 'vue-mdl';
 import Dropdown from '@/components/Dropdown';
-
-const convertDataFormat = (rowData) => {
-  const sectionNamesIds = rowData['sections'].reduce((acc, next) => {
-    acc['names'].push(next['name']);
-    acc['ids'].push(next['id']);
-
-    return acc;
-  }, {names: [], ids: []});
-
-  const fullName = rowData['sortableName'];
-
-  return {name: fullName, section: sectionNamesIds, id: rowData['id']};
-};
-
-const alphabeticalComparator = (a, b) => {
-  if(a.name.toLowerCase() < b.name.toLowerCase()) {
-    return -1;
-  }
-  if(a.name.toLowerCase() > b.name.toLowerCase()) {
-    return 1;
-  }
-  return 0;
-};
 
 export default {
   name: 'FilterableTable',
@@ -137,32 +115,26 @@ export default {
         value: id
       }));
     },
-    formattedEntries() {
-      return this.entries
-        .map(convertDataFormat)
-        .sort(alphabeticalComparator);
-    },
     filteredEntries() {
-      const parsedData = this.formattedEntries;
-      const sectionSelected = this.selectedSection.value;
-      const nameSelected = this.nameFilter;
+      const parsedData = this.entries;
+      const selectedSectionId = parseInt(this.selectedSection.value);
+      const selectedName = this.nameFilter.toLowerCase();
 
-      if(sectionSelected === '0' && nameSelected === '') {
+      if(selectedSectionId === 0 && selectedName === '') {
         return parsedData;
       }
 
-      return parsedData.filter(row => {
-        if(sectionSelected !== '0' && nameSelected !== '') {
-          const includesSection = row['section']['ids'].includes(parseInt(sectionSelected));
-          const includesName = row['name'].toLowerCase().includes(nameSelected.toLowerCase());
-
+      return parsedData.filter(entry => {
+        if(selectedSectionId !== 0 && selectedName !== '') {
+          const includesSection = entry.sections.ids.includes(selectedSectionId);
+          const includesName = entry.name.toLowerCase().includes(selectedName);
           return includesSection && includesName;
         }
-        if(sectionSelected !== '0') {
-          return row['section']['ids'].includes(parseInt(sectionSelected));
+        if(selectedSectionId !== 0) {
+          return entry.sections.ids.includes(selectedSectionId);
         }
-        if(nameSelected !== '') {
-          return (row['name'].toLowerCase()).includes(nameSelected.toLowerCase());
+        if(selectedName !== '') {
+          return entry.name.toLowerCase().includes(selectedName);
         }
       });
     },

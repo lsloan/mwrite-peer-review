@@ -1,7 +1,7 @@
 <template>
     <filterable-table
         :table-name="courseName"
-        :entries="students || []"
+        :entries="entries"
         :is-loading="!Boolean(students)"
         :row-click-handler="goToStudent"
         :make-row-link="makeStudentLink"
@@ -10,6 +10,30 @@
 
 <script>
 import FilterableTable from '@/components/FilterableTable';
+
+const makeStudentEntry = (student) => {
+  const sectionNamesIds = student.sections.reduce((acc, next) => {
+    acc.ids.push(next.id);
+    acc.names.push(next.name);
+    return acc;
+  }, {ids: [], names: []});
+
+  return {
+    id: student.id,
+    name: student.sortableName,
+    sections: sectionNamesIds
+  };
+};
+
+const alphabeticalComparator = (a, b) => {
+  if(a.name.toLowerCase() < b.name.toLowerCase()) {
+    return -1;
+  }
+  if(a.name.toLowerCase() > b.name.toLowerCase()) {
+    return 1;
+  }
+  return 0;
+};
 
 export default {
   name: 'RefactoredStudentList',
@@ -26,6 +50,11 @@ export default {
     },
     courseName() {
       return this.$store.state.userDetails.courseName;
+    },
+    entries() {
+      return this.students
+        ? this.students.map(makeStudentEntry).sort(alphabeticalComparator)
+        : [];
     }
   },
   methods: {
