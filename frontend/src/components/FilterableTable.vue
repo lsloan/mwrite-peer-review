@@ -249,7 +249,16 @@ export default {
       this.currentPage = 1;
     },
     selectedSection() {
-      window.sessionStorage.setItem(this.sectionFilterSessionStorageKey, JSON.stringify(this.selected));
+      window.sessionStorage.setItem(
+        this.sectionFilterSessionStorageKey,
+        JSON.stringify(this.selectedSection)
+      );
+    }
+  },
+  created() {
+    const selectedSection = JSON.parse(sessionStorage.getItem(this.sectionFilterSessionStorageKey));
+    if(selectedSection) {
+      this.selectedSection = selectedSection;
     }
   }
 };
