@@ -29,8 +29,11 @@
             <table class="mdl-data-table mdl-js-data-table student-table">
                 <thead>
                     <tr class="no-top-border">
-                        <th class="mdl-data-table__cell--non-numeric table-heading">Student Name</th>
-                        <th class="mdl-data-table__cell--non-numeric table-heading">Sections</th>
+                        <th v-for="{key, description} in columnMapping"
+                            :key="key"
+                            class="mdl-data-table__cell--non-numeric table-heading">
+                            {{ description }}
+                        </th>
                     </tr>
                 </thead>
                 <tbody>
