@@ -1,71 +1,77 @@
 <template>
-    <div class="mdl-grid">
-        <div class="mdl-cell mdl-cell--12-col">
-            <h1 class="title">{{ tableName }} Students</h1>
-        </div>
-        <div class="mdl-cell mdl-cell--3-col mdl-cell--3-col-tablet mdl-cell--4-col-phone">
-            <div class="mdl-textfield">
-                <dropdown
-                    id="section-select"
-                    label="Section Filter"
-                    v-model="selectedSection"
-                    :options="sectionChoices"
-                    :disabled="false"/>
+    <div>
+        <div class="mdl-grid">
+            <div class="mdl-cell mdl-cell--12-col">
+                <h1 class="title">{{ tableName }} Students</h1>
             </div>
         </div>
-        <div class="mdl-cell mdl-cell--3-col mdl-cell--3-col-tablet mdl-cell--4-col-phone">
-            <div class="mdl-textfield flexbox">
-                <input
-                    id="name-filter"
-                    v-model="nameFilter"
-                    class="mdl-textfield__input clickable"
-                    type="text"
-                    placeholder="Search for a student">
-                <i id="glass" class="material-icons">search</i>
+        <div class="mdl-grid">
+            <div class="mdl-cell mdl-cell--3-col mdl-cell--3-col-tablet mdl-cell--4-col-phone">
+                <div class="mdl-textfield">
+                    <dropdown
+                        id="section-select"
+                        label="Section Filter"
+                        v-model="selectedSection"
+                        :options="sectionChoices"
+                        :disabled="false"/>
+                </div>
             </div>
+            <div class="mdl-cell mdl-cell--3-col mdl-cell--3-col-tablet mdl-cell--4-col-phone">
+                <div class="mdl-textfield flexbox">
+                    <input
+                        id="name-filter"
+                        v-model="nameFilter"
+                        class="mdl-textfield__input clickable"
+                        type="text"
+                        placeholder="Search for a student">
+                    <i id="glass" class="material-icons">search</i>
+                </div>
+            </div>
+            <div class="mdl-cell mdl-cell--6-col mdl-cell--2-col-tablet mdl-cell--hide-phone"></div>
         </div>
-        <div class="mdl-cell mdl-cell--6-col mdl-cell--2-col-tablet mdl-cell--hide-phone"></div>
-        <div class="mdl-cell mdl-cell--12-col x-scrollable">
-            <table class="mdl-data-table mdl-js-data-table student-table">
-                <thead>
-                    <tr class="no-top-border">
-                        <th v-for="{key, description} in columnMapping"
-                            :key="key"
-                            class="mdl-data-table__cell--non-numeric table-heading">
-                            {{ description }}
-                        </th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr v-if="isLoading">
-                        <td colspan="2" class="centralized student-table-cell">
-                            <mdl-spinner single-color></mdl-spinner>
-                        </td>
-                    </tr>
-                    <tr v-else v-on:click="rowClickHandler(row.id)" v-for="row in paginatedFilteredEntries" :key="row.index">
-                        <td v-for="{key, transform} in columnMapping"
-                            :key="key"
-                            class="mdl-data-table__cell--non-numeric clickable student-table-cell">
-                            {{ transform(row[key]) }}
-                        </td>
-                    </tr>
-                </tbody>
-            </table>
-        </div>
-
-        <div class="flexbox pagination-container x-scrollable" v-if="isLoading === false">
-            <button class="pagination-button" type="button" v-on:click="goToPrevPage">Prev</button>
-
-            <div v-for="(currentButton, index) in buttonsToShow" v-bind:key="index">
-                <span v-if="currentButton==='...'" class="page-gap">{{currentButton}}</span>
-                <button class="pagination-button" v-else type="button" v-on:click="goToPage(currentButton)"
-                        v-bind:class="{'current-page': currentButton === currentPage}"
-                        :disabled="currentButton === currentPage">
-                    {{currentButton}}
-                </button>
+        <div class="mdl-grid">
+            <div class="mdl-cell mdl-cell--12-col x-scrollable">
+                <table class="mdl-data-table mdl-js-data-table student-table">
+                    <thead>
+                        <tr class="no-top-border">
+                            <th v-for="{key, description} in columnMapping"
+                                :key="key"
+                                class="mdl-data-table__cell--non-numeric table-heading">
+                                {{ description }}
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr v-if="isLoading">
+                            <td colspan="2" class="centralized student-table-cell">
+                                <mdl-spinner single-color></mdl-spinner>
+                            </td>
+                        </tr>
+                        <tr v-else v-on:click="rowClickHandler(row.id)" v-for="row in paginatedFilteredEntries" :key="row.index">
+                            <td v-for="{key, transform} in columnMapping"
+                                :key="key"
+                                class="mdl-data-table__cell--non-numeric clickable student-table-cell">
+                                {{ transform(row[key]) }}
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
             </div>
 
-            <button class="pagination-button" type="button" v-on:click="goToNextPage">Next</button>
+            <div class="flexbox pagination-container x-scrollable" v-if="isLoading === false">
+                <button class="pagination-button" type="button" v-on:click="goToPrevPage">Prev</button>
+
+                <div v-for="(currentButton, index) in buttonsToShow" v-bind:key="index">
+                    <span v-if="currentButton==='...'" class="page-gap">{{currentButton}}</span>
+                    <button class="pagination-button" v-else type="button" v-on:click="goToPage(currentButton)"
+                            v-bind:class="{'current-page': currentButton === currentPage}"
+                            :disabled="currentButton === currentPage">
+                        {{currentButton}}
+                    </button>
+                </div>
+
+                <button class="pagination-button" type="button" v-on:click="goToNextPage">Next</button>
+            </div>
         </div>
     </div>
 </template>
