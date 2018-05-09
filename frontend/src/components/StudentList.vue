@@ -2,28 +2,22 @@
     <filterable-table
         :table-name="courseName"
         :entries="entries"
+        :column-mapping="columnMapping"
         :is-loading="!Boolean(students)"
         :row-click-handler="goToStudent"
         :make-row-link="makeStudentLink"
-        section-filter-storage-key="studentsListSection"/>
+        section-filter-session-storage-key="studentsListSection"/>
 </template>
 
 <script>
+import * as R from 'ramda';
 import FilterableTable from '@/components/FilterableTable';
 
-const makeStudentEntry = (student) => {
-  const sectionNamesIds = student.sections.reduce((acc, next) => {
-    acc.ids.push(next.id);
-    acc.names.push(next.name);
-    return acc;
-  }, {ids: [], names: []});
-
-  return {
-    id: student.id,
-    name: student.sortableName,
-    sections: sectionNamesIds
-  };
-};
+const makeStudentEntry = student => ({
+  id: student.id,
+  name: student.sortableName,
+  sections: student.sections
+});
 
 const alphabeticalComparator = (a, b) => {
   if(a.name.toLowerCase() < b.name.toLowerCase()) {
@@ -35,13 +29,25 @@ const alphabeticalComparator = (a, b) => {
   return 0;
 };
 
+const namesFromSections = ss => ss.map(s => s.name);
+
+const allSectionsForDisplay = R.pipe(
+  namesFromSections,
+  R.intersperse(', '),
+  R.reduce(R.concat, '')
+);
+
 export default {
-  name: 'RefactoredStudentList',
+  name: 'StudentList',
   components: {FilterableTable},
   data() {
     return {
       students: null,
-      apiUrl: __API_URL__
+      apiUrl: __API_URL__,
+      columnMapping: [
+        {key: 'name', description: 'Student Name', transform: R.identity},
+        {key: 'sections', description: 'Sections', transform: allSectionsForDisplay}
+      ]
     };
   },
   computed: {

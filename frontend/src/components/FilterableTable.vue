@@ -39,15 +39,11 @@
                             <mdl-spinner single-color></mdl-spinner>
                         </td>
                     </tr>
-                    <tr v-on:click="rowClickHandler(row.id)" v-for="row in paginatedFilteredEntries" :key="row.index">
-                        <td class="mdl-data-table__cell--non-numeric clickable student-table-cell">
-                            <a class="plain-link" :href="makeRowLink(row.id)">{{row.name}}</a>
-                        </td>
-                        <td class="mdl-data-table__cell--non-numeric clickable student-table-cell">
-                        <span v-for="(section, index) in row.sections.names" :key="index">
-                            {{section}}
-                            <span v-if="index < row.sections.names.length -1">,&nbsp;</span>
-                        </span>
+                    <tr v-else v-on:click="rowClickHandler(row.id)" v-for="row in paginatedFilteredEntries" :key="row.index">
+                        <td v-for="{key, transform} in columnMapping"
+                            :key="key"
+                            class="mdl-data-table__cell--non-numeric clickable student-table-cell">
+                            {{ transform(row[key]) }}
                         </td>
                     </tr>
                 </tbody>
@@ -81,6 +77,7 @@ export default {
     'table-name',
     'entries',
     'is-loading',
+    'column-mapping',
     'row-click-handler',
     'make-row-link',
     'section-filter-session-storage-key'
@@ -98,11 +95,11 @@ export default {
   computed: {
     sectionChoices() {
       const allSections = this.entries.reduce((acc, next) => {
-        const sections = next['sections'];
+        const sections = next.sections;
 
         for(let i = 0; i < sections.length; i++) {
-          if(!acc.hasOwnProperty(sections[i]['id'])) {
-            acc[sections[i]['id']] = sections[i]['name'];
+          if(!acc.hasOwnProperty(sections[i].id)) {
+            acc[sections[i]['id']] = sections[i].name;
           }
         }
 
@@ -125,13 +122,15 @@ export default {
       }
 
       return parsedData.filter(entry => {
+        const sectionIds = entry.sections.map(s => s.id);
+
         if(selectedSectionId !== 0 && selectedName !== '') {
-          const includesSection = entry.sections.ids.includes(selectedSectionId);
+          const includesSection = sectionIds.includes(selectedSectionId);
           const includesName = entry.name.toLowerCase().includes(selectedName);
           return includesSection && includesName;
         }
         if(selectedSectionId !== 0) {
-          return entry.sections.ids.includes(selectedSectionId);
+          return sectionIds.includes(selectedSectionId);
         }
         if(selectedName !== '') {
           return entry.name.toLowerCase().includes(selectedName);
