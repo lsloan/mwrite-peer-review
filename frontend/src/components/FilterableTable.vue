@@ -56,7 +56,6 @@
                     </tbody>
                 </table>
             </div>
-
             <div class="flexbox pagination-container x-scrollable" v-if="isLoading === false">
                 <button class="pagination-button" type="button" v-on:click="goToPrevPage">Prev</button>
 
