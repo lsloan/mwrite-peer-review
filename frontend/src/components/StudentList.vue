@@ -40,7 +40,6 @@ const allSectionsForDisplay = R.pipe(
   R.reduce(R.concat, '')
 );
 
-// TODO put the R.reduce curry here
 const combineEntrySections = (acc, next) => {
   const sections = next.sections;
 
@@ -53,9 +52,10 @@ const combineEntrySections = (acc, next) => {
   return acc;
 };
 
-// TODO see above
+const entriesToSectionsById = R.reduce(combineEntrySections, {});
+
 const entriesToFilterChoices = entries => {
-  const sectionsById = entries.reduce(combineEntrySections, {});
+  const sectionsById = entriesToSectionsById(entries);
   sectionsById[allStudentsSectionId] = 'All Students';
   return Object.entries(sectionsById)
     .map(([id, name]) => ({value: parseInt(id), name: name}))
