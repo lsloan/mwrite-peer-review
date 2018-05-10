@@ -62,6 +62,21 @@ const entriesToFilterChoices = entries => {
     .sort((a, b) => a.value - b.value);
 };
 
+const rowMatchesStudentNameFilter = (value, entry) => {
+  return value === '' || entry.name.toLowerCase().includes(value.toLowerCase());
+};
+
+const rowMatchesSectionFilter = (value, entry) => {
+  const selectedSectionId = value.value;
+  if(selectedSectionId === allStudentsSectionId) {
+    return true;
+  }
+  else {
+    const sectionIds = entry.sections.map(s => s.id);
+    return sectionIds.includes(selectedSectionId);
+  }
+};
+
 export default {
   name: 'StudentList',
   components: {FilterableTable},
@@ -77,7 +92,7 @@ export default {
           filter: {
             type: 'absolute',
             defaultValue: '',
-            predicate: (value, entry) => value === '' || entry.name.includes(value)
+            predicate: rowMatchesStudentNameFilter
           }
         },
         {
@@ -88,7 +103,7 @@ export default {
             type: 'choices',
             defaultValue: {'value': allStudentsSectionId, 'name': 'All Students'},
             makeFilterChoices: entriesToFilterChoices,
-            predicate: (value, entry) => value.value === allStudentsSectionId || entry.sections.includes(value)
+            predicate: rowMatchesSectionFilter
           }
         }
       ]
