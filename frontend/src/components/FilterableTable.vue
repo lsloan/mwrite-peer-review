@@ -9,15 +9,12 @@
             <div v-for="{key, filter: {type, makeFilterChoices}} in filterableColumns"
                  :key="key"
                  class="mdl-cell mdl-cell--3-col mdl-cell--3-col-tablet mdl-cell--4-col-phone">
-                <div v-if="type === 'absolute'"
-                     class="mdl-textfield">
-                    <div class="mdl-textfield flexbox">
-                        <input v-model="filterValues[key]"
-                               class="mdl-textfield__input clickable absolute-filter"
-                               type="text"
-                               placeholder="Search for a student">
-                        <i class="material-icons filter-icon">search</i>
-                    </div>
+                <div v-if="type === 'absolute'" class="mdl-textfield flexbox">
+                    <input v-model="filterValues[key]"
+                            class="mdl-textfield__input clickable absolute-filter"
+                            type="text"
+                            placeholder="Search for a student">
+                    <i class="material-icons filter-icon">search</i>
                 </div>
                 <div v-else-if="type === 'choices'"
                      class="mdl-textfield">
