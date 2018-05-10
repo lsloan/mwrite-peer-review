@@ -88,7 +88,7 @@ export default {
     'column-mapping',
     'row-click-handler',
     'make-row-link',
-    'section-filter-session-storage-key'
+    'filter-session-storage-key'
   ],
   components: {MdlSpinner, Dropdown},
   data() {
@@ -163,10 +163,20 @@ export default {
     }
   },
   methods: {
-    restoreSavedFilters() {
-      const selectedSection = JSON.parse(sessionStorage.getItem(this.sectionFilterSessionStorageKey));
-      if(selectedSection) {
-        this.selectedSection = selectedSection;
+    restoreSavedFilterValues() {
+      const savedFilterValues = JSON.parse(sessionStorage.getItem(this.filterSessionStorageKey));
+      if(savedFilterValues) {
+        this.filterValues = savedFilterValues;
+      }
+    },
+    storeFilterValues() {
+      const keyValuePairs = this.columnMapping
+        .filter(cm => cm.filter && cm.filter.saveToSessionStorage)
+        .map(cm => [cm.key, this.filterValues[cm.key]])
+        .filter(([key, value]) => value);
+      const storableFilterValues = R.fromPairs(keyValuePairs);
+      if(!R.isEmpty(storableFilterValues)) {
+        window.sessionStorage.setItem(this.filterSessionStorageKey, JSON.stringify(storableFilterValues));
       }
     },
     initializeFilterValues() {
@@ -207,18 +217,20 @@ export default {
   },
   watch: {
     filteredEntries() {
-      this.currentPage = 1;
+      this.goToPage(1);
+    },
+    filterValues: {
+      deep: true,
+      handler() {
+        if(!this.isLoading) {
+          this.storeFilterValues();
+        }
+      }
     }
-    // selectedSection() {
-    //   window.sessionStorage.setItem(
-    //     this.sectionFilterSessionStorageKey,
-    //     JSON.stringify(this.selectedSection)
-    //   );
-    // }
   },
   mounted() {
-    this.restoreSavedFilters();
     this.initializeFilterValues();
+    this.restoreSavedFilterValues();
   }
 };
 </script>

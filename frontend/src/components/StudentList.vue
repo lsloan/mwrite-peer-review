@@ -6,7 +6,7 @@
         :is-loading="!Boolean(students)"
         :row-click-handler="goToStudent"
         :make-row-link="makeStudentLink"
-        section-filter-session-storage-key="studentsListSection"/>
+        filter-session-storage-key="studentsListFilterValues"/>
 </template>
 
 <script>
@@ -92,7 +92,8 @@ export default {
           filter: {
             type: 'absolute',
             defaultValue: '',
-            predicate: rowMatchesStudentNameFilter
+            predicate: rowMatchesStudentNameFilter,
+            saveToSessionStorage: false
           }
         },
         {
@@ -103,7 +104,8 @@ export default {
             type: 'choices',
             defaultValue: {'value': allStudentsSectionId, 'name': 'All Students'},
             makeFilterChoices: entriesToFilterChoices,
-            predicate: rowMatchesSectionFilter
+            predicate: rowMatchesSectionFilter,
+            saveToSessionStorage: true
           }
         }
       ]
