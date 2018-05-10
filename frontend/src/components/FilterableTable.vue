@@ -100,7 +100,7 @@ export default {
       rowsPerPage: 20,
       currentPage: 1,
       numPageShow: 3,
-      filterValues: null
+      filterValues: {}
     };
   },
   computed: {
@@ -109,7 +109,8 @@ export default {
       return filterableColumns.reverse();
     },
     filterPredicate() {
-      const predicates = this.filterableColumns.map(c => {
+      const columnsWithFilterValues = this.filterableColumns.filter(c => this.filterValues[c.key]);
+      const predicates = columnsWithFilterValues.map(c => {
         const filterValue = this.filterValues[c.key];
         return R.partial(c.filter.predicate, [filterValue]);
       });
