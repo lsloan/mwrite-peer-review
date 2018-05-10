@@ -6,25 +6,27 @@
             </div>
         </div>
         <div class="mdl-grid">
-            <div class="mdl-cell mdl-cell--3-col mdl-cell--3-col-tablet mdl-cell--4-col-phone">
-                <div class="mdl-textfield">
-                    <dropdown
-                        id="section-select"
-                        label="Section Filter"
-                        v-model="selectedSection"
-                        :options="sectionChoices"
-                        :disabled="false"/>
+            <div v-for="{key, filter: {type, makeFilterChoices}} in filterableColumns"
+                 :key="key"
+                 class="mdl-cell mdl-cell--3-col mdl-cell--3-col-tablet mdl-cell--4-col-phone">
+                <div v-if="type === 'absolute'"
+                     class="mdl-textfield">
+                    <div class="mdl-textfield flexbox">
+                        <input v-model="filterValues[key]"
+                               class="mdl-textfield__input clickable absolute-filter"
+                               type="text"
+                               placeholder="Search for a student">
+                        <i class="material-icons filter-icon">search</i>
+                    </div>
                 </div>
-            </div>
-            <div class="mdl-cell mdl-cell--3-col mdl-cell--3-col-tablet mdl-cell--4-col-phone">
-                <div class="mdl-textfield flexbox">
-                    <input
-                        id="name-filter"
-                        v-model="nameFilter"
-                        class="mdl-textfield__input clickable"
-                        type="text"
-                        placeholder="Search for a student">
-                    <i id="glass" class="material-icons">search</i>
+                <div v-else-if="type === 'choices'"
+                     class="mdl-textfield">
+                    <dropdown
+                        :id="key"
+                        label="Section Filter"
+                        v-model="filterValues[key]"
+                        :options="makeFilterChoices(entries)"
+                        :disabled="false"/>
                 </div>
             </div>
             <div class="mdl-cell mdl-cell--6-col mdl-cell--2-col-tablet mdl-cell--hide-phone"></div>
@@ -77,6 +79,7 @@
 </template>
 
 <script>
+import * as R from 'ramda';
 import {MdlSpinner} from 'vue-mdl';
 import Dropdown from '@/components/Dropdown';
 
@@ -94,57 +97,26 @@ export default {
   components: {MdlSpinner, Dropdown},
   data() {
     return {
-      selectedSection: {'value': '0', 'name': 'All Students'},
-      nameFilter: '',
       rowsPerPage: 20,
       currentPage: 1,
-      numPageShow: 3
+      numPageShow: 3,
+      filterValues: null
     };
   },
   computed: {
-    sectionChoices() {
-      const allSections = this.entries.reduce((acc, next) => {
-        const sections = next.sections;
-
-        for(let i = 0; i < sections.length; i++) {
-          if(!acc.hasOwnProperty(sections[i].id)) {
-            acc[sections[i]['id']] = sections[i].name;
-          }
-        }
-
-        return acc;
-      }, {});
-      allSections[0] = 'All students';
-
-      return Object.entries(allSections).map(([id, name]) => ({
-        name: name,
-        value: id
-      }));
+    filterableColumns() {
+      const filterableColumns = this.columnMapping.filter(({filter = null}) => filter);
+      return filterableColumns.reverse();
+    },
+    filterPredicate() {
+      const predicates = this.filterableColumns.map(c => {
+        const filterValue = this.filterValues[c.key];
+        return R.partial(c.filter.predicate, [filterValue]);
+      });
+      return R.allPass(predicates);
     },
     filteredEntries() {
-      const parsedData = this.entries;
-      const selectedSectionId = parseInt(this.selectedSection.value);
-      const selectedName = this.nameFilter.toLowerCase();
-
-      if(selectedSectionId === 0 && selectedName === '') {
-        return parsedData;
-      }
-
-      return parsedData.filter(entry => {
-        const sectionIds = entry.sections.map(s => s.id);
-
-        if(selectedSectionId !== 0 && selectedName !== '') {
-          const includesSection = sectionIds.includes(selectedSectionId);
-          const includesName = entry.name.toLowerCase().includes(selectedName);
-          return includesSection && includesName;
-        }
-        if(selectedSectionId !== 0) {
-          return sectionIds.includes(selectedSectionId);
-        }
-        if(selectedName !== '') {
-          return entry.name.toLowerCase().includes(selectedName);
-        }
-      });
+      return R.filter(this.filterPredicate, this.entries);
     },
     paginatedFilteredEntries() {
       const allFilteredData = this.filteredEntries;
@@ -194,6 +166,18 @@ export default {
     }
   },
   methods: {
+    restoreSavedFilters() {
+      const selectedSection = JSON.parse(sessionStorage.getItem(this.sectionFilterSessionStorageKey));
+      if(selectedSection) {
+        this.selectedSection = selectedSection;
+      }
+    },
+    initializeFilterValues() {
+      this.filterValues = this.filterableColumns.reduce((acc, next) => {
+        acc[next.key] = next.filter.defaultValue;
+        return acc;
+      }, {});
+    },
     goToNextPage() {
       if(this.currentPage < this.lastPage) {
         this.currentPage = this.currentPage + 1;
@@ -227,19 +211,17 @@ export default {
   watch: {
     filteredEntries() {
       this.currentPage = 1;
-    },
-    selectedSection() {
-      window.sessionStorage.setItem(
-        this.sectionFilterSessionStorageKey,
-        JSON.stringify(this.selectedSection)
-      );
     }
+    // selectedSection() {
+    //   window.sessionStorage.setItem(
+    //     this.sectionFilterSessionStorageKey,
+    //     JSON.stringify(this.selectedSection)
+    //   );
+    // }
   },
-  created() {
-    const selectedSection = JSON.parse(sessionStorage.getItem(this.sectionFilterSessionStorageKey));
-    if(selectedSection) {
-      this.selectedSection = selectedSection;
-    }
+  mounted() {
+    this.restoreSavedFilters();
+    this.initializeFilterValues();
   }
 };
 </script>
@@ -262,11 +244,11 @@ export default {
         cursor: pointer;
     }
 
-    #name-filter {
+    .absolute-filter {
         z-index: 10;
     }
 
-    #glass {
+    .filter-icon {
         margin-left: -30px;
     }
 
