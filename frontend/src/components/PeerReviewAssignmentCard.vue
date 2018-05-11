@@ -66,11 +66,11 @@
                class="mdl-button mdl-button--colored mdl-js-button mdl-js-ripple-effect">
                 {{ rubricActionText }} Rubric
             </a>
-            <a v-if="reviewsInProgress"
-               :href="viewReviewsUrl"
-               class="mdl-button mdl-button--colored mdl-js-button mdl-js-ripple-effect">
+            <router-link v-if="reviewsInProgress"
+                         class="mdl-button mdl-button--colored mdl-js-button mdl-js-ripple-effect"
+                         :to="{name: 'ReviewStatus', params: {rubricId: this.rubricId}}">
                 See Reviews
-            </a>
+            </router-link>
         </div>
 
     </div>
