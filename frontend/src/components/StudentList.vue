@@ -1,6 +1,6 @@
 <template>
     <filterable-table
-        :table-name="courseName"
+        :table-name="courseName + ' Students'"
         :entries="entries"
         :column-mapping="columnMapping"
         :is-loading="!Boolean(students)"
@@ -11,71 +11,8 @@
 
 <script>
 import * as R from 'ramda';
+import * as StudentsService from '@/services/students';
 import FilterableTable from '@/components/FilterableTable';
-
-// TODO should find a better value than 0 here?
-const allStudentsSectionId = 0;
-
-const makeStudentEntry = student => ({
-  id: student.id,
-  name: student.sortableName,
-  sections: student.sections
-});
-
-const alphabeticalComparator = (a, b) => {
-  if(a.name.toLowerCase() < b.name.toLowerCase()) {
-    return -1;
-  }
-  if(a.name.toLowerCase() > b.name.toLowerCase()) {
-    return 1;
-  }
-  return 0;
-};
-
-const namesFromSections = ss => ss.map(s => s.name);
-
-const allSectionsForDisplay = R.pipe(
-  namesFromSections,
-  R.intersperse(', '),
-  R.reduce(R.concat, '')
-);
-
-const combineEntrySections = (acc, next) => {
-  const sections = next.sections;
-
-  for(let i = 0; i < sections.length; i++) {
-    if(!acc.hasOwnProperty(sections[i].id)) {
-      acc[sections[i]['id']] = sections[i].name;
-    }
-  }
-
-  return acc;
-};
-
-const entriesToSectionsById = R.reduce(combineEntrySections, {});
-
-const entriesToFilterChoices = entries => {
-  const sectionsById = entriesToSectionsById(entries);
-  sectionsById[allStudentsSectionId] = 'All Students';
-  return Object.entries(sectionsById)
-    .map(([id, name]) => ({value: parseInt(id), name: name}))
-    .sort((a, b) => a.value - b.value);
-};
-
-const rowMatchesStudentNameFilter = (value, entry) => {
-  return value === '' || entry.name.toLowerCase().includes(value.toLowerCase());
-};
-
-const rowMatchesSectionFilter = (value, entry) => {
-  const selectedSectionId = value.value;
-  if(selectedSectionId === allStudentsSectionId) {
-    return true;
-  }
-  else {
-    const sectionIds = entry.sections.map(s => s.id);
-    return sectionIds.includes(selectedSectionId);
-  }
-};
 
 export default {
   name: 'StudentList',
@@ -92,19 +29,19 @@ export default {
           filter: {
             type: 'absolute',
             defaultValue: '',
-            predicate: rowMatchesStudentNameFilter,
+            predicate: StudentsService.rowMatchesStudentNameFilter,
             saveToSessionStorage: false
           }
         },
         {
           key: 'sections',
           description: 'Sections',
-          transform: allSectionsForDisplay,
+          transform: StudentsService.allSectionsForDisplay,
           filter: {
             type: 'choices',
-            defaultValue: {'value': allStudentsSectionId, 'name': 'All Students'},
-            makeFilterChoices: entriesToFilterChoices,
-            predicate: rowMatchesSectionFilter,
+            defaultValue: StudentsService.ALL_STUDENTS_SECTION,
+            makeFilterChoices: StudentsService.entriesToFilterChoices,
+            predicate: StudentsService.rowMatchesSectionFilter,
             saveToSessionStorage: true
           }
         }
@@ -120,7 +57,9 @@ export default {
     },
     entries() {
       return this.students
-        ? this.students.map(makeStudentEntry).sort(alphabeticalComparator)
+        ? this.students
+          .map(StudentsService.makeStudentEntry)
+          .sort(StudentsService.alphabeticalComparator)
         : [];
     }
   },

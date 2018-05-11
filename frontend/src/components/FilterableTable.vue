@@ -2,7 +2,7 @@
     <div>
         <div class="mdl-grid">
             <div class="mdl-cell mdl-cell--12-col">
-                <h1 class="title">{{ tableName }} Students</h1>
+                <h1 class="title">{{ tableName }}</h1>
             </div>
         </div>
         <div class="mdl-grid">
