@@ -24,6 +24,7 @@ from toolz.functoolz import thread_last
 from toolz.itertoolz import unique
 
 from peer_review.models import *
+from peer_review.queries import ReviewStatus
 from peer_review.util import parse_json_body, some
 from peer_review.decorators import authenticated_json_endpoint
 from peer_review.etl import persist_assignments, AssignmentValidation
@@ -433,56 +434,14 @@ class AssignmentStatus(HasRoleMixin, TemplateView):
     def get_context_data(self, **kwargs):
 
         course_id = int(kwargs['course_id'])
+        rubric_id = int(kwargs['rubric_id'])
 
         try:
-            rubric = Rubric.objects.get(id=kwargs['rubric_id'])
+            Rubric.objects.get(id=rubric_id)
         except Rubric.DoesNotExist:
             return Http404
 
-        submissions = rubric.reviewed_assignment.canvas_submission_set.all()
-
-        reviews = []
-        sections = set()
-        for submission in submissions:
-            total_completed_num = submission.total_completed_by_a_student.count()
-            completed_reviews_num = submission.num_comments_each_review_per_student       \
-                                              .filter(completed__gte=rubric.num_criteria) \
-                                              .count()
-
-            total_received_num = submission.total_received_of_a_student.count()
-            received_reviews_num = submission.num_comments_each_review_per_submission   \
-                                             .filter(received__gte=rubric.num_criteria) \
-                                             .count()
-
-            if rubric.sections.all():
-                author_sections = submission.author.sections.filter(id__in=rubric.sections.values_list('id', flat=True), course_id=course_id)
-            else:
-                author_sections = submission.author.sections.filter(course_id=course_id)
-
-            for section in author_sections:
-                sections.add(section)
-
-            reviews.append({
-                'author':          submission.author,
-                'total_completed': total_completed_num,
-                'completed':       completed_reviews_num,
-                'total_received':  total_received_num,
-                'received':        received_reviews_num,
-                'sections':        author_sections,
-                'json_sections':   json.dumps(list(author_sections.values_list('id', flat=True)))
-            })
-
-        sections = list(sections)
-        sections.sort(key=lambda s: s.name)
-
-        course = CanvasCourse.objects.get(id=course_id)
-        return {
-            'course_id': course.id,
-            'title':     course.name,
-            'reviews':   reviews,
-            'rubric':    rubric,
-            'sections':  sections
-        }
+        return ReviewStatus.status_for_rubric(course_id, rubric_id, for_api=False)
 
 
 class SingleReviewDetailView(HasRoleMixin, TemplateView):
