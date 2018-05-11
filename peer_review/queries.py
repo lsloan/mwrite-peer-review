@@ -263,6 +263,7 @@ class ReviewStatus:
 
             if for_api:
                 author = {
+                    'id': submission.author.id,
                     'name': submission.author.sortable_name
                 }
                 author_sections = [{'id': s.id, 'name': s.name} for s in author_sections]
