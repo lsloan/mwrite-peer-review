@@ -18,9 +18,17 @@ const makeReviewEntry = review => ({
   id: review.author.id,
   name: review.author.name,
   sections: review.sections,
-  reviewsGiven: `${review.completed} of ${review.totalCompleted}`,
-  reviewsReceived: `${review.received} of ${review.totalReceived}`
+  reviewsGiven: {
+    completed: review.completed,
+    total: review.totalCompleted
+  },
+  reviewsReceived: {
+    completed: review.received,
+    total: review.totalCompleted
+  }
 });
+
+const reviewsForDisplay = r => `${r.completed} of ${r.total}`;
 
 export default {
   name: 'review-status',
@@ -57,12 +65,12 @@ export default {
         {
           key: 'reviewsGiven',
           description: 'Reviews Given',
-          transform: R.identity
+          transform: reviewsForDisplay
         },
         {
           key: 'reviewsReceived',
           description: 'Reviews Received',
-          transform: R.identity
+          transform: reviewsForDisplay
         }
       ]
     };
@@ -103,4 +111,5 @@ export default {
 </script>
 
 <style scoped>
+    /* need to use background-color: #F9EAEC; for review rows past the date */
 </style>
