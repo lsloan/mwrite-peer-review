@@ -2,7 +2,7 @@
     <div>
         <div class="mdl-grid">
             <div class="mdl-cell mdl-cell--12-col">
-                <h1 class="title">{{ tableName }} Students</h1>
+                <h1 class="title">{{ tableName }}</h1>
             </div>
         </div>
         <div class="mdl-grid">
@@ -46,7 +46,10 @@
                                 <mdl-spinner single-color></mdl-spinner>
                             </td>
                         </tr>
-                        <tr v-else v-on:click="rowClickHandler(row.id)" v-for="row in paginatedFilteredEntries" :key="row.index">
+                        <tr v-else
+                            v-on:click="rowClickHandler(row.id)"
+                            v-for="row in paginatedFilteredEntries" :key="row.index"
+                            :class="resolveRowClasses(row)">
                             <td v-for="{key, transform} in columnMapping"
                                 :key="key"
                                 class="mdl-data-table__cell--non-numeric clickable student-table-cell">
@@ -79,17 +82,28 @@ import * as R from 'ramda';
 import {MdlSpinner} from 'vue-mdl';
 import Dropdown from '@/components/Dropdown';
 
+const resolveClassPredicateEntry = (row, [klass, predicate]) => {
+  const truthValue = typeof predicate === 'function'
+    ? predicate(row)
+    : predicate;
+  return [klass, truthValue];
+};
+
 export default {
   name: 'FilterableTable',
-  props: [
-    'table-name',
-    'entries',
-    'is-loading',
-    'column-mapping',
-    'row-click-handler',
-    'make-row-link',
-    'filter-session-storage-key'
-  ],
+  props: {
+    tableName: String,
+    entries: Array,
+    isLoading: Boolean,
+    columnMapping: Array,
+    rowClasses: {
+      type: Object,
+      default: () => ({})
+    },
+    rowClickHandler: Function,
+    makeRowLink: Function,
+    filterSessionStorageKey: String
+  },
   components: {MdlSpinner, Dropdown},
   data() {
     return {
@@ -163,6 +177,15 @@ export default {
     }
   },
   methods: {
+    resolveRowClasses(row) {
+      const resolveEntry = R.partial(resolveClassPredicateEntry, [row]);
+      const resolver = R.pipe(
+        R.toPairs,
+        R.map(resolveEntry),
+        R.fromPairs
+      );
+      return resolver(this.rowClasses);
+    },
     restoreSavedFilterValues() {
       const savedFilterValues = JSON.parse(sessionStorage.getItem(this.filterSessionStorageKey));
       if(savedFilterValues) {

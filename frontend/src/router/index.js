@@ -2,13 +2,14 @@ import Vue from 'vue';
 import Router from 'vue-router';
 
 import {redirectToRoleDashboard, authenticatedInstructorsOnly, authenticatedStudentsOnly} from './guards';
-import StudentList from '@/components/StudentList';
 import Error from '@/components/Error';
 import InstructorDashboard from '@/components/InstructorDashboard';
 import StudentDashboard from '@/components/StudentDashboard';
 import Modal from '@/components/Modal';
 import ReviewsGiven from '@/components/ReviewsGiven';
 import ReviewsReceived from '@/components/ReviewsReceived';
+import StudentList from '@/components/StudentList';
+import ReviewStatus from '@/components/ReviewStatus';
 
 Vue.use(Router);
 
@@ -42,6 +43,13 @@ const router = new Router({
       meta: {
         breadcrumbPathComponents: [{text: 'Students', href: '/instructor/students'}]
       }
+    },
+    {
+      path: '/instructor/reviews/rubric/:rubricId',
+      name: 'ReviewStatus',
+      component: ReviewStatus,
+      beforeEnter: authenticatedInstructorsOnly,
+      props: (route) => ({rubricId: route.params.rubricId})
     },
     {
       path: '/student/dashboard',

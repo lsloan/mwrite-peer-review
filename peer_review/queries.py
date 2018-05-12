@@ -1,3 +1,4 @@
+import json
 from toolz.itertoolz import groupby
 from toolz.dicttoolz import valfilter
 from toolz.functoolz import thread_last
@@ -5,7 +6,7 @@ from django.db import connection
 from django.db.models import BooleanField, Subquery, OuterRef, Count, Case, When, Value, F, Q
 
 from peer_review.util import some, fetchall_dicts
-from peer_review.models import PeerReview, Criterion, PeerReviewComment
+from peer_review.models import PeerReview, Criterion, PeerReviewComment, CanvasCourse, Rubric
 
 
 class InstructorDashboardStatus:
@@ -224,3 +225,81 @@ class StudentDashboardStatus:
             lambda pr: pr.review_is_complete,
             StudentDashboardStatus._make_completed_prompt
         )
+
+
+class ReviewStatus:
+
+    # TODO refactor to push load onto the DB
+    # this method was pulled out of peer_review.views.core.AssignmentStatus
+    @staticmethod
+    def status_for_rubric(course_id, rubric_id, for_api=True):
+        rubric = Rubric.objects.get(id=rubric_id)
+        submissions = rubric.reviewed_assignment.canvas_submission_set.all()
+
+        reviews = []
+        sections = set()
+        for submission in submissions:
+            total_completed_num = submission.total_completed_by_a_student.count()
+            completed_reviews_num = submission.num_comments_each_review_per_student       \
+                                              .filter(completed__gte=rubric.num_criteria) \
+                                              .count()
+
+            total_received_num = submission.total_received_of_a_student.count()
+            received_reviews_num = submission.num_comments_each_review_per_submission   \
+                                             .filter(received__gte=rubric.num_criteria) \
+                                             .count()
+
+            if rubric.sections.all():
+                rubric_sections_ids = rubric.sections.values_list('id', flat=True)
+                author_sections = submission.author.sections.filter(
+                    id__in=rubric_sections_ids,
+                    course_id=course_id
+                )
+            else:
+                author_sections = submission.author.sections.filter(course_id=course_id)
+
+            for section in author_sections:
+                sections.add(section)
+
+            if for_api:
+                author = {
+                    'id': submission.author.id,
+                    'name': submission.author.sortable_name
+                }
+                author_sections = [{'id': s.id, 'name': s.name} for s in author_sections]
+            else:
+                author = submission.author
+
+            review = {
+                'author':          author,
+                'total_completed': total_completed_num,
+                'completed':       completed_reviews_num,
+                'total_received':  total_received_num,
+                'received':        received_reviews_num,
+                'sections':        author_sections,
+            }
+            if not for_api:
+                review['json_sections'] = json.dumps(list(author_sections.values_list('id', flat=True)))
+
+            reviews.append(review)
+
+        sections = list(sections)
+        sections.sort(key=lambda s: s.name)
+
+        if for_api:
+            sections = [{'id': s.id, 'name': s.name} for s in sections]
+            due_date = rubric.passback_assignment.due_date_utc
+            rubric = {
+                'id': rubric.id,
+                'peer_review_title': rubric.passback_assignment.title,
+                'peer_review_due_date': due_date.strftime('%Y-%m-%d %H:%M:%SZ')
+            }
+
+        course = CanvasCourse.objects.get(id=course_id)
+        return {
+            'course_id': course.id,
+            'title':     course.name,
+            'reviews':   reviews,
+            'rubric':    rubric,
+            'sections':  sections
+        }
