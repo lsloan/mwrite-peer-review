@@ -6,7 +6,7 @@ module.exports = {
     parser: 'babel-eslint'
   },
   env: {
-    browser: true,
+    browser: true
   },
   globals: {
     '__API_URL__': true,
@@ -38,6 +38,7 @@ module.exports = {
       'while': {'after': false},
       'switch': {'after': false}
     }}],
-    'brace-style': ['error', 'stroustrup']
+    'brace-style': ['error', 'stroustrup'],
+    'quotes': ['error', 'single']
   }
 }

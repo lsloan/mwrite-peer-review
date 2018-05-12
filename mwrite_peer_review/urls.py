@@ -21,6 +21,7 @@ urlpatterns = [
 
         url(r'^students/', api.all_students),
 
+        url(r'^reviews/rubric/(?P<rubric_id>[0-9]+)/', api.review_status),
         url(r'^reviews/student/(?P<student_id>[0-9]+)/', include([
             url(r'^assigned', api.assigned_work),
             url(r'^completed', api.completed_work),

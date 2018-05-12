@@ -7,7 +7,7 @@ from django.views.decorators.http import require_POST
 
 import peer_review.etl as etl
 from peer_review.models import CanvasCourse, CanvasStudent, PeerReview, Rubric, PeerReviewEvaluation
-from peer_review.queries import InstructorDashboardStatus, StudentDashboardStatus
+from peer_review.queries import InstructorDashboardStatus, StudentDashboardStatus, ReviewStatus
 from peer_review.api.util import merge_validations
 from peer_review.util import to_camel_case, keymap_all
 from peer_review.decorators import authorized_json_endpoint, authenticated_json_endpoint, json_body
@@ -197,3 +197,8 @@ def submit_peer_review_evaluation(request, body, course_id, student_id, peer_rev
     )
 
     return True
+
+
+@authorized_json_endpoint(roles=['instructor'])
+def review_status(request, course_id, rubric_id):
+    return ReviewStatus.status_for_rubric(course_id, rubric_id)

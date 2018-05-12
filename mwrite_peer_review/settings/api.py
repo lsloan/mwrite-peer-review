@@ -70,6 +70,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'whitenoise.runserver_nostatic',  # TODO should be removed once all views are ported to VueJS
     'django.contrib.staticfiles',     # TODO should be removed once all views are ported to VueJS
+    'django_extensions',
     'rolepermissions',
     'djangolti',
     'peer_review',
