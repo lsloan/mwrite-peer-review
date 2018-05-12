@@ -288,9 +288,11 @@ class ReviewStatus:
 
         if for_api:
             sections = [{'id': s.id, 'name': s.name} for s in sections]
+            due_date = rubric.passback_assignment.due_date_utc
             rubric = {
                 'id': rubric.id,
-                'peer_review_title': rubric.passback_assignment.title
+                'peer_review_title': rubric.passback_assignment.title,
+                'peer_review_due_date': due_date.strftime('%Y-%m-%d %H:%M:%SZ')
             }
 
         course = CanvasCourse.objects.get(id=course_id)
