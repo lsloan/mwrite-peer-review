@@ -1,8 +1,10 @@
 <template>
     <filterable-table
+        class="review-status-table"
         :table-name="courseName"
         :entries="reviews"
-        :is-loading="!Boolean(entries)"
+        :row-classes="rowClasses"
+        :is-loading="!Boolean(data)"
         :column-mapping="columns"
         :row-click-handler="goToReview"
         :mke-row-link="makeReviewLink"
@@ -11,6 +13,7 @@
 
 <script>
 import * as R from 'ramda';
+import moment from 'moment';
 import * as StudentsService from '@/services/students';
 import FilterableTable from '@/components/FilterableTable';
 
@@ -37,7 +40,8 @@ export default {
   data() {
     return {
       apiUrl: __API_URL__,
-      entries: null,
+      data: null,
+      pageLoadTime: null,
       columns: [
         {
           key: 'name',
@@ -76,9 +80,29 @@ export default {
     };
   },
   computed: {
+    peerReviewDueDate() {
+      if(this.data) {
+        return moment(this.data.rubric.peerReviewDueDate).utc();
+      }
+    },
+    rowClasses() {
+      return {
+        'late-review': row => {
+          if(this.peerReviewDueDate) {
+            const dueDatePassed = this.peerReviewDueDate.isBefore(this.pageLoadTime);
+            if(dueDatePassed) {
+              const {reviewsReceived, reviewsGiven} = row;
+              const noReviewsReceived = reviewsReceived.completed === 0;
+              const noReviewsGiven = reviewsGiven.completed === 0;
+              return noReviewsReceived || noReviewsGiven;
+            }
+          }
+        }
+      };
+    },
     reviews() {
-      return this.entries
-        ? this.entries.reviews
+      return this.data
+        ? this.data.reviews
           .map(makeReviewEntry)
           .sort(StudentsService.alphabeticalComparator)
         : [];
@@ -102,14 +126,21 @@ export default {
     }
   },
   mounted() {
+    this.pageLoadTime = moment().utc();
     this.$api.get('/course/{}/reviews/rubric/{}', this.courseId, this.rubricId).then(r => {
       console.log('rubric status:', r.data);
-      this.entries = r.data;
+      this.data = r.data;
     });
   }
 };
 </script>
 
 <style scoped>
-    /* need to use background-color: #F9EAEC; for review rows past the date */
+    .review-status-table >>> tr.late-review {
+      background-color: #F9EAEC;
+    }
+
+    .review-status-table >>> tr.late-review:hover {
+      background-color: rgb(255, 168, 180);
+    }
 </style>
