@@ -2,14 +2,16 @@ import Vue from 'vue';
 import Router from 'vue-router';
 
 import {redirectToRoleDashboard, authenticatedInstructorsOnly, authenticatedStudentsOnly} from './guards';
-import Error from '@/components/Error';
-import InstructorDashboard from '@/components/InstructorDashboard';
-import StudentDashboard from '@/components/StudentDashboard';
+
 import Modal from '@/components/Modal';
 import ReviewsGiven from '@/components/ReviewsGiven';
 import ReviewsReceived from '@/components/ReviewsReceived';
-import StudentList from '@/components/StudentList';
-import ReviewStatus from '@/components/ReviewStatus';
+
+import Error from '@/pages/Error';
+import InstructorDashboard from '@/pages/InstructorDashboard';
+import StudentDashboard from '@/pages/StudentDashboard';
+import StudentList from '@/pages/StudentList';
+import ReviewStatus from '@/pages/ReviewStatus';
 
 Vue.use(Router);
 
