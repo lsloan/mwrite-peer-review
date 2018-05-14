@@ -12,6 +12,7 @@ import InstructorDashboard from '@/pages/InstructorDashboard';
 import StudentDashboard from '@/pages/StudentDashboard';
 import StudentList from '@/pages/StudentList';
 import ReviewStatus from '@/pages/ReviewStatus';
+import Rubric from '@/pages/Rubric';
 
 Vue.use(Router);
 
@@ -39,6 +40,13 @@ const router = new Router({
       }
     },
     {
+      path: '/instructor/rubric/:rubricId',
+      component: Rubric,
+      beforeEnter: authenticatedInstructorsOnly,
+      // TODO needs breadcrumbPathComponents
+      props: (route) => ({rubricId: route.params.rubricId})
+    },
+    {
       path: '/instructor/students',
       component: StudentList,
       beforeEnter: authenticatedInstructorsOnly,
@@ -52,6 +60,7 @@ const router = new Router({
       component: ReviewStatus,
       beforeEnter: authenticatedInstructorsOnly,
       props: (route) => ({rubricId: route.params.rubricId})
+      // TODO needs breadcrumbPathComponents
     },
     {
       path: '/student/dashboard',
