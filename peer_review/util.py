@@ -38,12 +38,16 @@ def transform_data_structure(data, dict_transform=lambda x: x):
     is_collection = isinstance(data, Iterable) and not is_dict and not is_string
 
     if is_collection:
-        content = [transform_data_structure(item, dict_transform=dict_transform)
-                   for item in data]
+        content = [
+            transform_data_structure(item, dict_transform=dict_transform)
+            for item in data
+        ]
     elif is_dict:
         # TODO doesn't preserve order for OrderedDict, defaultdict factory, etc.
-        content = dict_transform({k: transform_data_structure(v, dict_transform=dict_transform)
-                                  for k, v in data.items()})
+        content = dict_transform({
+            k: transform_data_structure(v, dict_transform=dict_transform)
+            for k, v in data.items()
+        })
     else:
         content = data
 
