@@ -288,6 +288,10 @@ export default {
     courseId() {
       return this.$store.state.userDetails.courseId;
     },
+    reviewIsInProgress() {
+      const {rubric: {reviewIsInProgress = false} = {}} = this.data || {};
+      return reviewIsInProgress;
+    },
     promptChoices() {
       if(this.data && this.data.assignments) {
         return this.data.assignments.filter(option => {
@@ -312,10 +316,13 @@ export default {
       }
     },
     promptIssues() {
-      const selectedPromptId = this.selectedPrompt.value;
-      return this.selectedPrompt && selectedPromptId
-        ? validationInfoAsIssues(this.data.validations[selectedPromptId], true)
-        : [];
+      if(this.selectedPrompt) {
+        const validations = this.data.validations[this.selectedPrompt.value];
+        return validationInfoAsIssues(validations, true);
+      }
+      else {
+        return [];
+      }
     },
     revisionIssues() {
       const selectedRevisionId = this.selectedRevision.value;
