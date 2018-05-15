@@ -41,6 +41,7 @@ const router = new Router({
     },
     {
       path: '/instructor/rubric/peer_review_assignment/:peerReviewAssignmentId',
+      name: 'Rubric',
       component: Rubric,
       beforeEnter: authenticatedInstructorsOnly,
       // TODO needs breadcrumbPathComponents
