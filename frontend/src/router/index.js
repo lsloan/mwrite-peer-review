@@ -40,11 +40,11 @@ const router = new Router({
       }
     },
     {
-      path: '/instructor/rubric/:rubricId',
+      path: '/instructor/rubric/peer_review_assignment/:peerReviewAssignmentId',
       component: Rubric,
       beforeEnter: authenticatedInstructorsOnly,
       // TODO needs breadcrumbPathComponents
-      props: (route) => ({rubricId: route.params.rubricId})
+      props: (route) => ({peerReviewAssignmentId: route.params.peerReviewAssignmentId})
     },
     {
       path: '/instructor/students',

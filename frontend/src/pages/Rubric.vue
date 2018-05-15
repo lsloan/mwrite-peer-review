@@ -3,208 +3,115 @@
 </template>
 
 <script>
-var noRevisionOption = {value: null, name: 'No revision'};
-var displayDateFormat = 'MMM D YYYY h:mm A';
+import * as R from 'ramda';
+import moment from 'moment';
+import Datepicker from 'vuejs-datepicker';
 
-var updatePeerReviewOpenDate = function(newPromptDueDateLocal) {
-  if(newPromptDueDateLocal) {
-    var date = moment(newPromptDueDateLocal, displayDateFormat);
+import Dropdown from '@/components/Dropdown';
+import AutosizeTextarea from '@/components/AutosizeTextarea';
 
-    var minute = date.minute();
-    // TODO the following could be replaced with _.flow(), but only if we use lodash.fp which will be much easier w/ ES6
-    var closestMinuteChoice = _(this.peerReviewOpenMinuteChoices)
-      .filter(function(choice) {
-        return parseInt(choice) >= minute;
-      })
-      .minBy(function(choice) {
-        return Math.abs(minute - parseInt(choice));
-      });
+import {gensym} from '@/services/util';
+import {validationInfoAsIssues} from '@/services/validation';
 
-    if(!closestMinuteChoice) {
-      var minutesToHour = 60 - minute;
-      date.add(minutesToHour, 'minutes');
-      closestMinuteChoice = '00';
-    }
+const NO_REVISION_OPTION = {value: null, name: 'No revision'};
+const DISPLAY_DATE_FORMAT = 'MMM D YYYY h:mm A';
 
-    var meridian = 'AM';
-    var hour = date.hour();
-    if(hour === 0) {
-      hour = 12;
-    }
-    else {
-      if(hour >= 12) {
-        meridian = 'PM';
-        if(hour > 12) {
-          hour -= 12;
-        }
-      }
-    }
-
-    this.peerReviewOpenHour = hour.toString();
-    this.peerReviewOpenMinute = closestMinuteChoice;
-    this.peerReviewOpenAMPM = meridian;
-    this.selectedPeerReviewOpenDate = date.toDate();
-  }
-};
-
-new Vue({
-  el: '#vue-root',
-  components: _.defaults({'autosize-textarea': AutosizeTextarea,
-    'dropdown': Dropdown,
-    'datepicker': Datepicker},
-  VueMdl.components),
-  directives: VueMdl.directives,
-  mounted: function() {
-    var data = document.querySelector('#rubric-form').dataset;
-    this.assignments = _.map(JSON.parse(data['assignments']), function(value, key) {
-      return {value: parseInt(key), name: value};
-    });
-    this.validations = JSON.parse(data['validationInfo']);
-
-    var existingPromptId = parseInt(data['existingPromptId']);
-    if(existingPromptId) {
-      this.selectedPrompt = {
-        value: existingPromptId,
-        name: _.find(this.assignments, function(a) {
- return a.value === existingPromptId; 
-}).name
-      };
-    }
-
-    var existingRevisionId = parseInt(data['existingRevisionId']);
-    if(existingRevisionId) {
-      this.selectedRevision = {
-        value: existingRevisionId,
-        name: _.find(this.assignments, function(a) {
- return a.value === existingRevisionId; 
-}).name
-      };
-    }
-
-    this.reviewIsInProgress = JSON.parse(data['reviewIsInProgress']);
-    this.rubricDescription = data['existingRubricDescription'];
-
-    var existingCriteria = JSON.parse(data['existingCriteria']);
-    if(existingCriteria && existingCriteria.length > 0) {
-      this.criteria = _.map(JSON.parse(data['existingCriteria']), function(c) {
-        return {id: _.uniqueId('criterion'), description: c};
-      });
-    }
-
-    this.peerReviewOpenDateIsPromptDueDate = JSON.parse(data['peerReviewOpenDateIsPromptDueDate']);
-    if(!this.peerReviewOpenDateIsPromptDueDate) {
-      var dateStr = moment(data['peerReviewOpenDate']).format(displayDateFormat);
-      updatePeerReviewOpenDate.call(this, dateStr);
-    }
-
-    this.existingPeerReviewDueDate = data['peerReviewDueDate'];
-
-    var existingDistributePeerReviewsForSections = JSON.parse(data['distributePeerReviewsForSections']);
-    if(existingDistributePeerReviewsForSections !== null) {
-      this.distributePeerReviewsForSections = existingDistributePeerReviewsForSections;
-    }
-
-    this.courseId = JSON.parse(document.querySelector('#main-container').dataset['courseId']);
-  },
-  data: {
-    courseId: null,
-    assignments: null,
-    validations: null,
-    reviewIsInProgress: null,
-    selectedPrompt: null,
-    selectedRevision: noRevisionOption,
-    rubricDescription: null,
-    criteria: [{id: _.uniqueId('criterion'), description: ''}],
-    submissionInProgress: false,
-    distributePeerReviewsForSections: true,
-    selectedPeerReviewOpenDate: null,
-    existingPeerReviewDueDate: null,
-    peerReviewOpenDateIsPromptDueDate: true,
-    peerReviewOpenHourChoices: _.map(_.range(1, 13), function(i) {
- return i.toString(); 
-}),
-    peerReviewOpenMinuteChoices: ['00', '15', '30', '45'],
-    peerReviewOpenAMPMChoices: ['AM', 'PM'],
-    peerReviewOpenHour: null,
-    peerReviewOpenMinute: null,
-    peerReviewOpenAMPM: null
+export default {
+  components: {Dropdown, Datepicker, AutosizeTextarea},
+  // directives: VueMdl.directives, // TODO still need this?
+  props: ['peer-review-assignment-id'],
+  data() {
+    return {
+      data: null,
+      selectedPrompt: null,
+      selectedRevision: NO_REVISION_OPTION,
+      submissionInProgress: false,
+      peerReviewOpenHourChoices: R.range(1, 13).map(i => i.toString()),
+      peerReviewOpenMinuteChoices: ['00', '15', '30', '45'],
+      peerReviewOpenAMPMChoices: ['AM', 'PM']
+    };
   },
   computed: {
-    promptChoices: function() {
-      if(!this.assignments) {
-        return null;
+    courseId() {
+      return this.$store.state.userDetails.courseId;
+    },
+    promptChoices() {
+      if(this.data && this.data.assignments) {
+        return this.data.assignments.filter(option => {
+          const selectedRevisionId = this.selectedRevision && this.selectedRevision.value;
+          const selectedPromptId = this.selectedPrompt && this.selectedPrompt.value;
+          return option.value !== selectedRevisionId && option.value !== selectedPromptId;
+        });
       }
-
-      var vm = this;
-      return _.filter(this.assignments, function(option) {
-        return option.value !== (vm.selectedRevision && vm.selectedRevision.value) && option.value !== (vm.selectedPrompt && vm.selectedPrompt.value);
-      });
     },
-    revisionChoices: function() {
-      if(!this.assignments) {
-        return null;
+    revisionChoices() {
+      if(this.data && this.data.assignments) {
+        const selectedRevisionId = this.selectedRevision && this.selectedRevision.value;
+        const revisionOptions = selectedRevisionId
+          ? [NO_REVISION_OPTION].concat(this.data.assignments)
+          : this.assignments;
+        return revisionOptions.filter(option => {
+          if(typeof (option) !== 'undefined') {
+            const selectedPromptId = this.selectedPrompt && this.selectedPrompt.value;
+            return !option.value || (option.value !== selectedPromptId && option.value !== selectedRevisionId);
+          }
+        });
       }
-
-      var vm = this;
-      var revisionSelected = this.selectedRevision && this.selectedRevision.value;
-      var revisionOptions = revisionSelected ? [noRevisionOption].concat(this.assignments) : this.assignments;
-      return _.filter(revisionOptions, function(option) {
-        if(typeof (option) !== 'undefined') {
-          return !option.value || (option.value !== (vm.selectedPrompt && vm.selectedPrompt.value) && option.value !== (vm.selectedRevision && vm.selectedRevision.value));
-        }
-      });
     },
-    promptIssues: function() {
-      return this.selectedPrompt ? getValidationIssues(true, this.validations[this.selectedPrompt.value]) : [];
+    promptIssues() {
+      const selectedPromptId = this.selectedPrompt.value;
+      return this.selectedPrompt && selectedPromptId
+        ? validationInfoAsIssues(this.data.validations[selectedPromptId], true)
+        : [];
     },
-    revisionIssues: function() {
-      return this.selectedRevision && this.selectedRevision.value ? getValidationIssues(false, this.validations[this.selectedRevision.value]) : [];
+    revisionIssues() {
+      const selectedRevisionId = this.selectedRevision.value;
+      return this.selectedRevision && selectedRevisionId
+        ? validationInfoAsIssues(this.data.validations[selectedRevisionId], false)
+        : [];
     },
-    promptSection: function() {
-      var sectionName = null;
+    promptSection() {
       if(this.selectedPrompt) {
-        var validations = this.validations[this.selectedPrompt.value];
-        sectionName = validations.sectionName || 'all students';
+        const validations = this.validations[this.selectedPrompt.value];
+        return validations.sectionName || 'all students';
       }
-      return sectionName;
     },
-    promptDueDate: function() {
-      var dueDateStr = null;
+    promptDueDate() {
       if(this.selectedPrompt) {
-        var validations = this.validations[this.selectedPrompt.value];
-        dueDateStr = moment(validations.dueDateUtc).local().format(displayDateFormat);
+        const validations = this.validations[this.selectedPrompt.value];
+        return moment(validations.dueDateUtc).local().format(DISPLAY_DATE_FORMAT);
       }
-      return dueDateStr;
     },
-    revisionSection: function() {
-      var sectionName = null;
-      if(this.selectedRevision && this.selectedRevision.value) {
-        var validations = this.validations[this.selectedRevision.value];
-        sectionName = validations.sectionName || 'all students';
+    revisionSection() {
+      const selectedRevisionId = this.selectedRevision.value;
+      if(this.selectedRevision && selectedRevisionId) {
+        const validations = this.validations[selectedRevisionId];
+        return validations.sectionName || 'all students';
       }
-      return sectionName;
     },
-    revisionDueDate: function() {
-      var dueDateStr = null;
-      if(this.selectedRevision && this.selectedRevision.value) {
-        var validations = this.validations[this.selectedRevision.value];
-        dueDateStr = moment(validations.dueDateUtc).local().format(displayDateFormat);
+    revisionDueDate() {
+      const selectedRevisionId = this.selectedRevision.value;
+      if(this.selectedRevision && selectedRevisionId) {
+        const validations = this.validations[selectedRevisionId];
+        return moment(validations.dueDateUtc).local().format(DISPLAY_DATE_FORMAT);
       }
-      return dueDateStr;
     },
-    rubricIsValid: function() {
-      var criteriaAreValid = this.criteria.length > 0 && _.every(this.criteria, function(criterion) {
-        return criterion.description.length > 0;
-      });
-      var noAssignmentIssuesExist = _.every(this.promptIssues.concat(this.revisionIssues), function(issue) {
-        return !issue.fatal;
-      });
-      return this.selectedPrompt && this.rubricDescription && criteriaAreValid && noAssignmentIssuesExist && this.peerReviewOpenDateIsValid;
+    rubricIsValid() {
+      if(this.data && this.data.rubric) {
+        const criteriaExist = !R.isEmpty(this.data.rubric.criteria);
+        const criteriaDescriptionsExist = R.all(this.data.rubric.criteria, c => !R.isEmpty(c.description));
+        const criteriaAreValid = criteriaExist && criteriaDescriptionsExist;
+
+        const allIssues = R.concat(this.promptIssues, this.revisionIssues);
+        const noFatalIssuesFound = R.all(allIssues, i => !i.fatal);
+
+        return this.selectedPrompt && this.rubric.description && criteriaAreValid && noFatalIssuesFound && this.peerReviewOpenDateIsValid;
+      }
     },
     peerReviewOpenDisabledDates: function() {
       var dates = {};
       if(this.promptDueDate && this.existingPeerReviewDueDate) {
-        var toMoment = moment(this.promptDueDate, displayDateFormat);
+        var toMoment = moment(this.promptDueDate, DISPLAY_DATE_FORMAT);
         var fromMoment = moment(this.existingPeerReviewDueDate);
 
         toMoment.startOf('day');
@@ -220,7 +127,7 @@ new Vue({
     peerReviewOpenDate: function() {
       var date = null;
       if(this.peerReviewOpenDateIsPromptDueDate) {
-        date = moment(this.promptDueDate, displayDateFormat).utc().toDate();
+        date = moment(this.promptDueDate, DISPLAY_DATE_FORMAT).utc().toDate();
       }
       else {
         if(this.selectedPeerReviewOpenDate && this.peerReviewOpenHour && this.peerReviewOpenMinute && this.peerReviewOpenAMPM) {
@@ -247,7 +154,7 @@ new Vue({
     peerReviewOpenDateStr: function() {
       var dateStr = '';
       if(this.peerReviewOpenDate) {
-        dateStr = moment(this.peerReviewOpenDate).format(displayDateFormat);
+        dateStr = moment(this.peerReviewOpenDate).format(DISPLAY_DATE_FORMAT);
       }
       return dateStr;
     },
@@ -256,82 +163,115 @@ new Vue({
         return false;
       }
       var peerReviewOpenDate = moment(this.peerReviewOpenDate);
-      var promptDueDate = moment(this.promptDueDate, displayDateFormat);
+      var promptDueDate = moment(this.promptDueDate, DISPLAY_DATE_FORMAT);
       var peerReviewDueDate = moment(this.existingPeerReviewDueDate);
       return peerReviewOpenDate.isSameOrAfter(promptDueDate) && peerReviewOpenDate.isSameOrBefore(peerReviewDueDate);
     }
   },
-  // TODO this didn't work, but I'm leaving it here in case it can be modified in the future when we have more
-  // TODO time.  the problem is that watchers fire even after data fields are modified during the mounted()
-  // TODO handler, which overwrites any *pre-existing* date. this is a problem for edit mode that I'm going
-  // TODO to solve by just adding a label to the date and not using a default.
-  // watch: {
-  //    selectedPrompt: {
-  //        immediate: true,
-  //        handler: function(newPromptDueDate, oldPromptDueDate) {
-  //            console.log('hello from watch');
-  //            updatePeerReviewOpenDate.call(this, newPromptDueDate);
-  //        }
-  //    }
-  // },
   methods: {
+    fetchData() {
+      this.$api.get('/course/{}/rubric/peer_review_assignment/{}', this.courseId, this.peerReviewAssignmentId)
+        .then(r => {
+          this.data = r.data;
+        });
+    },
+    updatePeerReviewOpenDate(newPromptDueDateLocal) {
+      if(newPromptDueDateLocal) {
+        const date = moment(newPromptDueDateLocal, DISPLAY_DATE_FORMAT);
+        const minute = date.minute();
+
+        // TODO the following could be replaced with _.flow(), but only if we use lodash.fp which will be much easier w/ ES6
+        let closestMinuteChoice = R.pipe(
+          R.filter(c => parseInt(c) >= minute),
+          R.minBy(c => Math.abs(minute - parseInt(c)))
+        )(this.peerReviewOpenMinuteChoices);
+
+        if(!closestMinuteChoice) {
+          const minutesToHour = 60 - minute;
+          date.add(minutesToHour, 'minutes');
+          closestMinuteChoice = '00';
+        }
+
+        let meridian = 'AM';
+        let hour = date.hour();
+        if(hour === 0) {
+          hour = 12;
+        }
+        else {
+          if(hour >= 12) {
+            meridian = 'PM';
+            if(hour > 12) {
+              hour -= 12;
+            }
+          }
+        }
+
+        this.peerReviewOpenHour = hour.toString();
+        this.peerReviewOpenMinute = closestMinuteChoice;
+        this.peerReviewOpenAMPM = meridian;
+        this.selectedPeerReviewOpenDate = date.toDate();
+      }
+    },
     addCriterion: function() {
-      this.criteria.push({id: _.uniqueId('criterion'), description: ''});
+      this.criteria.push({id: gensym('criterion'), description: ''});
     },
     removeCriterion: function(id) {
       this.criteria = this.criteria.filter(function(criterion) {
         return criterion.id !== id;
       });
-    },
-    submitRubricForm: function() {
-      if(this.rubricIsValid) {
-        var data = {
-          promptId: this.selectedPrompt.value || null,
-          revisionId: this.selectedRevision.value || null,
-          description: _.trim(this.rubricDescription) || null,
-          criteria: _.map(this.criteria, function(c) {
- return _.trim(c.description) || null; 
-}),
-          peerReviewOpenDateIsPromptDueDate: this.peerReviewOpenDateIsPromptDueDate,
-          peerReviewOpenDate: moment(this.peerReviewOpenDate).utc().format(),
-          distributePeerReviewsForSections: this.distributePeerReviewsForSections
-        };
-
-        this.submissionInProgress = true;
-        var vm = this;
-        postToEndpoint(
-          document.querySelector('#rubric-form').getAttribute('action'),
-          data,
-          function() {
-            vm.$root.$emit('notification', {
-              message: 'The rubric was successfully created.  You will be returned to the dashboard.'
-            });
-            var frontendLandingUrl = document.querySelector('#rubric-form').dataset['frontendLandingUrl'];
-            var redirectToDashboard = function() {
-              window.location.href = frontendLandingUrl + '/#/instructor/dashboard';
-            };
-            setTimeout(redirectToDashboard, 4000);
-          },
-          function() {
-            // TODO be more specific in certain cases e.g. 403 (session probably expired)
-            vm.$root.$emit('notification', {
-              message: 'An error occurred.  Please try again later.'
-            });
-          },
-          function() {
-            vm.submissionInProgress = false;
-          }
-        );
-      }
-      else {
-        // TODO not bad to have a guard, but this should be unreachable, so we need another way to tell the user what to do / what not do
-        this.$root.$emit('notification', {
-          message: 'This rubric is not valid.  Double check that you have selected a writing prompt, added a description, created criteria, and configured a peer review open date no sooner than the prompt\'s open date.'
-        });
-      }
     }
+    // submitRubricForm: function() {
+    //   if(this.rubricIsValid) {
+    //     var data = {
+    //       promptId: this.selectedPrompt.value || null,
+    //       revisionId: this.selectedRevision.value || null,
+    //       description: this.rubric ? R.trim(this.rubric.description) : null,
+    //       criteria: _.map(this.criteria, function(c) {
+    //         return _.trim(c.description) || null;
+    //       }),
+    //       peerReviewOpenDateIsPromptDueDate: this.peerReviewOpenDateIsPromptDueDate,
+    //       peerReviewOpenDate: moment(this.peerReviewOpenDate).utc().format(),
+    //       distributePeerReviewsForSections: this.distributePeerReviewsForSections
+    //     };
+
+    //     this.submissionInProgress = true;
+    //     var vm = this;
+    //     postToEndpoint(
+    //       document.querySelector('#rubric-form').getAttribute('action'),
+    //       data,
+    //       function() {
+    //         vm.$root.$emit('notification', {
+    //           message: 'The rubric was successfully created.  You will be returned to the dashboard.'
+    //         });
+    //         var frontendLandingUrl = document.querySelector('#rubric-form').dataset['frontendLandingUrl'];
+    //         var redirectToDashboard = function() {
+    //           window.location.href = frontendLandingUrl + '/#/instructor/dashboard';
+    //         };
+    //         setTimeout(redirectToDashboard, 4000);
+    //       },
+    //       function() {
+    //         // TODO be more specific in certain cases e.g. 403 (session probably expired)
+    //         vm.$root.$emit('notification', {
+    //           message: 'An error occurred.  Please try again later.'
+    //         });
+    //       },
+    //       function() {
+    //         vm.submissionInProgress = false;
+    //       }
+    //     );
+    //   }
+    //   else {
+    //     // TODO not bad to have a guard, but this should be unreachable, so we need another way to tell the user what to do / what not do
+    //     this.$root.$emit('notification', {
+    //       message: 'This rubric is not valid.  Double check that you have selected a writing prompt, added a description, created criteria, and configured a peer review open date no sooner than the prompt\'s open date.'
+    //     });
+    //   }
+    // }
+  },
+  mounted() {
+    this.fetchData();
   }
-});
+};
 </script>
 
 <style scoped>
