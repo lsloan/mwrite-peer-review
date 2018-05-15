@@ -13,8 +13,12 @@ def utc_to_timezone(datetime_utc, timezone_name):
 
 
 def to_camel_case(s):
-    parts = s.split('_')
-    return parts[0] + ''.join(p.title() for p in parts[1:])
+    if isinstance(s, str):
+        parts = s.split('_')
+        result = parts[0] + ''.join(p.title() for p in parts[1:])
+    else:
+        result = s
+    return result
 
 
 def to_snake_case(s):
