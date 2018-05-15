@@ -1,13 +1,15 @@
 import logging
 from itertools import chain
 
+from django.http import Http404
 from rolepermissions.roles import get_user_roles
-from django.core.exceptions import PermissionDenied, ObjectDoesNotExist
 from django.views.decorators.http import require_POST
+from django.core.exceptions import PermissionDenied, ObjectDoesNotExist
 
 import peer_review.etl as etl
-from peer_review.models import CanvasCourse, CanvasStudent, PeerReview, Rubric, PeerReviewEvaluation
-from peer_review.queries import InstructorDashboardStatus, StudentDashboardStatus, ReviewStatus
+from peer_review.models import CanvasCourse, CanvasStudent, PeerReview, Rubric, PeerReviewEvaluation, \
+    CanvasAssignment
+from peer_review.queries import InstructorDashboardStatus, StudentDashboardStatus, ReviewStatus, RubricForm
 from peer_review.api.util import merge_validations
 from peer_review.util import to_camel_case, keymap_all
 from peer_review.decorators import authorized_json_endpoint, authenticated_json_endpoint, json_body
@@ -202,3 +204,17 @@ def submit_peer_review_evaluation(request, body, course_id, student_id, peer_rev
 @authorized_json_endpoint(roles=['instructor'])
 def review_status(request, course_id, rubric_id):
     return ReviewStatus.status_for_rubric(course_id, rubric_id)
+
+
+@authorized_json_endpoint(roles=['instructor'])
+def rubric_info_for_peer_review_assignment(request, course_id, passback_assignment_id):
+    try:
+        passback_assignment = CanvasAssignment.objects.get(id=passback_assignment_id)
+    except CanvasAssignment.DoesNotExist:
+        raise Http404
+
+    # TODO might need to persist course here if assignment-level launches are added for instructors
+    course = CanvasCourse.objects.get(id=course_id)
+    fetched_assignments = etl.persist_assignments(course_id)
+
+    return RubricForm.rubric_info(course, passback_assignment, fetched_assignments)
