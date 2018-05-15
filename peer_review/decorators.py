@@ -9,7 +9,7 @@ from rolepermissions.roles import get_user_roles
 from toolz.dicttoolz import keymap
 from toolz.functoolz import thread_first, compose
 
-from peer_review.util import to_camel_case, transform_data_structure
+from peer_review.util import camel_case_keys, transform_data_structure, object_to_json
 
 logger = logging.getLogger(__name__)
 
@@ -42,12 +42,10 @@ def has_one_of_roles(**kwargs):
 
 # TODO think about pagination for large collections
 def json_response(view):
-    camel_caser = partial(keymap, to_camel_case)
-
     def wrapper(*args, **kwargs):
         data = view(*args, **kwargs)
-        content = transform_data_structure(data, dict_transform=camel_caser)
-        return HttpResponse(content=json.dumps(content),
+        content = transform_data_structure(data, dict_transform=camel_case_keys)
+        return HttpResponse(content=json.dumps(content, default=object_to_json),
                             content_type='application/json')
     return wrapper
 

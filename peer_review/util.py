@@ -1,8 +1,9 @@
 import re
 import json
-import pytz
+from functools import partial
 from collections import Iterable
 
+import pytz
 from toolz.dicttoolz import keymap
 
 
@@ -19,6 +20,9 @@ def to_camel_case(s):
     else:
         result = s
     return result
+
+
+camel_case_keys = partial(keymap, to_camel_case)
 
 
 def to_snake_case(s):
@@ -72,3 +76,6 @@ def fetchall_dicts(cursor):
         dict(zip(columns, row))
         for row in cursor.fetchall()
     ]
+
+def object_to_json(obj):
+    return transform_data_structure(obj.__dict__, dict_transform=camel_case_keys)
