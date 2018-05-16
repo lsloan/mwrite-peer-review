@@ -368,6 +368,6 @@ class RubricForm:
 
         return {
             'assignments': {a.id: a.title for a in assignments},
-            'validationInfo': {a.id: a.validation for a in fetched_assignments},
-            'rubric': rubric_data,
+            'validation_info': {a.id: a.validation for a in fetched_assignments},
+            'existing_rubric': rubric_data,
         }

@@ -72,7 +72,7 @@
                     </div>
 
                     <div class="mdl-card__supporting-text">
-                        <mdl-switch v-model="peerReviewOpenDateIsPromptDueDate" :disabled="reviewIsInProgress">
+                        <mdl-switch v-model="data.rubric.peerReviewOpenDateIsPromptDueDate" :disabled="reviewIsInProgress">
                             Use the writing prompt's due date as the peer review open date
                         </mdl-switch>
                     </div>
@@ -266,8 +266,16 @@ import AutosizeTextarea from '@/components/AutosizeTextarea';
 import {gensym} from '@/services/util';
 import {validationInfoAsIssues} from '@/services/validation';
 
+const makeCriterion = (prefix = 'criterion', description = '') => {
+  return {
+    id: gensym(prefix),
+    description: description
+  };
+};
+
 const NO_REVISION_OPTION = {value: null, name: 'No revision'};
 const DISPLAY_DATE_FORMAT = 'MMM D YYYY h:mm A';
+const DEFAULT_CRITERIA = [makeCriterion()];
 
 export default {
   components: {Dropdown, Datepicker, AutosizeTextarea},
@@ -275,9 +283,17 @@ export default {
   props: ['peer-review-assignment-id'],
   data() {
     return {
-      data: null,
-      selectedPrompt: null,
-      selectedRevision: NO_REVISION_OPTION,
+      assignmentNamesById: {},
+      existingRubric: null,
+      validations: {},
+      models: {
+        criteria: DEFAULT_CRITERIA,
+        description: '',
+        peerReviewOpenDate: null,
+        peerReviewOpenDateIsPromptDueDate: true,
+        selectedPrompt: null,
+        selectedRevision: NO_REVISION_OPTION
+      },
       submissionInProgress: false,
       peerReviewOpenHourChoices: R.range(1, 13).map(i => i.toString()),
       peerReviewOpenMinuteChoices: ['00', '15', '30', '45'],
@@ -430,10 +446,31 @@ export default {
   },
   methods: {
     fetchData() {
-      this.$api.get('/course/{}/rubric/peer_review_assignment/{}', this.courseId, this.peerReviewAssignmentId)
+      return this.$api.get('/course/{}/rubric/peer_review_assignment/{}', this.courseId, this.peerReviewAssignmentId)
         .then(r => {
-          this.data = r.data;
+          const {assignments, validations, existingRubric} = r.data;
+          this.assignmentNamesById = assignments;
+          this.validations = validations;
+          this.existingRubric = existingRubric;
         });
+    },
+    initializeModels() {
+      if(this.existingRubric) {
+        const {promptId, revisionId} = this.existingRubric;
+        const promptName = this.assignmentNamesById[promptId];
+        const revisionName = this.assignmentNamesById[revisionId];
+        const promptOption = {value: promptId, name: promptName};
+        const revisionOption = {value: revisionId, name: revisionName};
+
+        const modelConverter = R.pipe(
+          R.dissoc('promptId'),
+          R.dissoc('revisionId'),
+          R.assoc('selectedPrompt', promptOption),
+          R.assoc('selectedRevision', revisionOption)
+        );
+
+        this.models = modelConverter(this.existingRubric);
+      }
     },
     updatePeerReviewOpenDate(newPromptDueDateLocal) {
       if(newPromptDueDateLocal) {
@@ -473,7 +510,7 @@ export default {
       }
     },
     addCriterion: function() {
-      this.criteria.push({id: gensym('criterion'), description: ''});
+      this.criteria.push(makeCriterion());
     },
     removeCriterion: function(id) {
       this.criteria = this.criteria.filter(function(criterion) {
@@ -529,7 +566,7 @@ export default {
     // }
   },
   mounted() {
-    this.fetchData();
+    this.fetchData().then(this.initializeModels);
   }
 };
 </script>
