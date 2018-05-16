@@ -273,9 +273,15 @@ const makeCriterion = (prefix = 'criterion', description = '') => {
   };
 };
 
+const makeAssignmentOptions = (assignmentNamesById, ...excludedAssignmentIds) => R.pipe(
+  R.toPairs,
+  R.reject(([id, _]) => R.any(exId => id === exId, excludedAssignmentIds)),
+  R.map(([id, name]) => ({value: id, name: name})),
+  R.sortBy(R.prop('id'))
+)(assignmentNamesById);
+
 const NO_REVISION_OPTION = {value: null, name: 'No revision'};
 const DISPLAY_DATE_FORMAT = 'MMM D YYYY h:mm A';
-const DEFAULT_CRITERIA = [makeCriterion()];
 
 export default {
   components: {Dropdown, Datepicker, AutosizeTextarea},
@@ -287,7 +293,7 @@ export default {
       existingRubric: null,
       validations: {},
       models: {
-        criteria: DEFAULT_CRITERIA,
+        criteria: [makeCriterion()],
         description: '',
         peerReviewOpenDate: null,
         peerReviewOpenDateIsPromptDueDate: true,
@@ -305,111 +311,102 @@ export default {
       return this.$store.state.userDetails.courseId;
     },
     reviewIsInProgress() {
-      const {rubric: {reviewIsInProgress = false} = {}} = this.data || {};
-      return reviewIsInProgress;
+      return Boolean(this.existingRubric && this.existingRubric.reviewIsInProgress);
+    },
+    selectedPromptId() {
+      return this.selectedPrompt && this.selectedPrompt.value;
+    },
+    selectedRevisionId() {
+      return this.selectedRevision && this.selectedRevision.value;
     },
     promptChoices() {
-      if(this.data && this.data.assignments) {
-        return this.data.assignments.filter(option => {
-          const selectedRevisionId = this.selectedRevision && this.selectedRevision.value;
-          const selectedPromptId = this.selectedPrompt && this.selectedPrompt.value;
-          return option.value !== selectedRevisionId && option.value !== selectedPromptId;
-        });
-      }
+      return makeAssignmentOptions(
+        this.assignmentNamesById,
+        this.selectedPromptId,
+        this.selectedRevisionId
+      );
     },
     revisionChoices() {
-      if(this.data && this.data.assignments) {
-        const selectedRevisionId = this.selectedRevision && this.selectedRevision.value;
-        const revisionOptions = selectedRevisionId
-          ? [NO_REVISION_OPTION].concat(this.data.assignments)
-          : this.assignments;
-        return revisionOptions.filter(option => {
-          if(typeof (option) !== 'undefined') {
-            const selectedPromptId = this.selectedPrompt && this.selectedPrompt.value;
-            return !option.value || (option.value !== selectedPromptId && option.value !== selectedRevisionId);
-          }
-        });
-      }
+      const revisionOptions = makeAssignmentOptions(
+        this.assignmentNamesById,
+        this.selectedPromptId,
+        this.selectedRevisionId
+      );
+      return this.selectedRevisionId
+        ? [NO_REVISION_OPTION].concat(revisionOptions)
+        : revisionOptions;
     },
     promptIssues() {
-      if(this.selectedPrompt) {
-        const validations = this.data.validations[this.selectedPrompt.value];
-        return validationInfoAsIssues(validations, true);
-      }
-      else {
-        return [];
-      }
+      return this.models.selectedPromptId
+        ? validationInfoAsIssues(this.validations[this.selectedPromptId], true)
+        : [];
     },
     revisionIssues() {
-      const selectedRevisionId = this.selectedRevision.value;
-      return this.selectedRevision && selectedRevisionId
-        ? validationInfoAsIssues(this.data.validations[selectedRevisionId], false)
+      return this.models.selectedRevisionId
+        ? validationInfoAsIssues(this.validations[this.selectedRevisionId], false)
         : [];
     },
     promptSection() {
-      if(this.selectedPrompt) {
-        const validations = this.validations[this.selectedPrompt.value];
+      if(this.selectedPromptId) {
+        const validations = this.validations[this.selectedPromptId];
         return validations.sectionName || 'all students';
       }
     },
-    promptDueDate() {
-      if(this.selectedPrompt) {
-        const validations = this.validations[this.selectedPrompt.value];
-        return moment(validations.dueDateUtc).local().format(DISPLAY_DATE_FORMAT);
+    promptDueDateDisplay() {
+      if(this.selectedPromptId) {
+        const {dueDateUtc} = this.validations[this.selectedPromptId];
+        return moment(dueDateUtc).local().format(DISPLAY_DATE_FORMAT);
       }
     },
     revisionSection() {
-      const selectedRevisionId = this.selectedRevision.value;
-      if(this.selectedRevision && selectedRevisionId) {
-        const validations = this.validations[selectedRevisionId];
-        return validations.sectionName || 'all students';
+      if(this.selectedRevisionId) {
+        const {sectionName} = this.validations[this.selectedRevisionId];
+        return sectionName || 'all students';
       }
     },
     revisionDueDate() {
-      const selectedRevisionId = this.selectedRevision.value;
-      if(this.selectedRevision && selectedRevisionId) {
-        const validations = this.validations[selectedRevisionId];
-        return moment(validations.dueDateUtc).local().format(DISPLAY_DATE_FORMAT);
+      if(this.selectedRevisionId) {
+        const {dueDateUtc} = this.validations[this.selectedRevisionId];
+        return moment(dueDateUtc).local().format(DISPLAY_DATE_FORMAT);
       }
     },
     rubricIsValid() {
-      if(this.data && this.data.rubric) {
-        const criteriaExist = !R.isEmpty(this.data.rubric.criteria);
-        const criteriaDescriptionsExist = R.all(this.data.rubric.criteria, c => !R.isEmpty(c.description));
-        const criteriaAreValid = criteriaExist && criteriaDescriptionsExist;
+      const criteriaExist = !R.isEmpty(this.models.criteria);
+      const criteriaDescriptionsExist = R.all(this.models.criteria, c => !R.isEmpty(c.description));
+      const criteriaAreValid = criteriaExist && criteriaDescriptionsExist;
 
-        const allIssues = R.concat(this.promptIssues, this.revisionIssues);
-        const noFatalIssuesFound = R.all(allIssues, i => !i.fatal);
+      const allIssues = R.concat(this.promptIssues, this.revisionIssues);
+      const noFatalIssuesFound = R.all(allIssues, i => !i.fatal);
 
-        return this.selectedPrompt && this.rubric.description && criteriaAreValid && noFatalIssuesFound && this.peerReviewOpenDateIsValid;
-      }
+      return this.selectedPrompt && this.rubric.description && criteriaAreValid && noFatalIssuesFound && this.peerReviewOpenDateIsValid;
     },
     peerReviewOpenDisabledDates: function() {
-      var dates = {};
       if(this.promptDueDate && this.existingPeerReviewDueDate) {
-        var toMoment = moment(this.promptDueDate, DISPLAY_DATE_FORMAT);
-        var fromMoment = moment(this.existingPeerReviewDueDate);
+        const toMoment = moment(this.promptDueDate, DISPLAY_DATE_FORMAT);
+        const fromMoment = moment(this.existingPeerReviewDueDate);
 
         toMoment.startOf('day');
         fromMoment.startOf('day');
 
-        dates = {
+        return {
           to: toMoment.toDate(),
           from: fromMoment.toDate()
         };
       }
-      return dates;
+      else {
+        return {};
+      }
     },
     peerReviewOpenDate: function() {
-      var date = null;
+      let date = null;
       if(this.peerReviewOpenDateIsPromptDueDate) {
         date = moment(this.promptDueDate, DISPLAY_DATE_FORMAT).utc().toDate();
       }
       else {
         if(this.selectedPeerReviewOpenDate && this.peerReviewOpenHour && this.peerReviewOpenMinute && this.peerReviewOpenAMPM) {
-          var hours12 = parseInt(this.peerReviewOpenHour);
+          const hours12 = parseInt(this.peerReviewOpenHour);
 
-          var hours24 = null;
+          let hours24 = null;
           if(this.peerReviewOpenAMPM === 'AM') {
             hours24 = hours12 === 12 ? 0 : parseInt(hours12);
           }
@@ -428,19 +425,17 @@ export default {
       return date;
     },
     peerReviewOpenDateStr: function() {
-      var dateStr = '';
-      if(this.peerReviewOpenDate) {
-        dateStr = moment(this.peerReviewOpenDate).format(DISPLAY_DATE_FORMAT);
-      }
-      return dateStr;
+      return this.peerReviewOpenDate
+        ? moment(this.peerReviewOpenDate).local().format(DISPLAY_DATE_FORMAT)
+        : '';
     },
     peerReviewOpenDateIsValid: function() {
       if(!this.peerReviewOpenDate) {
         return false;
       }
-      var peerReviewOpenDate = moment(this.peerReviewOpenDate);
-      var promptDueDate = moment(this.promptDueDate, DISPLAY_DATE_FORMAT);
-      var peerReviewDueDate = moment(this.existingPeerReviewDueDate);
+      const peerReviewOpenDate = moment(this.peerReviewOpenDate);
+      const promptDueDate = moment(this.promptDueDate, DISPLAY_DATE_FORMAT);
+      const peerReviewDueDate = moment(this.existingPeerReviewDueDate);
       return peerReviewOpenDate.isSameOrAfter(promptDueDate) && peerReviewOpenDate.isSameOrBefore(peerReviewDueDate);
     }
   },
