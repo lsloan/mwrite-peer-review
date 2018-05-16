@@ -22,11 +22,10 @@
                     supporting-text="slot">
                 <div slot="supporting-text">
                     <div class="mdl-card__supporting-text">
-
                         <dropdown
                                 id="prompt-menu"
                                 label="The rubric will be applied to the following assignment:"
-                                v-model="selectedPrompt"
+                                v-model="models.selectedPrompt"
                                 :options="promptChoices"
                                 :disabled="reviewIsInProgress"
                                 empty-caption="Select an assignment">
@@ -57,26 +56,17 @@
 
         <div class="mdl-grid">
             <div class="mdl-cell mdl-cell--1-col mdl-cell--1-col-tablet mdl-cell-1-col-phone"></div>
-
             <mdl-card
                     class="mdl-card mdl-shadow--2dp mdl-cell mdl-cell--10-col mdl-cell--6-col-tablet mdl-cell-2-col-phone"
                     title="Peer Review"
                     supporting-text="slot">
                 <div slot="supporting-text">
-
-                    <!-- TODO disabled due to lack of demand -->
-                    <div v-if="false" class="mdl-card__supporting-text">
-                        <mdl-switch v-model="distributePeerReviewsForSections" :disabled="reviewIsInProgress">
-                            Distribute peer reviews only to students in the same section
-                        </mdl-switch>
-                    </div>
-
                     <div class="mdl-card__supporting-text">
-                        <mdl-switch v-model="data.rubric.peerReviewOpenDateIsPromptDueDate" :disabled="reviewIsInProgress">
+                        <mdl-switch v-model="models.peerReviewOpenDateIsPromptDueDate" :disabled="reviewIsInProgress">
                             Use the writing prompt's due date as the peer review open date
                         </mdl-switch>
                     </div>
-                    <div v-if="!peerReviewOpenDateIsPromptDueDate" class="mdl-card__supporting-text datetime-container">
+                    <div v-if="!models.peerReviewOpenDateIsPromptDueDate" class="mdl-card__supporting-text datetime-container">
                         <p>Enter a custom date:</p>
                         <div>
                             <datepicker
@@ -84,14 +74,14 @@
                                     placeholder="Day"
                                     :disabled="peerReviewOpenDisabledDates"
                                     :disabled-picker="reviewIsInProgress"
-                                    v-model="selectedPeerReviewOpenDate">
+                                    v-model="models.peerReviewOpenDate">
                             </datepicker>
                         </div>
                         <div>
                             <mdl-select
                                     id="peer-review-open-hour-select"
                                     label="Hour"
-                                    v-model="peerReviewOpenHour"
+                                    v-model="models.peerReviewOpenHour"
                                     :disabled="reviewIsInProgress"
                                     :options="peerReviewOpenHourChoices">
                             </mdl-select>
@@ -100,7 +90,7 @@
                             <mdl-select
                                     id="peer-review-open-minute-select"
                                     label="Minute"
-                                    v-model="peerReviewOpenMinute"
+                                    v-model="models.peerReviewOpenMinute"
                                     :disabled="reviewIsInProgress"
                                     :options="peerReviewOpenMinuteChoices">
                             </mdl-select>
@@ -109,7 +99,7 @@
                             <mdl-select
                                     id="peer-review-open-ampm-select"
                                     label="AM / PM"
-                                    v-model="peerReviewOpenAMPM"
+                                    v-model="models.peerReviewOpenMeridian"
                                     :disabled="reviewIsInProgress"
                                     :options="peerReviewOpenAMPMChoices">
                             </mdl-select>
@@ -122,7 +112,7 @@
                             not completed the writing prompt assignment in Canvas by this date will be unable
                             to participate in peer review.
                         </p>
-                        <p v-else-if="!peerReviewOpenDateIsPromptDueDate">
+                        <p v-else-if="!models.peerReviewOpenDateIsPromptDueDate">
                             The peer review open date must be between the prompt assignments's due date and the peer review's due date.
                         </p>
                     </div>
@@ -132,7 +122,7 @@
             <div class="mdl-cell mdl-cell--1-col mdl-cell--1-col-tablet mdl-cell-1-col-phone"></div>
         </div>
 
-        <template v-if="!(reviewIsInProgress && !selectedRevision.value)">
+        <template v-if="!(reviewIsInProgress && !models.selectedRevision.value)">
             <div class="mdl-grid">
                 <div class="mdl-cell mdl-cell--1-col mdl-cell--1-col-tablet mdl-cell-1-col-phone"></div>
 
@@ -147,7 +137,7 @@
                             <dropdown
                                     id="revision-menu"
                                     label="If students will be completing a revision, please select the revision assignment here."
-                                    v-model="selectedRevision"
+                                    v-model="models.selectedRevision"
                                     :options="revisionChoices"
                                     :disabled="reviewIsInProgress">
                             </dropdown>
@@ -178,30 +168,28 @@
 
         <div class="mdl-grid">
             <div class="mdl-cell mdl-cell--1-col mdl-cell--1-col-tablet mdl-cell-1-col-phone"></div>
-
             <mdl-card
                     class="mdl-card mdl-shadow--2dp mdl-cell mdl-cell--10-col mdl-cell--6-col-tablet mdl-cell-2-col-phone"
                     title="Description"
                     supporting-text="slot">
                 <div slot="supporting-text" class="mdl-card__supporting-text">
-                    <autosize-textarea v-model="rubricDescription" label="Enter a description for this rubric here." :disabled="reviewIsInProgress"></autosize-textarea>
+                    <autosize-textarea
+                        v-model="models.description"
+                        label="Enter a description for this rubric here."
+                        :disabled="reviewIsInProgress"/>
                 </div>
             </mdl-card>
-
             <div class="mdl-cell mdl-cell--1-col mdl-cell--1-col-tablet mdl-cell-1-col-phone"></div>
         </div>
-
         <div class="mdl-grid">
             <div class="mdl-cell mdl-cell--1-col mdl-cell--1-col-tablet mdl-cell-1-col-phone"></div>
-
             <mdl-card
                     class="mdl-card mdl-shadow--2dp mdl-cell mdl-cell--10-col mdl-cell--6-col-tablet mdl-cell-2-col-phone"
                     title="Criteria"
                     supporting-text="slot"
                     :actions="!reviewIsInProgress ? 'slot' : ''">
                 <div slot="supporting-text" class="criteria-container mdl-card__supporting-text">
-
-                    <mdl-card v-for="(criterion, index) in criteria" :key="criterion.id" class="criterion-card mdl-shadow--2dp" supporting-text="slot">
+                    <mdl-card v-for="(criterion, index) in models.criteria" :key="criterion.id" class="criterion-card mdl-shadow--2dp" supporting-text="slot">
                         <div slot="supporting-text">
                             <div v-if="!reviewIsInProgress && index > 0" class="criterion-delete-button-container">
                                 <button type="button" class="mdl-chip__action" tabindex="-1" @click="removeCriterion(criterion.id)">
@@ -213,7 +201,6 @@
                             </div>
                         </div>
                     </mdl-card>
-
                 </div>
                 <div slot="actions" class="mdl-card__actions">
                     <button type="button"
@@ -223,12 +210,9 @@
                     </button>
                 </div>
             </mdl-card>
-
             <div class="mdl-cell mdl-cell--1-col mdl-cell--1-col-tablet mdl-cell-1-col-phone"></div>
         </div>
-
         <template v-if="!reviewIsInProgress">
-
             <div class="mdl-grid">
                 <div class="mdl-cell mdl-cell--1-col mdl-cell--1-col-tablet mdl-cell-1-col-phone"></div>
                 <div class="mdl-cell mdl-cell--10-col mdl-cell--6-col-tablet mdl-cell-2-col-phone">
@@ -242,7 +226,6 @@
                 </div>
                 <div class="mdl-cell mdl-cell--1-col mdl-cell--1-col-tablet mdl-cell-1-col-phone"></div>
             </div>
-
             <div class="mdl-grid">
                 <div class="mdl-cell mdl-cell--1-col mdl-cell--1-col-tablet mdl-cell-1-col-phone"></div>
                 <div class="mdl-cell mdl-cell--10-col mdl-cell--6-col-tablet mdl-cell-2-col-phone">
@@ -250,7 +233,6 @@
                 </div>
                 <div class="mdl-cell mdl-cell--1-col mdl-cell--1-col-tablet mdl-cell-1-col-phone"></div>
             </div>
-
         </template>
     </form>
 </template>
@@ -259,6 +241,7 @@
 import * as R from 'ramda';
 import moment from 'moment';
 import Datepicker from 'vuejs-datepicker';
+import {MdlCard} from 'vue-mdl';
 
 import Dropdown from '@/components/Dropdown';
 import AutosizeTextarea from '@/components/AutosizeTextarea';
@@ -284,7 +267,7 @@ const NO_REVISION_OPTION = {value: null, name: 'No revision'};
 const DISPLAY_DATE_FORMAT = 'MMM D YYYY h:mm A';
 
 export default {
-  components: {Dropdown, Datepicker, AutosizeTextarea},
+  components: {Dropdown, Datepicker, AutosizeTextarea, MdlCard},
   // directives: VueMdl.directives, // TODO still need this?
   props: ['peer-review-assignment-id'],
   data() {
@@ -295,7 +278,10 @@ export default {
       models: {
         criteria: [makeCriterion()],
         description: '',
-        peerReviewOpenDate: null,
+        peerReviewOpenDay: null,
+        peerReviewOpenHour: null,
+        peerReviewOpenMinute: null,
+        peerReviewOpenMeridian: null,
         peerReviewOpenDateIsPromptDueDate: true,
         selectedPrompt: null,
         selectedRevision: NO_REVISION_OPTION
@@ -352,7 +338,7 @@ export default {
         return validations.sectionName || 'all students';
       }
     },
-    promptDueDateDisplay() {
+    promptDueDate() {
       if(this.selectedPromptId) {
         const {dueDateUtc} = this.validations[this.selectedPromptId];
         return moment(dueDateUtc).local().format(DISPLAY_DATE_FORMAT);
@@ -378,7 +364,7 @@ export default {
       const allIssues = R.concat(this.promptIssues, this.revisionIssues);
       const noFatalIssuesFound = R.all(allIssues, i => !i.fatal);
 
-      return this.selectedPrompt && this.rubric.description && criteriaAreValid && noFatalIssuesFound && this.peerReviewOpenDateIsValid;
+      return this.models.selectedPrompt && this.models.description && criteriaAreValid && noFatalIssuesFound && this.peerReviewOpenDateIsValid;
     },
     peerReviewOpenDisabledDates: function() {
       if(this.promptDueDate && this.existingPeerReviewDueDate) {
@@ -424,8 +410,8 @@ export default {
       }
       return date;
     },
-    peerReviewOpenDateStr: function() {
-      return this.peerReviewOpenDate
+    peerReviewOpenDateDisplay: function() {
+      return this.models.peerReviewOpenDate
         ? moment(this.peerReviewOpenDate).local().format(DISPLAY_DATE_FORMAT)
         : '';
     },
@@ -433,10 +419,9 @@ export default {
       if(!this.peerReviewOpenDate) {
         return false;
       }
-      const peerReviewOpenDate = moment(this.peerReviewOpenDate);
-      const promptDueDate = moment(this.promptDueDate, DISPLAY_DATE_FORMAT);
-      const peerReviewDueDate = moment(this.existingPeerReviewDueDate);
-      return peerReviewOpenDate.isSameOrAfter(promptDueDate) && peerReviewOpenDate.isSameOrBefore(peerReviewDueDate);
+      const peerReviewOpenDate = moment(this.models.peerReviewOpenDate);
+      const peerReviewDueDate = moment(this.models.peerReviewDueDate);
+      return peerReviewOpenDate.isSameOrAfter(this.promptDueDate) && peerReviewOpenDate.isSameOrBefore(peerReviewDueDate);
     }
   },
   methods: {
