@@ -21,7 +21,6 @@
 </template>
 
 <script>
-
 export default {
   name: 'Dropdown',
   props: ['id', 'value', 'options', 'label', 'disabled', 'empty-caption'],
