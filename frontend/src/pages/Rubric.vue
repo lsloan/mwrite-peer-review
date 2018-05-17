@@ -30,8 +30,8 @@
                                 :disabled="reviewIsInProgress"
                                 empty-caption="Select an assignment">
                         </dropdown>
-                        <p v-if="promptSection && promptDueDate" class="assignment-info">
-                            This prompt is assigned to {{ promptSection }} and is due {{ promptDueDate }}.
+                        <p v-if="promptSection && promptDueDateDisplay" class="assignment-info">
+                            This prompt is assigned to {{ promptSection }} and is due {{ promptDueDateDisplay }}.
                         </p>
                     </div>
 
@@ -108,7 +108,7 @@
                     </div>
                     <div class="mdl-card__supporting-text">
                         <p v-if="peerReviewOpenDateIsValid">
-                            Peer reviews will be distributed at {{ peerReviewOpenDateStr }}.  Students who have
+                            Peer reviews will be distributed at {{ peerReviewOpenDateDisplay }}.  Students who have
                             not completed the writing prompt assignment in Canvas by this date will be unable
                             to participate in peer review.
                         </p>
@@ -297,13 +297,13 @@ export default {
       return this.$store.state.userDetails.courseId;
     },
     reviewIsInProgress() {
-      return Boolean(this.existingRubric && this.existingRubric.reviewIsInProgress);
+      return Boolean(this.existingRubric && this.existingRubric.reviewInProgress);
     },
     selectedPromptId() {
-      return this.selectedPrompt && this.selectedPrompt.value;
+      return this.models.selectedPrompt && this.models.selectedPrompt.value;
     },
     selectedRevisionId() {
-      return this.selectedRevision && this.selectedRevision.value;
+      return this.models.selectedRevision && this.models.selectedRevision.value;
     },
     promptChoices() {
       return makeAssignmentOptions(
@@ -342,6 +342,11 @@ export default {
       if(this.selectedPromptId) {
         const {dueDateUtc} = this.validations[this.selectedPromptId];
         return moment(dueDateUtc).local().format(DISPLAY_DATE_FORMAT);
+      }
+    },
+    promptDueDateDisplay() {
+      if(this.promptDueDate) {
+        return this.promptDueDate.local().format(DISPLAY_DATE_FORMAT);
       }
     },
     revisionSection() {
@@ -385,23 +390,24 @@ export default {
     },
     peerReviewOpenDate: function() {
       let date = null;
-      if(this.peerReviewOpenDateIsPromptDueDate) {
+      if(this.models.peerReviewOpenDateIsPromptDueDate) {
         date = moment(this.promptDueDate, DISPLAY_DATE_FORMAT).utc().toDate();
       }
       else {
-        if(this.selectedPeerReviewOpenDate && this.peerReviewOpenHour && this.peerReviewOpenMinute && this.peerReviewOpenAMPM) {
-          const hours12 = parseInt(this.peerReviewOpenHour);
+        const {selectedPeerReviewOpenDay, peerReviewOpenHour, peerReviewOpenMinute, peerReviewOpenMeridian} = this.models;
+        if(selectedPeerReviewOpenDay && peerReviewOpenHour && peerReviewOpenMinute && peerReviewOpenMeridian) {
+          const hours12 = parseInt(peerReviewOpenHour);
 
           let hours24 = null;
-          if(this.peerReviewOpenAMPM === 'AM') {
+          if(peerReviewOpenMeridian === 'AM') {
             hours24 = hours12 === 12 ? 0 : parseInt(hours12);
           }
           else {
             hours24 = hours12 === 12 ? 12 : parseInt(hours12) + 12;
           }
 
-          var minutes = parseInt(this.peerReviewOpenMinute);
-          date = moment(this.selectedPeerReviewOpenDate)
+          const minutes = parseInt(peerReviewOpenMinute);
+          date = moment(selectedPeerReviewOpenDay)
             .hours(hours24)
             .minutes(minutes)
             .utc()
@@ -411,7 +417,7 @@ export default {
       return date;
     },
     peerReviewOpenDateDisplay: function() {
-      return this.models.peerReviewOpenDate
+      return this.peerReviewOpenDate
         ? moment(this.peerReviewOpenDate).local().format(DISPLAY_DATE_FORMAT)
         : '';
     },
@@ -428,9 +434,9 @@ export default {
     fetchData() {
       return this.$api.get('/course/{}/rubric/peer_review_assignment/{}', this.courseId, this.peerReviewAssignmentId)
         .then(r => {
-          const {assignments, validations, existingRubric} = r.data;
+          const {assignments, validationInfo, existingRubric} = r.data;
           this.assignmentNamesById = assignments;
-          this.validations = validations;
+          this.validations = validationInfo;
           this.existingRubric = existingRubric;
         });
     },
