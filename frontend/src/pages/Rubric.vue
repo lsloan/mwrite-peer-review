@@ -241,7 +241,7 @@
 import * as R from 'ramda';
 import moment from 'moment';
 import Datepicker from 'vuejs-datepicker';
-import {MdlCard} from 'vue-mdl';
+import {MdlCard, MdlSwitch, MdlSelect, MdlSnackbar} from 'vue-mdl';
 
 import Dropdown from '@/components/Dropdown';
 import AutosizeTextarea from '@/components/AutosizeTextarea';
@@ -267,8 +267,7 @@ const NO_REVISION_OPTION = {value: null, name: 'No revision'};
 const DISPLAY_DATE_FORMAT = 'MMM D YYYY h:mm A';
 
 export default {
-  components: {Dropdown, Datepicker, AutosizeTextarea, MdlCard},
-  // directives: VueMdl.directives, // TODO still need this?
+  components: {Dropdown, Datepicker, AutosizeTextarea, MdlCard, MdlSwitch, MdlSelect, MdlSnackbar},
   props: ['peer-review-assignment-id'],
   data() {
     return {
@@ -644,6 +643,12 @@ export default {
         width: 80px;
         margin-left: 3px;
         margin-right: 3px;
+    }
+
+    .datetime-container >>> .vdp-datepicker input {
+        padding: 8px;
+        margin-bottom: 6px;
+        font-size: 14px;
     }
 
     .mdl-card__supporting-text >>> textarea.autosize-textarea {
