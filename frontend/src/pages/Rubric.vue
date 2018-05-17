@@ -505,6 +505,7 @@ export default {
         const data = {
           promptId: parseInt(this.models.selectedPrompt.value) || null,
           revisionId: this.models.selectedRevision.value ? parseInt(this.models.selectedRevision.value) : null,
+          peerReviewAssignmentId: this.peerReviewAssignmentId,
           description: R.trim(this.models.description),
           criteria: R.map(c => R.trim(c.description), this.models.criteria),
           peerReviewOpenDateIsPromptDueDate: this.models.peerReviewOpenDateIsPromptDueDate,
