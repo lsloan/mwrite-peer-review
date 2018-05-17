@@ -8,14 +8,14 @@
             :disabled="disabled"
             @input="$emit('input', $event.target.value)"
             v-model="value"/>
-    <label :for="_uid" class="mdl-textfield__label">{{ label }}</label> +
+    <label v-if="label" :for="_uid" class="mdl-textfield__label">{{ label }}</label> +
     </div>
 </template>
 
 <script>
 export default {
   name: 'autosize-textarea',
-  props: ['value', 'disabled']
+  props: ['value', 'disabled', 'label']
 };
 </script>
 
