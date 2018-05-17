@@ -13,9 +13,18 @@
 </template>
 
 <script>
+import autosize from 'autosize';
+
 export default {
   name: 'autosize-textarea',
-  props: ['value', 'disabled', 'label']
+  props: ['value', 'disabled', 'label'],
+  mounted() {
+    autosize(this.$el.querySelector('textarea'));
+    componentHandler.upgradeElement(this.$el); // eslint-disable-line no-undef
+  },
+  updated() {
+    this.$el.MaterialTextfield.checkDirty();
+  }
 };
 </script>
 
