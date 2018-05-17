@@ -72,8 +72,8 @@
                             <datepicker
                                     format="MMM d yyyy"
                                     placeholder="Day"
-                                    :disabled="peerReviewOpenDisabledDates"
-                                    :disabled-picker="reviewIsInProgress"
+                                    :disabled-dates="peerReviewOpenDisabledDates"
+                                    :disabled="reviewIsInProgress"
                                     v-model="models.peerReviewOpenDate">
                             </datepicker>
                         </div>
@@ -496,8 +496,9 @@ export default {
       this.criteria = this.criteria.filter(function(criterion) {
         return criterion.id !== id;
       });
-    }
-    // submitRubricForm: function() {
+    },
+    submitRubricForm: function() {
+      console.log('would have submitted');
     //   if(this.rubricIsValid) {
     //     var data = {
     //       promptId: this.selectedPrompt.value || null,
@@ -543,7 +544,7 @@ export default {
     //       message: 'This rubric is not valid.  Double check that you have selected a writing prompt, added a description, created criteria, and configured a peer review open date no sooner than the prompt\'s open date.'
     //     });
     //   }
-    // }
+    }
   },
   mounted() {
     this.fetchData().then(this.initializeModels);
