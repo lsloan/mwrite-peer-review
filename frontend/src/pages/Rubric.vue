@@ -430,10 +430,13 @@ export default {
     initializeModels() {
       if(this.existingRubric) {
         const {promptId, revisionId} = this.existingRubric;
-        const promptName = this.assignmentNamesById[promptId];
-        const revisionName = this.assignmentNamesById[revisionId];
-        const promptOption = {value: promptId, name: promptName};
-        const revisionOption = {value: revisionId, name: revisionName};
+        const promptOption = {
+          value: promptId,
+          name: this.assignmentNamesById[promptId]
+        };
+        const revisionOption = this.revisionId
+          ? {value: revisionId, name: this.assignmentNamesById[revisionId]}
+          : NO_REVISION_OPTION;
 
         const modelConverter = R.pipe(
           R.dissoc('promptId'),
