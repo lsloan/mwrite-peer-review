@@ -419,7 +419,6 @@ export default {
     fetchData() {
       return this.$api.get('/course/{}/rubric/peer_review_assignment/{}', this.courseId, this.peerReviewAssignmentId)
         .then(r => {
-          console.log('API data:', r.data);
           const {assignments, validationInfo, existingRubric, peerReviewDueDate} = r.data;
           this.assignmentNamesById = assignments;
           this.validations = validationInfo;
