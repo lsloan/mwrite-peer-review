@@ -341,7 +341,7 @@ export default {
     promptDueDate() {
       if(this.selectedPromptId) {
         const {dueDateUtc} = this.validations[this.selectedPromptId];
-        return moment(dueDateUtc);
+        return moment(dueDateUtc).utc();
       }
     },
     promptDueDateDisplay() {
@@ -389,36 +389,27 @@ export default {
       }
     },
     peerReviewOpenDate() {
-      let date = null;
       if(this.models.peerReviewOpenDateIsPromptDueDate) {
-        date = moment(this.promptDueDate, DISPLAY_DATE_FORMAT).utc().toDate();
+        return this.promptDueDate;
       }
       else {
         const {selectedPeerReviewOpenDay, peerReviewOpenHour, peerReviewOpenMinute, peerReviewOpenMeridian} = this.models;
         if(selectedPeerReviewOpenDay && peerReviewOpenHour && peerReviewOpenMinute && peerReviewOpenMeridian) {
           const hours12 = parseInt(peerReviewOpenHour);
-
-          let hours24 = null;
-          if(peerReviewOpenMeridian === 'AM') {
-            hours24 = hours12 === 12 ? 0 : parseInt(hours12);
-          }
-          else {
-            hours24 = hours12 === 12 ? 12 : parseInt(hours12) + 12;
-          }
-
+          const hours24 = peerReviewOpenMeridian === 'AM'
+            ? (hours12 === 12 ? 0 : hours12)
+            : (hours12 === 12 ? 12 : hours12 + 12);
           const minutes = parseInt(peerReviewOpenMinute);
-          date = moment(selectedPeerReviewOpenDay)
+          return moment(selectedPeerReviewOpenDay)
             .hours(hours24)
             .minutes(minutes)
-            .utc()
-            .toDate();
+            .utc();
         }
       }
-      return date;
     },
     peerReviewOpenDateDisplay() {
       return this.peerReviewOpenDate
-        ? moment(this.peerReviewOpenDate).local().format(DISPLAY_DATE_FORMAT)
+        ? this.peerReviewOpenDate.local().format(DISPLAY_DATE_FORMAT)
         : '';
     },
     peerReviewOpenDateIsValid() {
