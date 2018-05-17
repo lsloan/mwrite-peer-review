@@ -8,7 +8,7 @@
             :disabled="disabled"
             @input="$emit('input', $event.target.value)"
             v-model="value"/>
-    <label v-if="label" :for="_uid" class="mdl-textfield__label">{{ label }}</label> +
+    <label v-if="label" :for="_uid" class="mdl-textfield__label">{{ label }}</label>
     </div>
 </template>
 
