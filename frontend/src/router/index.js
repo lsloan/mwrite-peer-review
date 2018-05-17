@@ -33,6 +33,7 @@ const router = new Router({
     },
     {
       path: '/instructor/dashboard',
+      name: 'InstructorDashboard',
       component: InstructorDashboard,
       beforeEnter: authenticatedInstructorsOnly,
       meta: {

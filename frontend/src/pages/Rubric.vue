@@ -446,96 +446,84 @@ export default {
         this.models = modelConverter(this.existingRubric);
       }
     },
-    updatePeerReviewOpenDate(newPromptDueDateLocal) {
-      if(newPromptDueDateLocal) {
-        const date = moment(newPromptDueDateLocal, DISPLAY_DATE_FORMAT);
-        const minute = date.minute();
+    // updatePeerReviewOpenDate(newPromptDueDateLocal) {
+    //   if(newPromptDueDateLocal) {
+    //     const date = moment(newPromptDueDateLocal, DISPLAY_DATE_FORMAT);
+    //     const minute = date.minute();
 
-        // TODO the following could be replaced with _.flow(), but only if we use lodash.fp which will be much easier w/ ES6
-        let closestMinuteChoice = R.pipe(
-          R.filter(c => parseInt(c) >= minute),
-          R.minBy(c => Math.abs(minute - parseInt(c)))
-        )(this.peerReviewOpenMinuteChoices);
+    //     // TODO the following could be replaced with _.flow(), but only if we use lodash.fp which will be much easier w/ ES6
+    //     let closestMinuteChoice = R.pipe(
+    //       R.filter(c => parseInt(c) >= minute),
+    //       R.minBy(c => Math.abs(minute - parseInt(c)))
+    //     )(this.peerReviewOpenMinuteChoices);
 
-        if(!closestMinuteChoice) {
-          const minutesToHour = 60 - minute;
-          date.add(minutesToHour, 'minutes');
-          closestMinuteChoice = '00';
-        }
+    //     if(!closestMinuteChoice) {
+    //       const minutesToHour = 60 - minute;
+    //       date.add(minutesToHour, 'minutes');
+    //       closestMinuteChoice = '00';
+    //     }
 
-        let meridian = 'AM';
-        let hour = date.hour();
-        if(hour === 0) {
-          hour = 12;
-        }
-        else {
-          if(hour >= 12) {
-            meridian = 'PM';
-            if(hour > 12) {
-              hour -= 12;
-            }
-          }
-        }
+    //     let meridian = 'AM';
+    //     let hour = date.hour();
+    //     if(hour === 0) {
+    //       hour = 12;
+    //     }
+    //     else {
+    //       if(hour >= 12) {
+    //         meridian = 'PM';
+    //         if(hour > 12) {
+    //           hour -= 12;
+    //         }
+    //       }
+    //     }
 
-        this.peerReviewOpenHour = hour.toString();
-        this.peerReviewOpenMinute = closestMinuteChoice;
-        this.peerReviewOpenAMPM = meridian;
-        this.selectedPeerReviewOpenDate = date.toDate();
-      }
-    },
+    //     this.peerReviewOpenHour = hour.toString();
+    //     this.peerReviewOpenMinute = closestMinuteChoice;
+    //     this.peerReviewOpenAMPM = meridian;
+    //     this.selectedPeerReviewOpenDate = date.toDate();
+    //   }
+    // },
     addCriterion() {
       this.models.criteria.push(makeCriterion());
     },
     removeCriterion(id) {
-      this.models.criteria = R.reject(c => c.id === id, this.criteria);
+      this.models.criteria = R.reject(c => c.id === id, this.models.criteria);
+    },
+    rubricUpdateSuccess() {
+      this.$emit('notification', {
+        message: 'The rubric was successfully created.  You will be returned to the dashboard.'
+      });
+      setTimeout(() => this.$router.push({name: 'InstructorDashboard'}), 5000);
+    },
+    rubricUpdateFailure() {
+      this.$emit('notification', {
+        message: 'An error occurred.  Please try again later.'
+      });
     },
     submitRubricForm() {
-      console.log('would have submitted');
-    //   if(this.rubricIsValid) {
-    //     var data = {
-    //       promptId: this.selectedPrompt.value || null,
-    //       revisionId: this.selectedRevision.value || null,
-    //       description: this.rubric ? R.trim(this.rubric.description) : null,
-    //       criteria: _.map(this.criteria, function(c) {
-    //         return _.trim(c.description) || null;
-    //       }),
-    //       peerReviewOpenDateIsPromptDueDate: this.peerReviewOpenDateIsPromptDueDate,
-    //       peerReviewOpenDate: moment(this.peerReviewOpenDate).utc().format(),
-    //       distributePeerReviewsForSections: this.distributePeerReviewsForSections
-    //     };
+      if(this.rubricIsValid) {
+        const data = {
+          promptId: parseInt(this.models.selectedPrompt.value) || null,
+          revisionId: this.models.selectedRevision.value ? parseInt(this.models.selectedRevision.value) : null,
+          description: R.trim(this.models.description),
+          criteria: R.map(c => R.trim(c.description), this.models.criteria),
+          peerReviewOpenDateIsPromptDueDate: this.models.peerReviewOpenDateIsPromptDueDate,
+          peerReviewOpenDate: this.peerReviewOpenDate.toISOString()
+        };
 
-    //     this.submissionInProgress = true;
-    //     var vm = this;
-    //     postToEndpoint(
-    //       document.querySelector('#rubric-form').getAttribute('action'),
-    //       data,
-    //       function() {
-    //         vm.$root.$emit('notification', {
-    //           message: 'The rubric was successfully created.  You will be returned to the dashboard.'
-    //         });
-    //         var frontendLandingUrl = document.querySelector('#rubric-form').dataset['frontendLandingUrl'];
-    //         var redirectToDashboard = function() {
-    //           window.location.href = frontendLandingUrl + '/#/instructor/dashboard';
-    //         };
-    //         setTimeout(redirectToDashboard, 4000);
-    //       },
-    //       function() {
-    //         // TODO be more specific in certain cases e.g. 403 (session probably expired)
-    //         vm.$root.$emit('notification', {
-    //           message: 'An error occurred.  Please try again later.'
-    //         });
-    //       },
-    //       function() {
-    //         vm.submissionInProgress = false;
-    //       }
-    //     );
-    //   }
-    //   else {
-    //     // TODO not bad to have a guard, but this should be unreachable, so we need another way to tell the user what to do / what not do
-    //     this.$root.$emit('notification', {
-    //       message: 'This rubric is not valid.  Double check that you have selected a writing prompt, added a description, created criteria, and configured a peer review open date no sooner than the prompt\'s open date.'
-    //     });
-    //   }
+        this.submissionInProgress = true;
+        this.$api.post('/course/{}/rubric', this.courseId, data)
+          .then(this.rubricUpdateSuccess)
+          .catch(this.rubricUpdateFailure)
+          .finally(() => {
+            this.submissionInProgress = false;
+          });
+      }
+      else {
+        this.$$emit('notification', {
+          message: 'This rubric is not valid.  Double check that you have selected a writing prompt, added a description, created criteria, and configured a peer review open date no sooner than the prompt\'s open date.'
+        });
+      }
     }
   },
   mounted() {
