@@ -354,7 +354,6 @@ class RubricForm:
                 'description': existing_rubric.description,
                 'prompt_id': existing_prompt.id,
                 'revision_id': existing_revision.id if existing_revision else None,
-                'peer_review_due_date': passback_assignment.due_date_utc.strftime(API_DATE_FORMAT),
                 'peer_review_open_date': existing_rubric.peer_review_open_date.strftime(API_DATE_FORMAT),
                 'peer_review_open_date_is_prompt_due_date': existing_rubric.peer_review_open_date_is_prompt_due_date,
                 'criteria': [
@@ -370,4 +369,5 @@ class RubricForm:
             'assignments': {a.id: a.title for a in assignments},
             'validation_info': {a.id: a.validation for a in fetched_assignments},
             'existing_rubric': rubric_data,
+            'peer_review_due_date': passback_assignment.due_date_utc.strftime(API_DATE_FORMAT)
         }

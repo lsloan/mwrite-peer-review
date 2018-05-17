@@ -275,6 +275,7 @@ export default {
       assignmentNamesById: {},
       existingRubric: null,
       validations: {},
+      peerReviewDueDate: null,
       models: {
         criteria: [makeCriterion()],
         description: '',
@@ -416,19 +417,20 @@ export default {
       if(!this.peerReviewOpenDate) {
         return false;
       }
-      const peerReviewOpenDate = moment(this.models.peerReviewOpenDate);
-      const peerReviewDueDate = moment(this.models.peerReviewDueDate);
-      return peerReviewOpenDate.isSameOrAfter(this.promptDueDate) && peerReviewOpenDate.isSameOrBefore(peerReviewDueDate);
+      const peerReviewDueAfterPrompt = this.peerReviewOpenDate.isSameOrAfter(this.promptDueDate);
+      const peerReviewDueAfterOpening = this.peerReviewOpenDate.isSameOrBefore(this.peerReviewDueDate);
+      return peerReviewDueAfterPrompt && peerReviewDueAfterOpening;
     }
   },
   methods: {
     fetchData() {
       return this.$api.get('/course/{}/rubric/peer_review_assignment/{}', this.courseId, this.peerReviewAssignmentId)
         .then(r => {
-          const {assignments, validationInfo, existingRubric} = r.data;
+          const {assignments, validationInfo, existingRubric, peerReviewDueDate} = r.data;
           this.assignmentNamesById = assignments;
           this.validations = validationInfo;
           this.existingRubric = existingRubric;
+          this.peerReviewDueDate = peerReviewDueDate;
         });
     },
     initializeModels() {
