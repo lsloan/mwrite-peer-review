@@ -1,20 +1,25 @@
 import logging
+import dateutil.parser
 from itertools import chain
 
 from django.http import Http404
-from rolepermissions.roles import get_user_roles
+from django.db import transaction
 from django.views.decorators.http import require_POST
 from django.core.exceptions import PermissionDenied, ObjectDoesNotExist
+from rolepermissions.roles import get_user_roles
 
 import peer_review.etl as etl
-from peer_review.models import CanvasCourse, CanvasStudent, PeerReview, Rubric, PeerReviewEvaluation, \
-    CanvasAssignment
-from peer_review.queries import InstructorDashboardStatus, StudentDashboardStatus, ReviewStatus, RubricForm
 from peer_review.api.util import merge_validations
-from peer_review.util import to_camel_case, keymap_all
+from peer_review.util import to_camel_case, keymap_all, some
+from peer_review.exceptions import ReviewsInProgressException, APIException
 from peer_review.decorators import authorized_json_endpoint, authenticated_json_endpoint, json_body
+from peer_review.models import CanvasCourse, CanvasStudent, CanvasAssignment, PeerReview, Rubric, \
+    Criterion, PeerReviewEvaluation, PeerReviewDistribution
+from peer_review.queries import InstructorDashboardStatus, StudentDashboardStatus, ReviewStatus, \
+    RubricForm
 
-log = logging.getLogger(__name__)
+
+LOGGER = logging.getLogger(__name__)
 
 
 @authenticated_json_endpoint
@@ -79,7 +84,7 @@ def all_peer_review_assignment_details(request, course_id):
 def raise_if_not_current_user(request, user_id):
     logged_in_user_id = request.session['lti_launch_params']['custom_canvas_user_id']
     if logged_in_user_id != user_id:
-        log.warning('User %s tried to access information for user %s without permission'
+        LOGGER.warning('User %s tried to access information for user %s without permission'
                     % (logged_in_user_id, user_id))
         raise PermissionDenied
 
@@ -87,7 +92,7 @@ def raise_if_not_current_user(request, user_id):
 def raise_if_peer_review_not_for_student(request, student_id, peer_review_id):
     if not PeerReview.objects.filter(id=peer_review_id, submission__author_id=student_id).exists():
         logged_in_user_id = request.session['lti_launch_params']['custom_canvas_user_id']
-        log.warning('User %s tried to submit an invalid peer review evaluation for user %s and peer review %s'
+        LOGGER.warning('User %s tried to submit an invalid peer review evaluation for user %s and peer review %s'
                     % (logged_in_user_id, student_id, peer_review_id))
         raise PermissionDenied
 
@@ -218,3 +223,80 @@ def rubric_info_for_peer_review_assignment(request, course_id, passback_assignme
     fetched_assignments = etl.persist_assignments(course_id)
 
     return RubricForm.rubric_info(course, passback_assignment, fetched_assignments)
+
+@require_POST
+@json_body
+@authorized_json_endpoint(roles=['instructor'], default_status_code=201)
+def create_or_update_rubric(request, params, course_id):
+    passback_assignment_id = params['assignment_id']
+
+    if CanvasAssignment.objects.get(id=passback_assignment_id).course_id != course_id:
+        error = 'The requested peer review assignment is not part of the specified course.'
+        raise APIException(data={'error': error}, status_code=403)
+
+    if not params.get('prompt_id'):
+        raise APIException(data={'error': 'Missing prompt assignment.'}, status_code=400)
+    prompt_assignment_id = params['prompt_id']
+
+    revision_assignment_id = params.get('revision_id')
+
+    if 'description' not in params or not params['description'].strip():
+        raise APIException(data={'error': 'Missing rubric description.'}, status_code=400)
+    rubric_description = params['description'].strip()
+
+    if 'criteria' not in params or len(params['criteria']) < 1:
+        raise APIException(data={'error': 'Missing criteria.'}, status_code=400)
+    if some(lambda c: not c.description.strip() == 0, params['criteria']):
+        raise APIException(data={'error': 'Blank criteria submitted.'}, status_code=400)
+    criteria = [Criterion(description=criterion) for criterion in params['criteria']]
+
+    if 'peer_review_open_date' not in params or not params['peer_review_open_date'].strip():
+        raise APIException(data={'error': 'Missing peer review open date.'}, status_code=400)
+    peer_review_open_date = dateutil.parser.parse(params['peer_review_open_date'])
+
+    if 'peer_review_open_date_is_prompt_due_date' not in params:
+        error = 'Missing peer review open date is prompt due date flag.'
+        raise APIException(data={'error': error}, status_code=400)
+    pr_open_date_is_prompt_due_date = params['peer_review_open_date_is_prompt_due_date']
+
+    try:
+        with transaction.atomic():
+            prompt_assignment = CanvasAssignment.objects.get(id=prompt_assignment_id)
+            passback_assignment = CanvasAssignment.objects.get(id=passback_assignment_id)
+
+            if revision_assignment_id:
+                revision_assignment = CanvasAssignment.objects.get(id=revision_assignment_id)
+            else:
+                revision_assignment = None
+
+            rubric, created = Rubric.objects.update_or_create(
+                reviewed_assignment=prompt_assignment_id,
+                defaults={
+                    'description': rubric_description,
+                    'reviewed_assignment': prompt_assignment,
+                    'passback_assignment': passback_assignment,
+                    'revision_assignment': revision_assignment,
+                    'peer_review_open_date': peer_review_open_date,
+                    'peer_review_open_date_is_prompt_due_date': pr_open_date_is_prompt_due_date,
+                    'distribute_peer_reviews_for_sections': False
+                }
+            )
+
+            if not created:
+                try:
+                    distribution = PeerReviewDistribution.objects.get(rubric_id=rubric.id)
+                    if distribution.is_distribution_complete:
+                        raise ReviewsInProgressException
+                except PeerReviewDistribution.DoesNotExist:
+                    pass
+                Criterion.objects.filter(rubric_id=rubric.id).delete()
+
+            rubric.save()
+            for criterion in criteria:
+                criterion.rubric_id = rubric.id
+                criterion.save()
+
+        return params
+    except ReviewsInProgressException:
+        error = 'Rubric is read-only because reviews are in progress.'
+        raise APIException(data={'error': error}, status_code=403)
