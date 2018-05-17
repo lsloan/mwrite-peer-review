@@ -341,7 +341,7 @@ export default {
     promptDueDate() {
       if(this.selectedPromptId) {
         const {dueDateUtc} = this.validations[this.selectedPromptId];
-        return moment(dueDateUtc).local().format(DISPLAY_DATE_FORMAT);
+        return moment(dueDateUtc);
       }
     },
     promptDueDateDisplay() {
