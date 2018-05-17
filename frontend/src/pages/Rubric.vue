@@ -141,8 +141,8 @@
                                     :options="revisionChoices"
                                     :disabled="reviewIsInProgress">
                             </dropdown>
-                            <p v-if="revisionSection && revisionDueDate" class="assignment-info">
-                                This revision is assigned to {{ revisionSection }} and is due {{ revisionDueDate }}.
+                            <p v-if="revisionSection && revisionDueDateDisplay" class="assignment-info">
+                                This revision is assigned to {{ revisionSection }} and is due {{ revisionDueDateDisplay }}.
                             </p>
                         </div>
 
@@ -342,7 +342,7 @@ export default {
     promptDueDate() {
       if(this.selectedPromptId) {
         const {dueDateUtc} = this.validations[this.selectedPromptId];
-        return moment(dueDateUtc).utc();
+        return moment.utc(dueDateUtc);
       }
     },
     promptDueDateDisplay() {
@@ -359,7 +359,12 @@ export default {
     revisionDueDate() {
       if(this.selectedRevisionId) {
         const {dueDateUtc} = this.validations[this.selectedRevisionId];
-        return moment(dueDateUtc).local().format(DISPLAY_DATE_FORMAT);
+        return moment.utc(dueDateUtc);
+      }
+    },
+    revisionDueDateDisplay() {
+      if(this.revisionDueDate) {
+        return this.revisionDueDate.local().format(DISPLAY_DATE_FORMAT);
       }
     },
     rubricIsValid() {
@@ -373,21 +378,9 @@ export default {
       return this.models.selectedPrompt && this.models.description && criteriaAreValid && noFatalIssuesFound && this.peerReviewOpenDateIsValid;
     },
     peerReviewOpenDisabledDates() {
-      if(this.promptDueDate && this.existingPeerReviewDueDate) {
-        const toMoment = moment(this.promptDueDate, DISPLAY_DATE_FORMAT);
-        const fromMoment = moment(this.existingPeerReviewDueDate);
-
-        toMoment.startOf('day');
-        fromMoment.startOf('day');
-
-        return {
-          to: toMoment.toDate(),
-          from: fromMoment.toDate()
-        };
-      }
-      else {
-        return {};
-      }
+      return this.promptDueDate && this.peerReviewDueDate
+        ? {to: this.promptDueDate.local().toDate(), from: this.peerReviewDueDate.local().toDate()}
+        : {};
     },
     peerReviewOpenDate() {
       if(this.models.peerReviewOpenDateIsPromptDueDate) {
@@ -426,11 +419,12 @@ export default {
     fetchData() {
       return this.$api.get('/course/{}/rubric/peer_review_assignment/{}', this.courseId, this.peerReviewAssignmentId)
         .then(r => {
+          console.log('API data:', r.data);
           const {assignments, validationInfo, existingRubric, peerReviewDueDate} = r.data;
           this.assignmentNamesById = assignments;
           this.validations = validationInfo;
           this.existingRubric = existingRubric;
-          this.peerReviewDueDate = peerReviewDueDate;
+          this.peerReviewDueDate = moment.utc(peerReviewDueDate);
         });
     },
     initializeModels() {
