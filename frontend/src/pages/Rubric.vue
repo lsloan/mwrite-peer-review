@@ -371,7 +371,7 @@ export default {
 
       return this.models.selectedPrompt && this.models.description && criteriaAreValid && noFatalIssuesFound && this.peerReviewOpenDateIsValid;
     },
-    peerReviewOpenDisabledDates: function() {
+    peerReviewOpenDisabledDates() {
       if(this.promptDueDate && this.existingPeerReviewDueDate) {
         const toMoment = moment(this.promptDueDate, DISPLAY_DATE_FORMAT);
         const fromMoment = moment(this.existingPeerReviewDueDate);
@@ -388,7 +388,7 @@ export default {
         return {};
       }
     },
-    peerReviewOpenDate: function() {
+    peerReviewOpenDate() {
       let date = null;
       if(this.models.peerReviewOpenDateIsPromptDueDate) {
         date = moment(this.promptDueDate, DISPLAY_DATE_FORMAT).utc().toDate();
@@ -416,12 +416,12 @@ export default {
       }
       return date;
     },
-    peerReviewOpenDateDisplay: function() {
+    peerReviewOpenDateDisplay() {
       return this.peerReviewOpenDate
         ? moment(this.peerReviewOpenDate).local().format(DISPLAY_DATE_FORMAT)
         : '';
     },
-    peerReviewOpenDateIsValid: function() {
+    peerReviewOpenDateIsValid() {
       if(!this.peerReviewOpenDate) {
         return false;
       }
@@ -495,15 +495,13 @@ export default {
         this.selectedPeerReviewOpenDate = date.toDate();
       }
     },
-    addCriterion: function() {
+    addCriterion() {
       this.criteria.push(makeCriterion());
     },
-    removeCriterion: function(id) {
-      this.criteria = this.criteria.filter(function(criterion) {
-        return criterion.id !== id;
-      });
+    removeCriterion(id) {
+      this.criteria = R.reject(c => c.id === id, this.criteria);
     },
-    submitRubricForm: function() {
+    submitRubricForm() {
       console.log('would have submitted');
     //   if(this.rubricIsValid) {
     //     var data = {
