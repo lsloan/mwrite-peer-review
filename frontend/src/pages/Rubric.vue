@@ -645,4 +645,8 @@ export default {
         margin-left: 3px;
         margin-right: 3px;
     }
+
+    .mdl-card__supporting-text >>> textarea.autosize-textarea {
+        color: inherit;
+    }
 </style>
