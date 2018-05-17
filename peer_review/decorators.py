@@ -9,6 +9,7 @@ from rolepermissions.roles import get_user_roles
 from toolz.dicttoolz import keymap
 from toolz.functoolz import thread_first, compose
 
+from peer_review.exceptions import APIException
 from peer_review.util import camel_case_keys, transform_data_structure, object_to_json
 
 logger = logging.getLogger(__name__)
@@ -43,10 +44,18 @@ def has_one_of_roles(**kwargs):
 # TODO think about pagination for large collections
 def json_response(view):
     def wrapper(*args, **kwargs):
-        data = view(*args, **kwargs)
+        try:
+            data = view(*args, **kwargs)
+            status_code = kwargs.get('default_status_code') or 200
+        except APIException as ex:
+            data = ex.data
+            status_code = ex.status_code
         content = transform_data_structure(data, dict_transform=camel_case_keys)
-        return HttpResponse(content=json.dumps(content, default=object_to_json),
-                            content_type='application/json')
+        return HttpResponse(
+            status_code=status_code,
+            content=json.dumps(content, default=object_to_json),
+            content_type='application/json'
+        )
     return wrapper
 
 
