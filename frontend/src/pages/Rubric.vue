@@ -357,12 +357,12 @@ export default {
       }
     },
     rubricIsValid() {
-      const criteriaExist = !R.isEmpty(this.models.criteria);
-      const criteriaDescriptionsExist = R.all(this.models.criteria, c => !R.isEmpty(c.description));
+      const criteriaExist = this.models.criteria && !R.isEmpty(this.models.criteria);
+      const criteriaDescriptionsExist = criteriaExist && R.all(c => !R.isEmpty(c.description), this.models.criteria);
       const criteriaAreValid = criteriaExist && criteriaDescriptionsExist;
 
       const allIssues = R.concat(this.promptIssues, this.revisionIssues);
-      const noFatalIssuesFound = R.all(allIssues, i => !i.fatal);
+      const noFatalIssuesFound = R.all(i => !i.fatal, allIssues);
 
       return this.models.selectedPrompt && this.models.description && criteriaAreValid && noFatalIssuesFound && this.peerReviewOpenDateIsValid;
     },
