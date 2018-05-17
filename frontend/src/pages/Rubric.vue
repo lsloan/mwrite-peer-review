@@ -484,10 +484,10 @@ export default {
       }
     },
     addCriterion() {
-      this.criteria.push(makeCriterion());
+      this.models.criteria.push(makeCriterion());
     },
     removeCriterion(id) {
-      this.criteria = R.reject(c => c.id === id, this.criteria);
+      this.models.criteria = R.reject(c => c.id === id, this.criteria);
     },
     submitRubricForm() {
       console.log('would have submitted');
