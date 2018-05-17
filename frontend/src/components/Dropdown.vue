@@ -56,6 +56,10 @@ export default {
         background-color: white;
     }
 
+    .dropdown-button:disabled {
+        cursor: initial;
+    }
+
     .selected-option {
         font-size: 16px;
     }
