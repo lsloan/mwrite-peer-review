@@ -74,7 +74,7 @@
                                     placeholder="Day"
                                     :disabled-dates="peerReviewOpenDisabledDates"
                                     :disabled="reviewIsInProgress"
-                                    v-model="models.peerReviewOpenDate">
+                                    v-model="models.peerReviewOpenDay">
                             </datepicker>
                         </div>
                         <div>
