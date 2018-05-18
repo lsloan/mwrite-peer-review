@@ -228,9 +228,9 @@ def rubric_info_for_peer_review_assignment(request, course_id, passback_assignme
 @json_body
 @authorized_json_endpoint(roles=['instructor'], default_status_code=201)
 def create_or_update_rubric(request, params, course_id):
-    passback_assignment_id = params['assignment_id']
+    passback_assignment_id = params['peer_review_assignment_id']
 
-    if CanvasAssignment.objects.get(id=passback_assignment_id).course_id != course_id:
+    if CanvasAssignment.objects.get(id=passback_assignment_id).course_id != int(course_id):
         error = 'The requested peer review assignment is not part of the specified course.'
         raise APIException(data={'error': error}, status_code=403)
 
@@ -246,7 +246,7 @@ def create_or_update_rubric(request, params, course_id):
 
     if 'criteria' not in params or len(params['criteria']) < 1:
         raise APIException(data={'error': 'Missing criteria.'}, status_code=400)
-    if some(lambda c: not c.description.strip() == 0, params['criteria']):
+    if some(lambda c: not c.strip(), params['criteria']):
         raise APIException(data={'error': 'Blank criteria submitted.'}, status_code=400)
     criteria = [Criterion(description=criterion) for criterion in params['criteria']]
 
