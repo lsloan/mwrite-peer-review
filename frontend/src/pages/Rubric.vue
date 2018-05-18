@@ -514,7 +514,7 @@ export default {
         };
 
         this.submissionInProgress = true;
-        api.post('/course/{}/rubric', data, this.courseId)
+        api.post('/course/{}/rubric/', data, this.courseId)
           .then(this.rubricUpdateSuccess)
           .catch(this.rubricUpdateFailure)
           .finally(() => {
