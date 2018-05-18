@@ -20,7 +20,7 @@ urlpatterns = [
 
         url(r'^students/', api.all_students),
 
-        url(r'^rubric/', api.create_or_update_rubric),
+        url(r'^rubric/$', api.create_or_update_rubric),
         url(
             r'^rubric/peer_review_assignment/(?P<passback_assignment_id>[0-9]+)/',
             api.rubric_info_for_peer_review_assignment
