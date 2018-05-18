@@ -42,17 +42,17 @@ def has_one_of_roles(**kwargs):
 
 
 # TODO think about pagination for large collections
-def json_response(view):
+def json_response(view, default_status_code=200):
     def wrapper(*args, **kwargs):
         try:
             data = view(*args, **kwargs)
-            status_code = kwargs.get('default_status_code') or 200
+            status_code = default_status_code
         except APIException as ex:
             data = ex.data
             status_code = ex.status_code
         content = transform_data_structure(data, dict_transform=camel_case_keys)
         return HttpResponse(
-            status_code=status_code,
+            status=status_code,
             content=json.dumps(content, default=object_to_json),
             content_type='application/json'
         )
