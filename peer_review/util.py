@@ -30,8 +30,10 @@ def to_snake_case(s):
     return re.sub('([a-z0-9])([A-Z])', r'\1_\2', inter).lower()
 
 
-# TODO what i really want here is something to recursively descend through the datastructure, snake-casing dict keys
-# TODO right now this only works for dicts or lists of dicts
+snake_case_keys = partial(keymap, to_snake_case)
+
+
+# TODO remove this in favor of snake_case_keys once peer_review.views.core is deprecated
 def parse_json_body(b):
     b_obj = json.loads(b.decode('utf-8'))
     if isinstance(b_obj, dict):
