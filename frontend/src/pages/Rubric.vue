@@ -491,13 +491,13 @@ export default {
       this.models.criteria = R.reject(c => c.id === id, this.models.criteria);
     },
     rubricUpdateSuccess() {
-      this.$emit('notification', {
+      this.$root.$emit('notification', {
         message: 'The rubric was successfully created.  You will be returned to the dashboard.'
       });
       setTimeout(() => this.$router.push({name: 'InstructorDashboard'}), 5000);
     },
     rubricUpdateFailure() {
-      this.$emit('notification', {
+      this.$root.$emit('notification', {
         message: 'An error occurred.  Please try again later.'
       });
     },
@@ -522,7 +522,7 @@ export default {
           });
       }
       else {
-        this.$$emit('notification', {
+        this.$root.$emit('notification', {
           message: 'This rubric is not valid.  Double check that you have selected a writing prompt, added a description, created criteria, and configured a peer review open date no sooner than the prompt\'s open date.'
         });
       }
