@@ -246,6 +246,7 @@ import {MdlCard, MdlSwitch, MdlSelect, MdlSnackbar} from 'vue-mdl';
 import Dropdown from '@/components/Dropdown';
 import AutosizeTextarea from '@/components/AutosizeTextarea';
 
+import api from '@/services/api';
 import {gensym} from '@/services/util';
 import {validationInfoAsIssues} from '@/services/validation';
 
@@ -513,7 +514,7 @@ export default {
         };
 
         this.submissionInProgress = true;
-        this.$api.post('/course/{}/rubric', this.courseId, data)
+        api.post('/course/{}/rubric', data, this.courseId)
           .then(this.rubricUpdateSuccess)
           .catch(this.rubricUpdateFailure)
           .finally(() => {
