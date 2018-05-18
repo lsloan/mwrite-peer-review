@@ -1,6 +1,5 @@
-import logging
-import dateutil.parser
 from itertools import chain
+import logging
 
 from django.http import Http404
 from django.db import transaction
@@ -9,8 +8,8 @@ from django.core.exceptions import PermissionDenied, ObjectDoesNotExist
 from rolepermissions.roles import get_user_roles
 
 import peer_review.etl as etl
-from peer_review.api.util import merge_validations
-from peer_review.util import to_camel_case, keymap_all, some
+from peer_review.api.util import merge_validations, validate_rubric
+from peer_review.util import to_camel_case, keymap_all
 from peer_review.exceptions import ReviewsInProgressException, APIException
 from peer_review.decorators import authorized_json_endpoint, authenticated_json_endpoint, json_body
 from peer_review.models import CanvasCourse, CanvasStudent, CanvasAssignment, PeerReview, Rubric, \
@@ -224,53 +223,25 @@ def rubric_info_for_peer_review_assignment(request, course_id, passback_assignme
 
     return RubricForm.rubric_info(course, passback_assignment, fetched_assignments)
 
+
 @require_POST
 @json_body
 @authorized_json_endpoint(roles=['instructor'], default_status_code=201)
 def create_or_update_rubric(request, params, course_id):
-    passback_assignment_id = params['peer_review_assignment_id']
-
-    if CanvasAssignment.objects.get(id=passback_assignment_id).course_id != int(course_id):
-        error = 'The requested peer review assignment is not part of the specified course.'
-        raise APIException(data={'error': error}, status_code=403)
-
-    if not params.get('prompt_id'):
-        raise APIException(data={'error': 'Missing prompt assignment.'}, status_code=400)
-    prompt_assignment_id = params['prompt_id']
-
-    revision_assignment_id = params.get('revision_id')
-
-    if 'description' not in params or not params['description'].strip():
-        raise APIException(data={'error': 'Missing rubric description.'}, status_code=400)
-    rubric_description = params['description'].strip()
-
-    if 'criteria' not in params or len(params['criteria']) < 1:
-        raise APIException(data={'error': 'Missing criteria.'}, status_code=400)
-    if some(lambda c: not c.strip(), params['criteria']):
-        raise APIException(data={'error': 'Blank criteria submitted.'}, status_code=400)
-    criteria = [Criterion(description=criterion) for criterion in params['criteria']]
-
-    if 'peer_review_open_date' not in params or not params['peer_review_open_date'].strip():
-        raise APIException(data={'error': 'Missing peer review open date.'}, status_code=400)
-    peer_review_open_date = dateutil.parser.parse(params['peer_review_open_date'])
-
-    if 'peer_review_open_date_is_prompt_due_date' not in params:
-        error = 'Missing peer review open date is prompt due date flag.'
-        raise APIException(data={'error': error}, status_code=400)
-    pr_open_date_is_prompt_due_date = params['peer_review_open_date_is_prompt_due_date']
-
     try:
         with transaction.atomic():
-            prompt_assignment = CanvasAssignment.objects.get(id=prompt_assignment_id)
-            passback_assignment = CanvasAssignment.objects.get(id=passback_assignment_id)
-
-            if revision_assignment_id:
-                revision_assignment = CanvasAssignment.objects.get(id=revision_assignment_id)
-            else:
-                revision_assignment = None
+            # my kingdom for destructuring assignment in Python :/
+            objects = validate_rubric(int(course_id), params)
+            prompt_assignment = objects['prompt_assignment']
+            passback_assignment = objects['peer_review_assignment']
+            revision_assignment = objects['revision_assignment']
+            rubric_description = objects['rubric_description']
+            criteria = objects['criteria']
+            peer_review_open_date = objects['peer_review_open_date']
+            pr_open_date_is_prompt_due_date = objects['peer_review_open_date_is_prompt_due_date']
 
             rubric, created = Rubric.objects.update_or_create(
-                reviewed_assignment=prompt_assignment_id,
+                reviewed_assignment=prompt_assignment,
                 defaults={
                     'description': rubric_description,
                     'reviewed_assignment': prompt_assignment,
