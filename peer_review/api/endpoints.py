@@ -1,18 +1,24 @@
-import logging
 from itertools import chain
+import logging
 
-from rolepermissions.roles import get_user_roles
-from django.core.exceptions import PermissionDenied, ObjectDoesNotExist
+from django.http import Http404
+from django.db import transaction
 from django.views.decorators.http import require_POST
+from django.core.exceptions import PermissionDenied, ObjectDoesNotExist
+from rolepermissions.roles import get_user_roles
 
 import peer_review.etl as etl
-from peer_review.models import CanvasCourse, CanvasStudent, PeerReview, Rubric, PeerReviewEvaluation
-from peer_review.queries import InstructorDashboardStatus, StudentDashboardStatus, ReviewStatus
-from peer_review.api.util import merge_validations
+from peer_review.api.util import merge_validations, validate_rubric
 from peer_review.util import to_camel_case, keymap_all
+from peer_review.exceptions import ReviewsInProgressException, APIException
 from peer_review.decorators import authorized_json_endpoint, authenticated_json_endpoint, json_body
+from peer_review.models import CanvasCourse, CanvasStudent, CanvasAssignment, PeerReview, Rubric, \
+    Criterion, PeerReviewEvaluation, PeerReviewDistribution
+from peer_review.queries import InstructorDashboardStatus, StudentDashboardStatus, ReviewStatus, \
+    RubricForm
 
-log = logging.getLogger(__name__)
+
+LOGGER = logging.getLogger(__name__)
 
 
 @authenticated_json_endpoint
@@ -77,7 +83,7 @@ def all_peer_review_assignment_details(request, course_id):
 def raise_if_not_current_user(request, user_id):
     logged_in_user_id = request.session['lti_launch_params']['custom_canvas_user_id']
     if logged_in_user_id != user_id:
-        log.warning('User %s tried to access information for user %s without permission'
+        LOGGER.warning('User %s tried to access information for user %s without permission'
                     % (logged_in_user_id, user_id))
         raise PermissionDenied
 
@@ -85,7 +91,7 @@ def raise_if_not_current_user(request, user_id):
 def raise_if_peer_review_not_for_student(request, student_id, peer_review_id):
     if not PeerReview.objects.filter(id=peer_review_id, submission__author_id=student_id).exists():
         logged_in_user_id = request.session['lti_launch_params']['custom_canvas_user_id']
-        log.warning('User %s tried to submit an invalid peer review evaluation for user %s and peer review %s'
+        LOGGER.warning('User %s tried to submit an invalid peer review evaluation for user %s and peer review %s'
                     % (logged_in_user_id, student_id, peer_review_id))
         raise PermissionDenied
 
@@ -202,3 +208,66 @@ def submit_peer_review_evaluation(request, body, course_id, student_id, peer_rev
 @authorized_json_endpoint(roles=['instructor'])
 def review_status(request, course_id, rubric_id):
     return ReviewStatus.status_for_rubric(course_id, rubric_id)
+
+
+@authorized_json_endpoint(roles=['instructor'])
+def rubric_info_for_peer_review_assignment(request, course_id, passback_assignment_id):
+    try:
+        passback_assignment = CanvasAssignment.objects.get(id=passback_assignment_id)
+    except CanvasAssignment.DoesNotExist:
+        raise Http404
+
+    # TODO might need to persist course here if assignment-level launches are added for instructors
+    course = CanvasCourse.objects.get(id=course_id)
+    fetched_assignments = etl.persist_assignments(course_id)
+
+    return RubricForm.rubric_info(course, passback_assignment, fetched_assignments)
+
+
+@require_POST
+@json_body
+@authorized_json_endpoint(roles=['instructor'], default_status_code=201)
+def create_or_update_rubric(request, params, course_id):
+    try:
+        with transaction.atomic():
+            # my kingdom for destructuring assignment in Python :/
+            objects = validate_rubric(int(course_id), params)
+            prompt_assignment = objects['prompt_assignment']
+            passback_assignment = objects['peer_review_assignment']
+            revision_assignment = objects['revision_assignment']
+            rubric_description = objects['rubric_description']
+            criteria = objects['criteria']
+            peer_review_open_date = objects['peer_review_open_date']
+            pr_open_date_is_prompt_due_date = objects['peer_review_open_date_is_prompt_due_date']
+
+            rubric, created = Rubric.objects.update_or_create(
+                reviewed_assignment=prompt_assignment,
+                defaults={
+                    'description': rubric_description,
+                    'reviewed_assignment': prompt_assignment,
+                    'passback_assignment': passback_assignment,
+                    'revision_assignment': revision_assignment,
+                    'peer_review_open_date': peer_review_open_date,
+                    'peer_review_open_date_is_prompt_due_date': pr_open_date_is_prompt_due_date,
+                    'distribute_peer_reviews_for_sections': False
+                }
+            )
+
+            if not created:
+                try:
+                    distribution = PeerReviewDistribution.objects.get(rubric_id=rubric.id)
+                    if distribution.is_distribution_complete:
+                        raise ReviewsInProgressException
+                except PeerReviewDistribution.DoesNotExist:
+                    pass
+                Criterion.objects.filter(rubric_id=rubric.id).delete()
+
+            rubric.save()
+            for criterion in criteria:
+                criterion.rubric_id = rubric.id
+                criterion.save()
+
+        return params
+    except ReviewsInProgressException:
+        error = 'Rubric is read-only because reviews are in progress.'
+        raise APIException(data={'error': error}, status_code=403)

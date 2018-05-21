@@ -13,13 +13,18 @@ def not_found(request):
 
 
 urlpatterns = [
-
     url(r'^launch$', djangolti.views.LaunchView.as_view(), name='launch'),
     url(r'^user/self$', api.logged_in_user_details),
 
     url(r'^course/(?P<course_id>[0-9]+)/', include([
 
         url(r'^students/', api.all_students),
+
+        url(r'^rubric/$', api.create_or_update_rubric),
+        url(
+            r'^rubric/peer_review_assignment/(?P<passback_assignment_id>[0-9]+)/',
+            api.rubric_info_for_peer_review_assignment
+        ),
 
         url(r'^reviews/rubric/(?P<rubric_id>[0-9]+)/', api.review_status),
         url(r'^reviews/student/(?P<student_id>[0-9]+)/', include([
@@ -34,7 +39,7 @@ urlpatterns = [
 
         ### old URLs below this point
 
-        url(r'^favicon.ico$', not_found),   # TODO ...just add a favicon already
+        url(r'^favicon.ico$', not_found),  # TODO ...just add a favicon already
 
         url(r'^health/', include('health_check.urls')),
 

@@ -12,6 +12,7 @@ import InstructorDashboard from '@/pages/InstructorDashboard';
 import StudentDashboard from '@/pages/StudentDashboard';
 import StudentList from '@/pages/StudentList';
 import ReviewStatus from '@/pages/ReviewStatus';
+import Rubric from '@/pages/Rubric';
 
 Vue.use(Router);
 
@@ -32,11 +33,20 @@ const router = new Router({
     },
     {
       path: '/instructor/dashboard',
+      name: 'InstructorDashboard',
       component: InstructorDashboard,
       beforeEnter: authenticatedInstructorsOnly,
       meta: {
         breadcrumbPathComponents: [{text: 'Peer Review', href: '/instructor/dashboard'}]
       }
+    },
+    {
+      path: '/instructor/rubric/peer_review_assignment/:peerReviewAssignmentId',
+      name: 'Rubric',
+      component: Rubric,
+      beforeEnter: authenticatedInstructorsOnly,
+      // TODO needs breadcrumbPathComponents
+      props: (route) => ({peerReviewAssignmentId: route.params.peerReviewAssignmentId})
     },
     {
       path: '/instructor/students',
@@ -52,6 +62,7 @@ const router = new Router({
       component: ReviewStatus,
       beforeEnter: authenticatedInstructorsOnly,
       props: (route) => ({rubricId: route.params.rubricId})
+      // TODO needs breadcrumbPathComponents
     },
     {
       path: '/student/dashboard',

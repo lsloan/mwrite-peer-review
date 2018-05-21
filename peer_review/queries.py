@@ -1,12 +1,17 @@
 import json
-from toolz.itertoolz import groupby
+from itertools import chain
 from toolz.dicttoolz import valfilter
 from toolz.functoolz import thread_last
+from toolz.itertoolz import groupby, unique
 from django.db import connection
 from django.db.models import BooleanField, Subquery, OuterRef, Count, Case, When, Value, F, Q
 
 from peer_review.util import some, fetchall_dicts
-from peer_review.models import PeerReview, Criterion, PeerReviewComment, CanvasCourse, Rubric
+from peer_review.models import PeerReview, Criterion, PeerReviewComment, CanvasCourse, Rubric, \
+    CanvasAssignment, PeerReviewDistribution
+
+# TODO move to settings
+API_DATE_FORMAT = '%Y-%m-%d %H:%M:%SZ'
 
 
 class InstructorDashboardStatus:
@@ -80,9 +85,9 @@ class InstructorDashboardStatus:
     @staticmethod
     def _format_details(data):
         for row in data:
-            row['due_date'] = row['due_date'].strftime('%Y-%m-%d %H:%M:%SZ')
+            row['due_date'] = row['due_date'].strftime(API_DATE_FORMAT)
             if row.get('open_date'):
-                row['open_date'] = row['open_date'].strftime('%Y-%m-%d %H:%M:%SZ')
+                row['open_date'] = row['open_date'].strftime(API_DATE_FORMAT)
             row['reviews_in_progress'] = row['reviews_in_progress'] == 1
         return data
 
@@ -154,7 +159,7 @@ class StudentDashboardStatus:
     def _sort_and_format(data):
         sorted_data = sorted(data, key=lambda r: r['due_date_utc'])
         for review in sorted_data:
-            review['due_date_utc'] = review['due_date_utc'].strftime('%Y-%m-%d %H:%M:%SZ')
+            review['due_date_utc'] = review['due_date_utc'].strftime(API_DATE_FORMAT)
         return sorted_data
 
     @staticmethod
@@ -292,7 +297,7 @@ class ReviewStatus:
             rubric = {
                 'id': rubric.id,
                 'peer_review_title': rubric.passback_assignment.title,
-                'peer_review_due_date': due_date.strftime('%Y-%m-%d %H:%M:%SZ')
+                'peer_review_due_date': due_date.strftime(API_DATE_FORMAT)
             }
 
         course = CanvasCourse.objects.get(id=course_id)
@@ -302,4 +307,67 @@ class ReviewStatus:
             'reviews':   reviews,
             'rubric':    rubric,
             'sections':  sections
+        }
+
+
+# TODO refactor to be more ergonomic (this was lifted nearly verbatim from peer_review.views.core)
+class RubricForm:
+
+    @staticmethod
+    def _get_unclaimed_assignments(course_id):
+        query = Q(reviewed_assignment__course_id=course_id) | Q(revision_assignment__course_id=course_id)
+        rubrics = Rubric.objects.filter(query)
+        claimed_assignments = thread_last(rubrics,
+                                          (map, lambda r: (r.reviewed_assignment_id, r.revision_assignment_id)),
+                                          chain.from_iterable,
+                                          unique,
+                                          (filter, lambda i: i is not None))
+        return CanvasAssignment.objects.filter(course_id=course_id, is_peer_review_assignment=False) \
+                                       .exclude(id__in=claimed_assignments)
+
+    @staticmethod
+    def rubric_info(course, passback_assignment, fetched_assignments):
+        try:
+            existing_rubric = Rubric.objects.get(passback_assignment=passback_assignment)
+        except Rubric.DoesNotExist:
+            existing_rubric = None
+
+        if existing_rubric:
+            try:
+                review_is_in_progress = PeerReviewDistribution.objects.get(rubric=existing_rubric) \
+                    .is_distribution_complete
+            except PeerReviewDistribution.DoesNotExist:
+                review_is_in_progress = False
+        else:
+            review_is_in_progress = False
+
+        existing_prompt = existing_rubric.reviewed_assignment if existing_rubric else None
+        existing_revision = existing_rubric.revision_assignment if existing_rubric else None
+        assignments = list(RubricForm._get_unclaimed_assignments(course.id))
+        if existing_prompt:
+            assignments.insert(0, existing_prompt)
+        if existing_revision:
+            assignments.insert(0, existing_revision)
+
+        if existing_rubric:
+            rubric_data = {
+                'description': existing_rubric.description,
+                'prompt_id': existing_prompt.id,
+                'revision_id': existing_revision.id if existing_revision else None,
+                'peer_review_open_date': existing_rubric.peer_review_open_date.strftime(API_DATE_FORMAT),
+                'peer_review_open_date_is_prompt_due_date': existing_rubric.peer_review_open_date_is_prompt_due_date,
+                'criteria': [
+                    {'id': c.id, 'description': c.description}
+                    for c in existing_rubric.criteria.all()
+                ],
+                'review_in_progress': review_is_in_progress
+            }
+        else:
+            rubric_data = None
+
+        return {
+            'assignments': {a.id: a.title for a in assignments},
+            'validation_info': {a.id: a.validation for a in fetched_assignments},
+            'existing_rubric': rubric_data,
+            'peer_review_due_date': passback_assignment.due_date_utc.strftime(API_DATE_FORMAT)
         }

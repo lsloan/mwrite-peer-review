@@ -9,9 +9,11 @@ from rolepermissions.roles import get_user_roles
 from toolz.dicttoolz import keymap
 from toolz.functoolz import thread_first, compose
 
-from peer_review.util import to_camel_case, transform_data_structure
+from peer_review.exceptions import APIException
+from peer_review.util import camel_case_keys, snake_case_keys, \
+    transform_data_structure, object_to_json
 
-logger = logging.getLogger(__name__)
+LOGGER = logging.getLogger(__name__)
 
 
 def login_required_or_raise(view):
@@ -41,14 +43,20 @@ def has_one_of_roles(**kwargs):
 
 
 # TODO think about pagination for large collections
-def json_response(view):
-    camel_caser = partial(keymap, to_camel_case)
-
+def json_response(view, default_status_code=200):
     def wrapper(*args, **kwargs):
-        data = view(*args, **kwargs)
-        content = transform_data_structure(data, dict_transform=camel_caser)
-        return HttpResponse(content=json.dumps(content),
-                            content_type='application/json')
+        try:
+            data = view(*args, **kwargs)
+            status_code = default_status_code
+        except APIException as ex:
+            data = ex.data
+            status_code = ex.status_code
+        content = transform_data_structure(data, dict_transform=camel_case_keys)
+        return HttpResponse(
+            status=status_code,
+            content=json.dumps(content, default=object_to_json),
+            content_type='application/json'
+        )
     return wrapper
 
 
@@ -61,7 +69,7 @@ def launch_course_matches(view):
             launch_course_id = request.session['lti_launch_params']['custom_canvas_course_id']
             requested_course_id = kwargs['course_id']
             if requested_course_id != launch_course_id:
-                logger.warning('Requested course ID %s does not match LTI launch course ID %s for user %s'
+                LOGGER.warning('Requested course ID %s does not match LTI launch course ID %s for user %s'
                                % (requested_course_id, launch_course_id, request.user.email))
                 raise PermissionDenied
         return view(*args, **kwargs)
@@ -91,7 +99,10 @@ def authorized_json_endpoint(**kwargs):
 def json_body(view):
     def wrapper(*args, **kwargs):
         request = args[0]
-        body = json.loads(request.body)
+        body = transform_data_structure(
+            json.loads(request.body),
+            dict_transform=snake_case_keys
+        )
         new_args = args + (body,)
         return view(*new_args, **kwargs)
     return wrapper
