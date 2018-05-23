@@ -104,7 +104,6 @@ class StudentDashboardStatus:
     def _make_review(peer_review):
         return {
             'review_id': peer_review.id,
-            'submission_id': peer_review.submission.id,  # TODO remove this when review submission is ported to VueJS
             'review_is_complete': peer_review.review_is_complete
         }
 
