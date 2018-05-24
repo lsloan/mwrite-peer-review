@@ -287,3 +287,24 @@ def submission_for_review(request, course_id, review_id):
     response['Content-Disposition'] = 'attachment; filename="%s"' % submission.filename
 
     return response
+
+
+@authorized_json_endpoint(roles=['student'])
+def rubric_for_review(request, course_id, review_id):
+    try:
+        peer_review = PeerReview.objects.get(id=review_id)
+    except PeerReview.DoesNotExist:
+        raise Http404
+
+    logged_in_user_id = int(request.session['lti_launch_params']['custom_canvas_user_id'])
+    if logged_in_user_id != peer_review.student_id:
+        msg = 'User %s tried to access rubric for a review (ID %s) they were not assigned'
+        LOGGER.warning(msg, logged_in_user_id, review_id)
+        raise PermissionDenied
+    
+    rubric = peer_review.submission.assignment.rubric_for_prompt
+
+    return {
+        'description': rubric.description,
+        'criteria': [{'id': c.id, 'description': c.description} for c in rubric.criteria.all()]
+    }
