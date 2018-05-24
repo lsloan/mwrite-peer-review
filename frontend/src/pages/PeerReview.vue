@@ -31,19 +31,19 @@ import AutosizeTextarea from '@/components/AutosizeTextarea';
 export default {
   name: 'PeerReview',
   props: ['review-id'],
+  components: {PeerReviewSection, AutosizeTextarea},
   data() {
     return {
       data: {},
       responses: {}
     };
   },
-  components: {PeerReviewSection, AutosizeTextarea},
   computed: {
     courseId() {
       return this.$store.state.userDetails.courseId;
     },
     rubricDescription() {
-      return this.data.description;
+      return this.data.description || '';
     },
     criteria() {
       const {criteria = []} = this.data;
