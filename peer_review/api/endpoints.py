@@ -317,7 +317,7 @@ def rubric_for_review(request, course_id, review_id):
 @authorized_json_endpoint(roles=['student'], default_status_code=201)
 def submit_peer_review(request, params, course_id, review_id):
 
-    logged_in_user_id = request.session['lti_launch_params']['custom_canvas_user_id']
+    logged_in_user_id = int(request.session['lti_launch_params']['custom_canvas_user_id'])
 
     try:
         peer_review = PeerReview.objects.get(id=review_id)
@@ -330,7 +330,7 @@ def submit_peer_review(request, params, course_id, review_id):
         error = 'You were not assigned that peer review.'
         raise APIException(data={'error': error}, status_code=403)
 
-    student = CanvasStudent.objects.get(student_id=logged_in_user_id)
+    student = CanvasStudent.objects.get(id=logged_in_user_id)
     comments = params['comments']
     rubric = peer_review.submission.assignment.rubric_for_prompt
 
