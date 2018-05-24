@@ -75,21 +75,33 @@ def launch_course_matches(view):
         return view(*args, **kwargs)
     return wrapper
 
+authenticated_endpoint = compose(login_required_or_raise, launch_course_matches)
+authenticated_json_endpoint = compose(authenticated_endpoint, json_response)
 
-authenticated_json_endpoint = compose(login_required_or_raise, launch_course_matches, json_response)
 
-
-def authorized_json_endpoint(**kwargs):
+def authorized_endpoint(**kwargs):
     valid_roles = kwargs['roles']
 
     def decorator(view):
         has_roles_decorator = has_one_of_roles(roles=valid_roles)
         decorators = thread_first(view,
-                                  json_response,
                                   has_roles_decorator,
                                   launch_course_matches,
                                   login_required_or_raise)
 
+        def wrapper(request, *args, **kwargs):
+            return decorators(request, *args, **kwargs)
+        return wrapper
+    return decorator
+
+
+# TODO is there a simple, pythonic way to compose with kwargs?
+def authorized_json_endpoint(**kwargs):
+    def decorator(view):
+        authorization_decorator = authorized_endpoint(**kwargs)
+        decorators = thread_first(view,
+                                  json_response,
+                                  authorization_decorator)
         def wrapper(request, *args, **kwargs):
             return decorators(request, *args, **kwargs)
         return wrapper

@@ -9,10 +9,11 @@ import ReviewsReceived from '@/components/ReviewsReceived';
 
 import Error from '@/pages/Error';
 import InstructorDashboard from '@/pages/InstructorDashboard';
-import StudentDashboard from '@/pages/StudentDashboard';
 import StudentList from '@/pages/StudentList';
 import ReviewStatus from '@/pages/ReviewStatus';
 import Rubric from '@/pages/Rubric';
+import StudentDashboard from '@/pages/StudentDashboard';
+import PeerReview from '@/pages/PeerReview';
 
 Vue.use(Router);
 
@@ -82,6 +83,13 @@ const router = new Router({
           props: (route) => ({component: ReviewsReceived, childProps: route.params})
         }
       ]
+    },
+    {
+      name: 'PeerReview',
+      path: '/student/review/:reviewId',
+      component: PeerReview,
+      beforeEnter: authenticatedStudentsOnly,
+      props: route => ({reviewId: route.params.reviewId})
     }
   ]
 });
