@@ -47,7 +47,7 @@ export default {
     },
     criteria() {
       const {criteria = []} = this.data;
-      return R.sortBy(R.prop('id'), criteria);
+      return R.sortBy(c => c.id, criteria);
     },
     submissionDownloadUrl() {
       return __API_URL__ + '/course/' + this.courseId + '/reviews/' + this.reviewId + '/submission';
