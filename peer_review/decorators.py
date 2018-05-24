@@ -75,8 +75,8 @@ def launch_course_matches(view):
         return view(*args, **kwargs)
     return wrapper
 
-
-authenticated_json_endpoint = compose(login_required_or_raise, launch_course_matches, json_response)
+authenticated_endpoint = compose(login_required_or_raise, launch_course_matches)
+authenticated_json_endpoint = compose(authenticated_endpoint, json_response)
 
 
 def authorized_json_endpoint(**kwargs):
