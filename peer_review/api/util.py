@@ -1,9 +1,31 @@
+import logging
+
 import dateutil.parser
+from django.core.exceptions import PermissionDenied
 
 from peer_review.util import some
 from peer_review.exceptions import APIException
 from peer_review.etl import AssignmentValidation
-from peer_review.models import CanvasAssignment, Criterion
+from peer_review.models import CanvasAssignment, Criterion, PeerReview
+
+
+LOGGER = logging.getLogger(__name__)
+
+
+def raise_if_not_current_user(request, user_id):
+    logged_in_user_id = request.session['lti_launch_params']['custom_canvas_user_id']
+    if logged_in_user_id != user_id:
+        LOGGER.warning('User %s tried to access information for user %s without permission'
+                    % (logged_in_user_id, user_id))
+        raise PermissionDenied
+
+
+def raise_if_peer_review_not_given_to_student(request, student_id, peer_review_id):
+    if not PeerReview.objects.filter(id=peer_review_id, submission__author_id=student_id).exists():
+        logged_in_user_id = request.session['lti_launch_params']['custom_canvas_user_id']
+        LOGGER.warning('User %s tried to submit an invalid peer review evaluation for user %s and peer review %s'
+                    % (logged_in_user_id, student_id, peer_review_id))
+        raise PermissionDenied
 
 
 def merge_validations(data, validations):

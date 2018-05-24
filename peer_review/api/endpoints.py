@@ -1,19 +1,25 @@
-from itertools import chain
+import os.path
 import logging
+import mimetypes
+from itertools import chain
 
-from django.http import Http404
 from django.db import transaction
+from django.conf import settings
+from django.http import Http404, HttpResponse
 from django.views.decorators.http import require_POST
 from django.core.exceptions import PermissionDenied, ObjectDoesNotExist
 from rolepermissions.roles import get_user_roles
+from rolepermissions.checkers import has_role
 
 import peer_review.etl as etl
-from peer_review.api.util import merge_validations, validate_rubric
+from peer_review.api.util import merge_validations, validate_rubric, raise_if_not_current_user, \
+    raise_if_peer_review_not_given_to_student
 from peer_review.util import to_camel_case, keymap_all
 from peer_review.exceptions import ReviewsInProgressException, APIException
-from peer_review.decorators import authorized_json_endpoint, authenticated_json_endpoint, json_body
-from peer_review.models import CanvasCourse, CanvasStudent, CanvasAssignment, PeerReview, Rubric, \
-    Criterion, PeerReviewEvaluation, PeerReviewDistribution
+from peer_review.decorators import authorized_endpoint, authorized_json_endpoint, \
+    authenticated_json_endpoint, json_body
+from peer_review.models import CanvasCourse, CanvasStudent, CanvasAssignment, CanvasSubmission, \
+    PeerReview, Rubric, Criterion, PeerReviewEvaluation, PeerReviewDistribution
 from peer_review.queries import InstructorDashboardStatus, StudentDashboardStatus, ReviewStatus, \
     RubricForm
 
@@ -78,22 +84,6 @@ def all_peer_review_assignment_details(request, course_id):
     details_with_validations = merge_validations(details, validations)
 
     return keymap_all(to_camel_case, details_with_validations)
-
-
-def raise_if_not_current_user(request, user_id):
-    logged_in_user_id = request.session['lti_launch_params']['custom_canvas_user_id']
-    if logged_in_user_id != user_id:
-        LOGGER.warning('User %s tried to access information for user %s without permission'
-                    % (logged_in_user_id, user_id))
-        raise PermissionDenied
-
-
-def raise_if_peer_review_not_for_student(request, student_id, peer_review_id):
-    if not PeerReview.objects.filter(id=peer_review_id, submission__author_id=student_id).exists():
-        logged_in_user_id = request.session['lti_launch_params']['custom_canvas_user_id']
-        LOGGER.warning('User %s tried to submit an invalid peer review evaluation for user %s and peer review %s'
-                    % (logged_in_user_id, student_id, peer_review_id))
-        raise PermissionDenied
 
 
 @authorized_json_endpoint(roles=['student'])
@@ -271,3 +261,29 @@ def create_or_update_rubric(request, params, course_id):
     except ReviewsInProgressException:
         error = 'Rubric is read-only because reviews are in progress.'
         raise APIException(data={'error': error}, status_code=403)
+
+
+@authorized_endpoint(roles=['instructor', 'student'])
+def submission_for_review(request, course_id, review_id):
+    try:
+        peer_review = PeerReview.objects.get(id=review_id)
+    except PeerReview.DoesNotExist:
+        raise Http404
+
+    logged_in_user_id = int(request.session['lti_launch_params']['custom_canvas_user_id'])
+    if has_role(request.user, 'student') and logged_in_user_id != peer_review.student_id:
+        msg = 'User %s tried to download submission for a peer review (ID %s) they were not assigned'
+        LOGGER.warning(msg, logged_in_user_id, review_id)
+        raise PermissionDenied
+
+    submission = peer_review.submission
+    submission_path = os.path.join(settings.MEDIA_ROOT, 'submissions', submission.filename)
+
+    with open(submission_path, 'rb') as submission_file:
+        submission_bytes = submission_file.read()
+
+    content_type = mimetypes.guess_type(submission.filename)[0] or 'application/octet-stream'
+    response = HttpResponse(submission_bytes, content_type)
+    response['Content-Disposition'] = 'attachment; filename="%s"' % submission.filename
+
+    return response

@@ -27,6 +27,7 @@ urlpatterns = [
         ),
 
         url(r'^reviews/', include([
+            url(r'^(?P<review_id>[0-9]+)/submission', api.submission_for_review),
             url(r'^rubric/(?P<rubric_id>[0-9]+)/', api.review_status),
             url(r'^student/(?P<student_id>[0-9]+)/', include([
                 url(r'^assigned', api.assigned_work),
