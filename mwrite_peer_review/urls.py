@@ -26,13 +26,15 @@ urlpatterns = [
             api.rubric_info_for_peer_review_assignment
         ),
 
-        url(r'^reviews/rubric/(?P<rubric_id>[0-9]+)/', api.review_status),
-        url(r'^reviews/student/(?P<student_id>[0-9]+)/', include([
-            url(r'^assigned', api.assigned_work),
-            url(r'^completed', api.completed_work),
-            url(r'^given/(?P<rubric_id>[0-9]+)', api.reviews_given),
-            url(r'^received/(?P<rubric_id>[0-9]+)', api.reviews_received),
-            url(r'^evaluation/(?P<peer_review_id>[0-9]+)', api.submit_peer_review_evaluation)
+        url(r'^reviews/', include([
+            url(r'^rubric/(?P<rubric_id>[0-9]+)/', api.review_status),
+            url(r'^student/(?P<student_id>[0-9]+)/', include([
+                url(r'^assigned', api.assigned_work),
+                url(r'^completed', api.completed_work),
+                url(r'^given/(?P<rubric_id>[0-9]+)', api.reviews_given),
+                url(r'^received/(?P<rubric_id>[0-9]+)', api.reviews_received),
+                url(r'^evaluation/(?P<peer_review_id>[0-9]+)', api.submit_peer_review_evaluation)
+            ]))
         ])),
 
         url(r'^peer_review/all', api.all_peer_review_assignment_details),
