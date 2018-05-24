@@ -11,6 +11,7 @@ import Error from '@/pages/Error';
 import InstructorDashboard from '@/pages/InstructorDashboard';
 import StudentList from '@/pages/StudentList';
 import ReviewStatus from '@/pages/ReviewStatus';
+import AssignmentStatus from '@/pages/AssignmentStatus';
 import Rubric from '@/pages/Rubric';
 import StudentDashboard from '@/pages/StudentDashboard';
 import PeerReview from '@/pages/PeerReview';
@@ -63,6 +64,14 @@ const router = new Router({
       component: ReviewStatus,
       beforeEnter: authenticatedInstructorsOnly,
       props: (route) => ({rubricId: route.params.rubricId})
+      // TODO needs breadcrumbPathComponents
+    },
+    {
+      path: '/instructor/reviews/student/:studentId',
+      name: 'AssignmentStatus',
+      component: AssignmentStatus,
+      beforeEnter: authenticatedInstructorsOnly,
+      props: route => ({studentId: route.params.studentId})
       // TODO needs breadcrumbPathComponents
     },
     {
