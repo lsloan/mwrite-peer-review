@@ -46,7 +46,8 @@ export default {
       return this.data.description;
     },
     criteria() {
-      return R.sortBy(R.prop('id'), this.data.criteria);
+      const {criteria = []} = this.data;
+      return R.sortBy(R.prop('id'), criteria);
     },
     submissionDownloadUrl() {
       return __API_URL__ + '/course/' + this.courseId + '/reviews/' + this.reviewId + '/submission';
@@ -61,14 +62,18 @@ export default {
 </script>
 
 <style scoped>
+    h1, p {
+        font-family: "Roboto","Helvetica","Arial",sans-serif;
+    }
+
     h1 {
         font-size: 24px;
         line-height: 24px;
         margin: 8px 0;
     }
 
-    h1, p {
-        font-family: "Roboto","Helvetica","Arial",sans-serif;
+    p {
+        font-size: 16px;
     }
 
     .criterion-input {
