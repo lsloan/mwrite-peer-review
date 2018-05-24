@@ -2,7 +2,9 @@ import os.path
 import logging
 import mimetypes
 from itertools import chain
+from datetime import datetime
 
+from dateutil.tz import tzutc
 from django.db import transaction
 from django.conf import settings
 from django.http import Http404, HttpResponse
@@ -19,7 +21,7 @@ from peer_review.exceptions import ReviewsInProgressException, APIException
 from peer_review.decorators import authorized_endpoint, authorized_json_endpoint, \
     authenticated_json_endpoint, json_body
 from peer_review.models import CanvasCourse, CanvasStudent, CanvasAssignment, CanvasSubmission, \
-    PeerReview, Rubric, Criterion, PeerReviewEvaluation, PeerReviewDistribution
+    Rubric, Criterion, PeerReview, PeerReviewComment, PeerReviewEvaluation, PeerReviewDistribution
 from peer_review.queries import InstructorDashboardStatus, StudentDashboardStatus, ReviewStatus, \
     RubricForm
 
@@ -301,10 +303,74 @@ def rubric_for_review(request, course_id, review_id):
         msg = 'User %s tried to access rubric for a review (ID %s) they were not assigned'
         LOGGER.warning(msg, logged_in_user_id, review_id)
         raise PermissionDenied
-    
+
     rubric = peer_review.submission.assignment.rubric_for_prompt
 
     return {
         'description': rubric.description,
         'criteria': [{'id': c.id, 'description': c.description} for c in rubric.criteria.all()]
     }
+
+
+@require_POST
+@json_body
+@authorized_json_endpoint(roles=['student'], default_status_code=201)
+def submit_peer_review(request, params, course_id, review_id):
+
+    logged_in_user_id = request.session['lti_launch_params']['custom_canvas_user_id']
+
+    try:
+        peer_review = PeerReview.objects.get(id=review_id)
+    except PeerReview.DoesNotExist:
+        raise Http404
+
+    if logged_in_user_id != peer_review.student_id:
+        msg = 'User %s tried to submit comments for a review (ID %s) that they were not assigned'
+        LOGGER.warning(msg, logged_in_user_id, review_id)
+        error = 'You were not assigned that peer review.'
+        raise APIException(data={'error': error}, status_code=403)
+
+    student = CanvasStudent.objects.get(student_id=logged_in_user_id)
+    comments = params['comments']
+    rubric = peer_review.submission.assignment.rubric_for_prompt
+
+    criteria_ids = set(rubric.criteria.all().values_list('id', flat=True))
+    user_criteria_ids = set(int(c['criterion_id']) for c in comments)
+    if criteria_ids != user_criteria_ids:
+        msg = 'Criterion IDs do not match for review %s submitted by student "%s"'
+        LOGGER.warning(msg, review_id, student.username)
+        raise APIException(data={'error': 'Criterion IDs do not match.'}, status_code=400)
+
+    existing_comments = PeerReviewComment.objects.filter(peer_review=peer_review)
+    if existing_comments.exists():
+        LOGGER.warning(
+            'Student %s tried to submit a review that has already been completed',
+            student.username
+        )
+        if existing_comments.count() != rubric.criteria.count():
+            LOGGER.warning(
+                'Student %s has %d out of %d comments for review %s',
+                student.username,
+                existing_comments.count(),
+                rubric.criteria.count(),
+                review_id
+            )
+        msg = 'Review %s has already been completed previously.' % review_id
+        raise APIException(data={'error': msg}, status_code=400)
+
+    comments = [
+        PeerReviewComment(
+            criterion_id=c['criterion_id'],
+            comment=c['comment'],
+            commented_at_utc=datetime.now(tzutc()),
+            peer_review=peer_review
+        )
+        for c in comments
+    ]
+
+    with transaction.atomic():
+        existing_comments.delete()
+        for comment in comments:
+            comment.save()
+
+    return params
