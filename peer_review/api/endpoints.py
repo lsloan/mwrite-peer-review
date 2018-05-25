@@ -1,3 +1,5 @@
+import io
+import csv
 import os.path
 import logging
 import mimetypes
@@ -23,7 +25,7 @@ from peer_review.decorators import authorized_endpoint, authorized_json_endpoint
 from peer_review.models import CanvasCourse, CanvasStudent, CanvasAssignment, CanvasSubmission, \
     Rubric, Criterion, PeerReview, PeerReviewComment, PeerReviewEvaluation, PeerReviewDistribution
 from peer_review.queries import InstructorDashboardStatus, StudentDashboardStatus, ReviewStatus, \
-    RubricForm
+    RubricForm, Comments
 
 
 LOGGER = logging.getLogger(__name__)
@@ -374,3 +376,41 @@ def submit_peer_review(request, params, course_id, review_id):
             comment.save()
 
     return params
+
+
+@authorized_endpoint(roles=['instructor'])
+def csv_for_student_and_rubric(request, course_id, student_id, rubric_id=None):
+
+    try:
+        all_comments = Comments.all_comments_for_student(
+            student_id=student_id,
+            rubric_id=rubric_id
+        )
+    except Rubric.DoesNotExist:
+        LOGGER.error('Rubric %s does not exist to download CSV data', rubric_id)
+        raise Http404
+    except CanvasStudent.DoesNotExist:
+        LOGGER.error('Student %s does not exist to download CSV data', student_id)
+        raise Http404
+
+    rows = [['Prompt', 'Reviewer', 'Author', 'Criterion ID', 'Comment']] + [
+        [
+            comment.peer_review.submission.assignment.title,
+            comment.peer_review.student.sortable_name,
+            comment.peer_review.submission.author.sortable_name,
+            comment.criterion.id,
+            comment.comment
+        ]
+        for comment in all_comments
+    ]
+
+    output = io.StringIO()
+    writer = csv.writer(output, delimiter=',', quoting=csv.QUOTE_MINIMAL)
+    for row in rows:
+        writer.writerow(row)
+    csv_data = output.getvalue()
+
+    response = HttpResponse(csv_data, content_type="text/csv")
+    response["Content-Disposition"] = "attachment"
+
+    return response

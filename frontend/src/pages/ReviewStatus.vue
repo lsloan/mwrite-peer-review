@@ -39,7 +39,6 @@ export default {
   components: {FilterableTable},
   data() {
     return {
-      apiUrl: __API_URL__,
       data: null,
       pageLoadTime: null,
       columns: [
@@ -119,10 +118,10 @@ export default {
   },
   methods: {
     makeReviewLink(studentId) {
-      return `${this.apiUrl}/course/${this.courseId}/review/student/${studentId}/rubric/${this.rubricId}`;
+      return `/instructor/reviews/student/${studentId}`;
     },
     goToReview(studentId) {
-      window.location = this.makeReviewLink(studentId);
+      this.$router.push(this.makeReviewLink(studentId));
     }
   },
   mounted() {

@@ -8,7 +8,7 @@ from django.db.models import BooleanField, Subquery, OuterRef, Count, Case, When
 
 from peer_review.util import some, fetchall_dicts
 from peer_review.models import PeerReview, Criterion, PeerReviewComment, CanvasCourse, Rubric, \
-    CanvasAssignment, PeerReviewDistribution
+    CanvasStudent, CanvasAssignment, PeerReviewDistribution
 
 # TODO move to settings
 API_DATE_FORMAT = '%Y-%m-%d %H:%M:%SZ'
@@ -370,3 +370,24 @@ class RubricForm:
             'existing_rubric': rubric_data,
             'peer_review_due_date': passback_assignment.due_date_utc.strftime(API_DATE_FORMAT)
         }
+
+
+class Comments:
+    @staticmethod
+    def all_comments_for_student(**kwargs):
+        student_id = kwargs['student_id']
+        rubric_id = kwargs.get('rubric_id')
+
+        student = CanvasStudent.objects.get(id=student_id)
+
+        comments_given_args = {'peer_review__student_id': student_id}
+        comments_received_args = {'peer_review__submission__author_id': student_id}
+        if rubric_id:
+            rubric = Rubric.objects.get(id=rubric_id)
+            comments_given_args['peer_review__submission__assignment_id'] = rubric.reviewed_assignment_id
+            comments_received_args['peer_review__submission__assignment_id'] = rubric.reviewed_assignment_id
+
+        comments_given = PeerReviewComment.objects.filter(**comments_given_args)
+        comments_received = PeerReviewComment.objects.filter(**comments_received_args)
+
+        return chain(comments_given, comments_received)
