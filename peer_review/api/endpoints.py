@@ -414,3 +414,35 @@ def csv_for_student_and_rubric(request, course_id, student_id, rubric_id=None):
     response["Content-Disposition"] = "attachment"
 
     return response
+
+
+@authorized_json_endpoint(roles=['instructor'])
+def student_info(request, course_id, student_id):
+    try:
+        student = CanvasStudent.objects.get(id=student_id)
+    except CanvasStudent.DoesNotExist:
+        raise Http404
+
+    # TODO update this when https://github.com/M-Write/mwrite-peer-review/issues/270 is fixed
+    if int(course_id) != student.course_id:
+        msg = 'Student %s is not a part of course %s' % (student_id, course_id)
+        raise APIException(data={'error': msg}, status_code=403)
+
+    return {
+        'id': student.id,
+        'full_name': student.full_name,
+        'sortable_name': student.sortable_name
+    }
+
+
+@authorized_json_endpoint(roles=['instructor'])
+def all_rubrics_for_course(request, course_id):
+    rubrics = Rubric.objects.filter(reviewed_assignment__course__id=course_id)
+    return [
+        {
+            'id': r.id,
+            'prompt_id': r.reviewed_assignment.id,
+            'prompt_title': r.reviewed_assignment.title
+        }
+        for r in rubrics
+    ]

@@ -1,8 +1,9 @@
 <template>
     <div>
         <div class="mdl-grid">
-            <h1>TODO student name goes here</h1>
-            <mdl-anchor-button raised :href="dataDownloadUrl">
+            <h1>{{ studentName }}</h1>
+            <div class="mdl-layout-spacer"></div>
+            <mdl-anchor-button class="data-download-button" raised :href="dataDownloadUrl">
                 Download
                 <template v-if="rubricId">
                     Prompt
@@ -44,14 +45,16 @@ export default {
   components: {MdlAnchorButton, AssignmentStatusOverview, AssignmentStatusForRubric},
   data() {
     return {
-      selectedPrmopt: null,
-      data: {},
-      tempRubrics: [{id: 1, prompt: 'Prompt One'}, {id: 2, prompt: 'Prompt Two'}]
+      data: {}
     };
   },
   computed: {
     courseId() {
       return this.$store.state.userDetails.courseId;
+    },
+    studentName() {
+      const {studentInfo: {fullName = ''} = {}} = this.data;
+      return fullName;
     },
     prompts() {
       const overviewEntry = {
@@ -64,7 +67,9 @@ export default {
         title: 'Overview',
         isActivePred: rubricId => !rubricId
       };
-      const promptEntries = this.tempRubrics.map(r => ({
+
+      const {rubrics = []} = this.data;
+      const promptEntries = rubrics.map(r => ({
         to: {
           name: 'AssignmentStatusForRubric',
           params: {
@@ -72,9 +77,10 @@ export default {
             rubricId: r.id
           }
         },
-        title: r.prompt,
+        title: r.promptTitle,
         isActivePred: rId => r.id === rId
       }));
+
       return [overviewEntry].concat(promptEntries);
     },
     dataDownloadUrl() {
@@ -82,6 +88,17 @@ export default {
       const baseUrl = `${apiUrl}/course/${this.courseId}/students/${this.studentId}/data/`;
       return this.rubricId ? `${baseUrl}rubric/${this.rubricId}/` : baseUrl;
     }
+  },
+  mounted() {
+    Promise.all([
+      this.$api.get('/course/{}/students/{}/', this.courseId, this.studentId),
+      this.$api.get('/course/{}/rubric/all/', this.courseId)
+    ]).then(([{data: studentInfo}, {data: rubrics}]) => {
+      this.data = {
+        studentInfo: studentInfo,
+        rubrics: rubrics
+      };
+    });
   }
 };
 </script>
@@ -92,6 +109,10 @@ export default {
         font-size: 28px;
         line-height: 28px;
         margin: 8px 0;
+    }
+
+    .data-download-button {
+        margin-top: 5px;
     }
 
     .mdl-tabs__tab-bar {

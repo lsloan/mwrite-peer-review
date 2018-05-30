@@ -18,14 +18,20 @@ urlpatterns = [
 
     url(r'^course/(?P<course_id>[0-9]+)/', include([
         url(r'^students/', include([
-            url(r'^$', api.all_students),
-            url(r'^(?P<student_id>[0-9]+)/data/', include([
-                url(r'^$', api.csv_for_student_and_rubric),
-                url(r'^rubric/(?P<rubric_id>[0-9]+)', api.csv_for_student_and_rubric)
+            url(r'^$', api.all_students),  # TODO change URI to /all/ ?
+            url(r'^(?P<student_id>[0-9]+)/', include([
+                url(r'^$', api.student_info),
+                url(r'^data/', include([
+                    url(r'^$', api.csv_for_student_and_rubric),
+                    url(r'^rubric/(?P<rubric_id>[0-9]+)', api.csv_for_student_and_rubric)
+                ]))
             ]))
         ])),
 
-        url(r'^rubric/$', api.create_or_update_rubric),
+        url(r'^rubric/', include([   # TODO change URI to /rubrics/ ?
+            url(r'^$', api.create_or_update_rubric),
+            url(r'^all/', api.all_rubrics_for_course)
+        ])),
 
         url(
             r'^rubric/peer_review_assignment/(?P<passback_assignment_id>[0-9]+)/',
