@@ -248,7 +248,8 @@ class ReviewStatus:
             'email': ReviewStatus._make_email(peer_review.student)
         }
         if peer_review.comments.exists():
-            completed_at = peer_review.comments.all()[0].strftime(API_DATE_FORMAT)
+            first_comment = peer_review.comments.all()[0]
+            completed_at = first_comment.commented_at_utc.strftime(API_DATE_FORMAT)
         else:
             completed_at = None
 
@@ -261,14 +262,17 @@ class ReviewStatus:
     @staticmethod
     def detailed_rubric_status_for_student(course_id, student, rubric):
         try:
-            submission = rubric.prompt.canvas_submission_set.get(author__id=student.id)
+            prompt = rubric.reviewed_assignment
+            submission = prompt.canvas_submission_set.get(author__id=student.id)
         except CanvasSubmission.DoesNotExist:
             submission = None
 
-        if rubric.peer_review_distribution:
-            reviews_were_assigned = True
-        else:
-            reviews_were_assigned = False
+        reviews_were_assigned = False
+        try:
+            if rubric.peer_review_distribution.is_distribution_complete:
+                reviews_were_assigned = True
+        except PeerReviewDistribution.DoesNotExist:
+            pass
 
         data = {
             'student': {
@@ -285,7 +289,7 @@ class ReviewStatus:
             ]
             data['received'] = [
                 ReviewStatus._make_peer_review_details(pr)
-                for pr in submission.total_received_of_a_student(pr)
+                for pr in submission.total_received_of_a_student
             ]
         
         return data
