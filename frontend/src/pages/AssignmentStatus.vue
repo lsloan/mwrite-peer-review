@@ -26,10 +26,8 @@
                 </transition-group>
             </div>
         </div>
-        <div class="mdl-grid">
-            <assignment-status-overview v-if="!rubricId" :student-id="studentId"/>
-            <assignment-status-for-rubric v-else :student-id="studentId" :rubric-id="rubricId"/>
-        </div>
+        <assignment-status-overview v-if="!rubricId" :student-id="studentId"/>
+        <assignment-status-for-rubric v-else :student-id="studentId" :rubric-id="rubricId"/>
     </div>
 </template>
 
