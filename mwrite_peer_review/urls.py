@@ -33,7 +33,10 @@ urlpatterns = [
             url(r'^all/', include([
                 url(r'^$', api.all_rubrics_for_course),
                 url(r'^for-student/(?P<student_id>[0-9]+)/', api.all_rubric_statuses_for_student)
-            ]))
+            ])),
+            url(r'(?P<rubric_id>[0-9]+)/for-student/(?P<student_id>[0-9]+)/',
+                api.rubric_status_for_student
+            )
         ])),
 
         url(

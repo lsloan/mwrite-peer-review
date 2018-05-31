@@ -456,3 +456,20 @@ def all_rubric_statuses_for_student(request, course_id, student_id):
         raise Http404
 
     return ReviewStatus.all_rubric_statuses_for_student(course_id, student)
+
+
+@authorized_json_endpoint(roles=['instructor'])
+def rubric_status_for_student(request, course_id, rubric_id, student_id):
+    try:
+        rubric = Rubric.objects.get(id=rubric_id)
+    except Rubric.DoesNotExist:
+        msg = 'The specified rubric does not exist.'
+        raise APIException(data={'error': msg}, status_code=404)
+
+    try:
+        student = CanvasStudent.objects.get(id=student_id)
+    except CanvasStudent.DoesNotExist:
+        msg = 'The specified student does not exist.'
+        raise APIException(data={'error': msg}, status_code=404)
+
+    return ReviewStatus.detailed_rubric_status_for_student(course_id, student, rubric)

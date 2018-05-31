@@ -233,6 +233,63 @@ class StudentDashboardStatus:
 
 class ReviewStatus:
 
+    @staticmethod
+    def _make_email(student):
+        if '@' in student.username:
+            email = student.username
+        else:
+            email = '%s@umich.edu' % student.username
+        return email
+
+    @staticmethod
+    def _make_peer_review_details(peer_review):
+        student_info = {
+            'sortable_name': peer_review.student.sortable_name,
+            'email': ReviewStatus._make_email(peer_review.student)
+        }
+        if peer_review.comments.exists():
+            completed_at = peer_review.comments.all()[0].strftime(API_DATE_FORMAT)
+        else:
+            completed_at = None
+
+        return {
+            'id': peer_review.id,
+            'student': student_info,
+            'completed_at': completed_at
+        }
+
+    @staticmethod
+    def detailed_rubric_status_for_student(course_id, student, rubric):
+        try:
+            submission = rubric.prompt.canvas_submission_set.get(author__id=student.id)
+        except CanvasSubmission.DoesNotExist:
+            submission = None
+
+        if rubric.peer_review_distribution:
+            reviews_were_assigned = True
+        else:
+            reviews_were_assigned = False
+
+        data = {
+            'student': {
+                'sortable_name': student.sortable_name,
+                'email': ReviewStatus._make_email(student)
+            },
+            'reviews_assigned_for_rubric': reviews_were_assigned,
+        }
+
+        if submission:
+            data['completed'] = [
+                ReviewStatus._make_peer_review_details(pr)
+                for pr in submission.total_completed_by_a_student
+            ]
+            data['received'] = [
+                ReviewStatus._make_peer_review_details(pr)
+                for pr in submission.total_received_of_a_student(pr)
+            ]
+        
+        return data
+
     # TODO refactor to push load onto the DB
     # this method was pulled out of peer_review.views.core.OverviewForAStudent
     @staticmethod
@@ -261,7 +318,7 @@ class ReviewStatus:
                 received = submission.num_comments_each_review_per_submission \
                     .filter(received__gte=number_of_criteria)
                 reviews_received_late = received \
-                    .filter(comments__commented_at_utc__gte=peer_review_assignment.due_date_utc) \
+                    .filter(comments__commented_at_utc__gte=peer_review_assignment.due_date_utc)
 
                 review_info = {
                     'submission_present': True,
