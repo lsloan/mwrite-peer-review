@@ -18,7 +18,6 @@
                         :key="review.id"
                         direction="To"
                         :subject="studentFirstName"
-                        :now="now"
                         :due-date="dueDate"
                         :review="review"/>
                 </div>
@@ -42,7 +41,6 @@
                         :key="review.id"
                         direction="From"
                         :subject="studentFirstName"
-                        :now="now"
                         :due-date="dueDate"
                         :review="review"/>
                 </div>
@@ -70,7 +68,6 @@ export default {
   components: {PeerReviewStatusCard},
   data() {
     return {
-      now: moment.utc(),
       data: {}
     };
   },
@@ -85,8 +82,8 @@ export default {
         : '';
     },
     dueDate() {
-      const {rubric: {dueDate} = {}} = this.data;
-      return dueDate ? moment.utc(dueDate) : null;
+      const {rubric: {peerReviewDueDate} = {}} = this.data;
+      return peerReviewDueDate ? moment.utc(peerReviewDueDate) : null;
     },
     reviewsToBeCompleted() {
       const {completed = []} = this.data;

@@ -1,13 +1,13 @@
 <template>
     <div class="status-card mdl-card mdl-shadow--2dp">
-        <div class="title-bar mdl-card__title">
+        <div class="title-bar mdl-card__title" :class="{'title-bar': true, 'mdl-card__title': true, 'title-bar__issue': !review.completedAt}">
            {{ direction }} {{ review.name }}
         </div>
         <div class="mdl-card__supporting-text">
             <div class="status-line">
                 <i class="material-icons">
-                    <template v-if="reviewSubmittedLate">report_problem</template>
-                    <template v-else-if="!review.completedAt">info_outline</template>
+                    <template v-if="!review.completedAt">info_outline</template>
+                    <template v-else-if="reviewSubmittedLate">report_problem</template>
                     <template v-else>done</template>
                 </i>
                 <span>
@@ -38,10 +38,13 @@ import {sortableNameToFirstName} from '@/services/students';
 
 export default {
   name: 'PeerReviewStatusCard',
-  props: ['review', 'direction', 'due-date', 'now', 'subject'],
+  props: ['review', 'direction', 'subject', 'due-date'],
   computed: {
     reviewSubmittedLate() {
-      return this.now.isSameOrAfter(this.dueDate);
+      const {review: {completedAt} = {}} = this.review;
+      return completedAt
+        ? completedAt.isSameOrAfter(this.dueDate)
+        : true;
     },
     completedAtDisplay() {
       const date = this.review.completedAt;
