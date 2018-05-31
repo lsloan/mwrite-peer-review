@@ -30,7 +30,10 @@ urlpatterns = [
 
         url(r'^rubric/', include([   # TODO change URI to /rubrics/ ?
             url(r'^$', api.create_or_update_rubric),
-            url(r'^all/', api.all_rubrics_for_course)
+            url(r'^all/', include([
+                url(r'^$', api.all_rubrics_for_course),
+                url(r'^for-student/(?P<student_id>[0-9]+)/', api.all_rubric_statuses_for_student)
+            ]))
         ])),
 
         url(

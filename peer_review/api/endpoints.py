@@ -446,3 +446,13 @@ def all_rubrics_for_course(request, course_id):
         }
         for r in rubrics
     ]
+
+
+@authorized_json_endpoint(roles=['instructor'])
+def all_rubric_statuses_for_student(request, course_id, student_id):
+    try:
+        student = CanvasStudent.objects.get(id=student_id)
+    except CanvasStudent.DoesNotExist:
+        raise Http404
+
+    return ReviewStatus.all_rubric_statuses_for_student(course_id, student)

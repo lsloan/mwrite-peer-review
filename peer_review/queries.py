@@ -7,8 +7,8 @@ from django.db import connection
 from django.db.models import BooleanField, Subquery, OuterRef, Count, Case, When, Value, F, Q
 
 from peer_review.util import some, fetchall_dicts
-from peer_review.models import PeerReview, Criterion, PeerReviewComment, CanvasCourse, Rubric, \
-    CanvasStudent, CanvasAssignment, PeerReviewDistribution
+from peer_review.models import PeerReview, Criterion, PeerReviewComment, Rubric, \
+    PeerReviewDistribution, CanvasCourse, CanvasStudent, CanvasAssignment, CanvasSubmission
 
 # TODO move to settings
 API_DATE_FORMAT = '%Y-%m-%d %H:%M:%SZ'
@@ -233,6 +233,70 @@ class StudentDashboardStatus:
 
 class ReviewStatus:
 
+    # TODO refactor to push load onto the DB
+    # this method was pulled out of peer_review.views.core.OverviewForAStudent
+    @staticmethod
+    def all_rubric_statuses_for_student(course_id, student):
+        rubrics = Rubric.objects.filter(reviewed_assignment__course_id=course_id)
+
+        reviews = []
+        for rubric in rubrics:
+            prompt = rubric.reviewed_assignment
+            peer_review_assignment = rubric.passback_assignment
+            number_of_criteria = rubric.num_criteria
+
+            try:
+                submission = prompt.canvas_submission_set.get(author__id=student.id)
+            except CanvasSubmission.DoesNotExist:
+                submission = None
+
+            if submission:
+                to_be_completed = submission.total_completed_by_a_student
+                completed = submission.num_comments_each_review_per_student \
+                    .filter(completed__gte=number_of_criteria)
+                reviews_completed_late = completed \
+                    .filter(comments__commented_at_utc__gte=peer_review_assignment.due_date_utc) \
+
+                to_be_received = submission.total_received_of_a_student
+                received = submission.num_comments_each_review_per_submission \
+                    .filter(received__gte=number_of_criteria)
+                reviews_received_late = received \
+                    .filter(comments__commented_at_utc__gte=peer_review_assignment.due_date_utc) \
+
+                review_info = {
+                    'submission_present': True,
+                    'total_to_complete': to_be_completed.count(),
+                    'completed': completed.count(),
+                    'completed_late': reviews_completed_late.count(),
+                    'total_to_receive': to_be_received.count(),
+                    'received': received.count(),
+                    'received_late': reviews_received_late.count()
+                }
+            else:
+                review_info = {
+                    'submission_present': False
+                }
+
+            if peer_review_assignment.due_date_utc:
+                due_date = peer_review_assignment.due_date_utc.strftime(API_DATE_FORMAT)
+            else:
+                due_date = None
+
+            if prompt.due_date_utc:
+                prompt_due_date = prompt.due_date_utc.strftime(API_DATE_FORMAT)
+            else:
+                prompt_due_date = None
+
+            reviews.append({
+                'rubric_id': rubric.id,
+                'title': peer_review_assignment.title,
+                'due_date': due_date,
+                'prompt_due_date': prompt_due_date,
+                'review_info': review_info
+            })
+
+        return reviews
+            
     # TODO refactor to push load onto the DB
     # this method was pulled out of peer_review.views.core.AssignmentStatus
     @staticmethod
