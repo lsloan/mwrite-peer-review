@@ -1,6 +1,6 @@
 <template>
     <div class="mdl-card mdl-cell mdl-cell--3-col mdl-shadow--2dp">
-        <div class="title-bar mdl-card__title mdl-card--expand">
+        <div :class="titleBarClasses">
             {{ rubric.title }}
         </div>
         <div class="mdl-card__supporting-text">
@@ -79,6 +79,14 @@ export default {
       const dataPresent = received !== null && totalToReceive !== null;
       return dataPresent && received === totalToReceive;
     },
+    noReviewsCompleted() {
+      const {reviewInfo: {completed = null} = {}} = this.rubric;
+      return completed !== null && completed === 0;
+    },
+    noReviewsReceived() {
+      const {reviewInfo: {received = null} = {}} = this.rubric;
+      return received !== null && received === 0;
+    },
     someCompletedLate() {
       const {reviewInfo: {completedLate = null} = {}} = this.rubric;
       return completedLate !== null && completedLate > 0;
@@ -100,6 +108,17 @@ export default {
           studentId: this.studentId,
           rubricId: this.rubric.rubricId
         }
+      };
+    },
+    reviewProblemsExist() {
+      return this.noReviewsCompleted || this.noReviewsReceived;
+    },
+    titleBarClasses() {
+      return {
+        'mdl-card__title': true,
+        'mdl-card--expand': true,
+        'title-bar': true,
+        'title-bar__issue': this.reviewProblemsExist
       };
     }
   }
