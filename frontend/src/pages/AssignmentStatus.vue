@@ -27,7 +27,7 @@
             </div>
         </div>
         <assignment-status-overview v-if="!rubricId" :student-id="studentId"/>
-        <assignment-status-for-rubric v-else :student-id="studentId" :rubric-id="rubricId"/>
+        <assignment-status-for-rubric v-else :student-id="studentId" :rubric-id="rubricId" :key="rubricId"/>
     </div>
 </template>
 

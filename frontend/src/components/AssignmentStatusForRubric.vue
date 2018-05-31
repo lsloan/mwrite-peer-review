@@ -31,6 +31,17 @@ export default {
       reviewsToBeCompleted: [1, 2, 3],
       reviewsToBeReceived: [1, 2, 3]
     };
+  },
+  computed: {
+    courseId() {
+      return this.$store.state.userDetails.courseId;
+    }
+  },
+  mounted() {
+    this.$api.get('/course/{}/rubric/{}/for-student/{}', this.courseId, this.rubricId, this.studentId)
+      .then(r => {
+        console.log(r.data);
+      });
   }
 };
 </script>
