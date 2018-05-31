@@ -2,25 +2,67 @@
     <div class="mdl-grid">
         <div class="mdl-cell mdl-cell--6-col">
             <div class="mdl-grid">
-                <div class="mdl-cell mdl-cell--12-col"><h1>Reviews Completed</h1></div>
+                <div class="mdl-cell mdl-cell--12-col">
+                    <h1>
+                        {{ studentFirstName }}
+                        completed
+                        {{ numberOfCompletedReviews }}/{{ reviewsToBeCompleted.length }}
+                        peer reviews
+                    </h1>
+                </div>
             </div>
             <div class="mdl-grid">
-                <peer-review-status-card v-for="(_, index) in reviewsToBeCompleted" :key="index"/>
+                <div class="mdl-cell mdl-cell--12-col">
+                    <peer-review-status-card
+                        v-for="review in reviewsToBeCompleted"
+                        :key="review.id"
+                        direction="To"
+                        :subject="studentFirstName"
+                        :now="now"
+                        :due-date="dueDate"
+                        :review="review"/>
+                </div>
             </div>
         </div>
         <div class="mdl-cell mdl-cell--6-col">
             <div class="mdl-grid">
-                <div class="mdl-cell mdl-cell--12-col"><h1>Reviews Received</h1></div>
+                <div class="mdl-cell mdl-cell--12-col">
+                    <h1>
+                        {{ studentFirstName }}
+                        received
+                        {{ numberOfReceivedReviews }}/{{ reviewsToBeReceived.length }}
+                        peer reviews
+                    </h1>
+                </div>
             </div>
             <div class="mdl-grid">
-                <peer-review-status-card v-for="(_, index) in reviewsToBeReceived" :key="index"/>
+                <div class="mdl-cell mdl-cell--12-col">
+                    <peer-review-status-card
+                        v-for="review in reviewsToBeReceived"
+                        :key="review.id"
+                        direction="From"
+                        :subject="studentFirstName"
+                        :now="now"
+                        :due-date="dueDate"
+                        :review="review"/>
+                </div>
             </div>
         </div>
     </div>
 </template>
 
 <script>
+import * as R from 'ramda';
+import moment from 'moment';
+
+import {sortableNameToFirstName} from '@/services/students';
 import PeerReviewStatusCard from '@/components/PeerReviewStatusCard';
+
+const makeReview = r => ({
+  id: r.id,
+  name: r.student.sortableName,
+  completedAt: r.completedAt ? moment.utc(r.completedAt) : null
+});
 
 export default {
   name: 'AssignmentStatusForRubric',
@@ -28,19 +70,44 @@ export default {
   components: {PeerReviewStatusCard},
   data() {
     return {
-      reviewsToBeCompleted: [1, 2, 3],
-      reviewsToBeReceived: [1, 2, 3]
+      now: moment.utc(),
+      data: {}
     };
   },
   computed: {
     courseId() {
       return this.$store.state.userDetails.courseId;
+    },
+    studentFirstName() {
+      const {student: {sortableName} = {}} = this.data;
+      return sortableName
+        ? sortableNameToFirstName(sortableName)
+        : '';
+    },
+    dueDate() {
+      const {rubric: {dueDate} = {}} = this.data;
+      return dueDate ? moment.utc(dueDate) : null;
+    },
+    reviewsToBeCompleted() {
+      const {completed = []} = this.data;
+      return R.sortBy(r => r.id, completed).map(makeReview);
+    },
+    reviewsToBeReceived() {
+      const {received = []} = this.data;
+      return R.sortBy(r => r.id, received).map(makeReview);
+    },
+    numberOfCompletedReviews() {
+      return this.reviewsToBeCompleted.filter(r => r.completedAt).length;
+    },
+    numberOfReceivedReviews() {
+      return this.reviewsToBeReceived.filter(r => r.completedAt).length;
     }
   },
   mounted() {
     this.$api.get('/course/{}/rubric/{}/for-student/{}', this.courseId, this.rubricId, this.studentId)
       .then(r => {
         console.log(r.data);
+        this.data = r.data;
       });
   }
 };

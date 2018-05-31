@@ -3,6 +3,8 @@ import * as R from 'ramda';
 // TODO should find a better value than 0 here?
 export const ALL_STUDENTS_SECTION = {value: 0, name: 'All Students'};
 
+export const sortableNameToFirstName = sn => R.trim(R.last(R.split(', ', sn)));
+
 export const makeStudentEntry = student => ({
   id: student.id,
   name: student.sortableName,
