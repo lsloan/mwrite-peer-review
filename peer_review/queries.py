@@ -242,10 +242,15 @@ class ReviewStatus:
         return email
 
     @staticmethod
-    def _make_peer_review_details(peer_review):
+    def _make_peer_review_details(peer_review, for_reviewer):
+        if for_reviewer:
+            student = peer_review.student
+        else:
+            student = peer_review.submission.author
+
         student_info = {
-            'sortable_name': peer_review.student.sortable_name,
-            'email': ReviewStatus._make_email(peer_review.student)
+            'sortable_name': student.sortable_name,
+            'email': ReviewStatus._make_email(student)
         }
         if peer_review.comments.exists():
             first_comment = peer_review.comments.all()[0]
@@ -274,21 +279,25 @@ class ReviewStatus:
         except PeerReviewDistribution.DoesNotExist:
             pass
 
+        peer_review_due_date = rubric.passback_assignment.due_date_utc.strftime(API_DATE_FORMAT)
         data = {
             'student': {
                 'sortable_name': student.sortable_name,
                 'email': ReviewStatus._make_email(student)
             },
-            'reviews_assigned_for_rubric': reviews_were_assigned,
+            'rubric': {
+                'reviews_were_assigned': reviews_were_assigned,
+                'peer_review_due_date': peer_review_due_date
+            }
         }
 
         if submission:
             data['completed'] = [
-                ReviewStatus._make_peer_review_details(pr)
+                ReviewStatus._make_peer_review_details(pr, False)
                 for pr in submission.total_completed_by_a_student
             ]
             data['received'] = [
-                ReviewStatus._make_peer_review_details(pr)
+                ReviewStatus._make_peer_review_details(pr, True)
                 for pr in submission.total_received_of_a_student
             ]
         
