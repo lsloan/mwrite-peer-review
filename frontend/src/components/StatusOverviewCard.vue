@@ -27,11 +27,16 @@
                     <template v-if="allReviewsCompleted && !someCompletedLate">done</template>
                     <template v-else>info_outline</template>
                 </i>
-                Submitted
-                {{ rubric.reviewInfo.completed }}/{{ rubric.reviewInfo.totalToComplete }}
-                peer reviews
-                <template v-if="someCompletedLate">
-                    ({{ rubric.reviewInfo.completedLate }} late)
+                <template v-if="!rubric.reviewInfo.submissionPresent">
+                    Reviews not assigned
+                </template>
+                <template v-else>
+                    Submitted
+                    {{ rubric.reviewInfo.completed }}/{{ rubric.reviewInfo.totalToComplete }}
+                    peer reviews
+                    <template v-if="someCompletedLate">
+                        ({{ rubric.reviewInfo.completedLate }} late)
+                    </template>
                 </template>
             </div>
         </div>
@@ -41,11 +46,16 @@
                     <template v-if="allReviewsReceived && !someReceivedLate">done</template>
                     <template v-else>info_outline</template>
                 </i>
-                Received
-                {{ rubric.reviewInfo.received }}/{{ rubric.reviewInfo.totalToReceive }}
-                peer reviews
-                <template v-if="someReceivedLate">
-                    ({{ rubric.reviewInfo.receivedLate }} late)
+                <template v-if="!rubric.reviewInfo.submissionPresent">
+                    Reviews not assigned
+                </template>
+                <template v-else>
+                    Received
+                    {{ rubric.reviewInfo.received }}/{{ rubric.reviewInfo.totalToReceive }}
+                    peer reviews
+                    <template v-if="someReceivedLate">
+                        ({{ rubric.reviewInfo.receivedLate }} late)
+                    </template>
                 </template>
             </div>
         </div>
@@ -111,7 +121,8 @@ export default {
       };
     },
     reviewProblemsExist() {
-      return this.noReviewsCompleted || this.noReviewsReceived;
+      const promptMissing = !this.rubric.reviewInfo.submissionPresent && this.promptDueDatePassed;
+      return this.noReviewsCompleted || this.noReviewsReceived || promptMissing;
     },
     titleBarClasses() {
       return {
