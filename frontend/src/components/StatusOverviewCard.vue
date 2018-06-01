@@ -36,9 +36,10 @@
                 </template>
                 <template v-else>
                     <i class="material-icons">
-                        <template v-if="noReviewsCompleted">warning</template>
-                        <template v-else-if="!allReviewsCompleted || someCompletedLate">error_outline</template>
-                        <template v-else>done</template>
+                        <template v-if="allReviewsCompleted && !someCompletedLate">done</template>
+                        <template v-else-if="!dueDatePassed">more_horiz</template>
+                        <template v-else-if="noReviewsCompleted">warning</template>
+                        <template v-else>error_outline</template>
                     </i>
                     <span>
                         Submitted
@@ -63,9 +64,10 @@
                 </template>
                 <template v-else>
                     <i class="material-icons">
-                        <template v-if="noReviewsReceived">warning</template>
-                        <template v-else-if="!allReviewsReceived || someReceivedLate">error_outline</template>
-                        <template v-else>done</template>
+                        <template v-if="allReviewsReceived && !someReceivedLate">done</template>
+                        <template v-else-if="!dueDatePassed">more_horiz</template>
+                        <template v-else-if="noReviewsReceived">warning</template>
+                        <template v-else>error_outline</template>
                     </i>
                     <span>
                         Received
