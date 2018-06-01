@@ -28,7 +28,11 @@
             </div>
         </div>
         <div class="mdl-card__actions mdl-card--border">
-            derp
+            <a v-if="!review.completedAt" class="mdl-button" :href="contactEmailLink">
+                Email {{ contactName }}
+            </a>
+            <router-link v-else class="mdl-button" to="#/">See Review</router-link>
+            <a class="mdl-button" :href="submissionDownloadUrl">See {{ contactName }}'s Submission</a>
         </div>
     </div>
 </template>
@@ -38,8 +42,11 @@ import {sortableNameToFirstName} from '@/services/students';
 
 export default {
   name: 'PeerReviewStatusCard',
-  props: ['review', 'direction', 'subject', 'due-date'],
+  props: ['review', 'direction', 'subject-name', 'subject-email', 'due-date'],
   computed: {
+    courseId() {
+      return this.$store.state.userDetails.courseId;
+    },
     reviewSubmittedLate() {
       const {review: {completedAt} = {}} = this.review;
       return completedAt
@@ -57,13 +64,13 @@ export default {
     },
     source() {
       return this.direction === 'To'
-        ? this.subject
+        ? this.subjectName
         : this.revieweeName;
     },
     destination() {
       return this.direction === 'To'
         ? this.revieweeName
-        : this.subject;
+        : this.subjectName;
     },
     action() {
       return this.direction === 'To'
@@ -74,6 +81,20 @@ export default {
       return this.direction === 'To'
         ? 'for'
         : 'from';
+    },
+    contactEmailLink() {
+      const email = this.direction === 'To'
+        ? this.subjectEmail
+        : this.review.email;
+      return `mailto:${email}`;
+    },
+    contactName() {
+      return this.direction === 'To'
+        ? this.source
+        : this.destination;
+    },
+    submissionDownloadUrl() {
+      return `${__API_URL__}/course/${this.courseId}/reviews/${this.review.id}/submission`;
     }
   }
 };
@@ -101,5 +122,20 @@ export default {
 
     .status-line > i {
         margin-right: 10px;
+    }
+
+    .mdl-card__actions {
+        display: flex;
+        flex-wrap: wrap;
+    }
+
+    .mdl-card__actions > .mdl-button {
+        flex: 1 1 auto;
+    }
+
+    .mdl-button {
+        width: 100%;
+        box-sizing: border-box;
+        color: #777777;
     }
 </style>

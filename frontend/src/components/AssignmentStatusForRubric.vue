@@ -17,7 +17,8 @@
                         v-for="review in reviewsToBeCompleted"
                         :key="review.id"
                         direction="To"
-                        :subject="studentFirstName"
+                        :subject-name="studentFirstName"
+                        :subject-email="data.student.email"
                         :due-date="dueDate"
                         :review="review"/>
                 </div>
@@ -40,7 +41,8 @@
                         v-for="review in reviewsToBeReceived"
                         :key="review.id"
                         direction="From"
-                        :subject="studentFirstName"
+                        :subject-name="studentFirstName"
+                        :subject-email="data.student.email"
                         :due-date="dueDate"
                         :review="review"/>
                 </div>
@@ -59,6 +61,7 @@ import PeerReviewStatusCard from '@/components/PeerReviewStatusCard';
 const makeReview = r => ({
   id: r.id,
   name: r.student.sortableName,
+  email: r.student.email,
   completedAt: r.completedAt ? moment.utc(r.completedAt) : null
 });
 
