@@ -48,10 +48,7 @@ export default {
       return this.$store.state.userDetails.courseId;
     },
     reviewSubmittedLate() {
-      const {review: {completedAt} = {}} = this.review;
-      return completedAt
-        ? completedAt.isSameOrAfter(this.dueDate)
-        : true;
+      return this.review.completedAt.isSameOrAfter(this.dueDate);
     },
     completedAtDisplay() {
       const date = this.review.completedAt;
