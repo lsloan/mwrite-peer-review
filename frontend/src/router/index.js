@@ -6,6 +6,7 @@ import {redirectToRoleDashboard, authenticatedInstructorsOnly, authenticatedStud
 import Modal from '@/components/Modal';
 import ReviewsGiven from '@/components/ReviewsGiven';
 import ReviewsReceived from '@/components/ReviewsReceived';
+import SingleReview from '@/components/SingleReview';
 
 import Error from '@/pages/Error';
 import InstructorDashboard from '@/pages/InstructorDashboard';
@@ -82,7 +83,15 @@ const router = new Router({
       props: route => ({
         studentId: parseInt(route.params.studentId),
         rubricId: parseInt(route.params.rubricId)
-      })
+      }),
+      children: [
+        {
+          path: 'review/:reviewId',
+          name: 'SingleReview',
+          component: Modal,
+          props: route => ({component: SingleReview, childProps: {reviewId: route.params.reviewId}})
+        }
+      ]
       // TODO needs breadcrumbPathComponents
     },
     {

@@ -17,6 +17,7 @@
                         v-for="review in reviewsToBeCompleted"
                         :key="review.id"
                         direction="To"
+                        :subject-id="studentId"
                         :subject-name="studentFirstName"
                         :subject-email="data.student.email"
                         :due-date="dueDate"
@@ -41,6 +42,7 @@
                         v-for="review in reviewsToBeReceived"
                         :key="review.id"
                         direction="From"
+                        :subject-id="studentId"
                         :subject-name="studentFirstName"
                         :subject-email="data.student.email"
                         :due-date="dueDate"
@@ -48,6 +50,7 @@
                 </div>
             </div>
         </div>
+        <router-view/>
     </div>
     <div class="centered mdl-grid" v-else>
         <template v-if="!reviewsWereAssigned">
@@ -67,13 +70,6 @@ import moment from 'moment';
 import {sortableNameToFirstName} from '@/services/students';
 import PeerReviewStatusCard from '@/components/PeerReviewStatusCard';
 
-const makeReview = r => ({
-  id: r.id,
-  name: r.student.sortableName,
-  email: r.student.email,
-  completedAt: r.completedAt ? moment.utc(r.completedAt) : null
-});
-
 export default {
   name: 'AssignmentStatusForRubric',
   props: ['student-id', 'rubric-id'],
@@ -82,6 +78,17 @@ export default {
     return {
       data: {}
     };
+  },
+  methods: {
+    makeReview(r) {
+      return {
+        id: r.id,
+        rubricId: this.rubricId,
+        name: r.student.sortableName,
+        email: r.student.email,
+        completedAt: r.completedAt ? moment.utc(r.completedAt) : null
+      };
+    }
   },
   computed: {
     courseId() {
@@ -103,11 +110,11 @@ export default {
     },
     reviewsToBeCompleted() {
       const {completed = []} = this.data;
-      return R.sortBy(r => r.id, completed).map(makeReview);
+      return R.sortBy(r => r.id, completed).map(this.makeReview);
     },
     reviewsToBeReceived() {
       const {received = []} = this.data;
-      return R.sortBy(r => r.id, received).map(makeReview);
+      return R.sortBy(r => r.id, received).map(this.makeReview);
     },
     numberOfCompletedReviews() {
       return this.reviewsToBeCompleted.filter(r => r.completedAt).length;

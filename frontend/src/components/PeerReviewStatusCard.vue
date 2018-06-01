@@ -28,10 +28,14 @@
             </div>
         </div>
         <div class="mdl-card__actions mdl-card--border">
-            <a v-if="!review.completedAt" class="mdl-button" :href="contactEmailLink">
+            <a class="mdl-button" :href="contactEmailLink" v-if="!review.completedAt">
                 Email {{ contactName }}
             </a>
-            <router-link v-else class="mdl-button" to="#/">See Review</router-link>
+            <router-link v-else
+                class="mdl-button"
+                :to="{name: 'SingleReview', params: {studentId: subjectId, rubricId: review.rubricId, reviewId: review.id}}">
+                See Review
+            </router-link>
             <a class="mdl-button" :href="submissionDownloadUrl">See {{ contactName }}'s Submission</a>
         </div>
     </div>
@@ -42,7 +46,7 @@ import {sortableNameToFirstName} from '@/services/students';
 
 export default {
   name: 'PeerReviewStatusCard',
-  props: ['review', 'direction', 'subject-name', 'subject-email', 'due-date'],
+  props: ['review', 'direction', 'subject-id', 'subject-name', 'subject-email', 'due-date'],
   computed: {
     courseId() {
       return this.$store.state.userDetails.courseId;
