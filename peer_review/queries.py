@@ -358,12 +358,20 @@ class ReviewStatus:
             else:
                 prompt_due_date = None
 
+            reviews_were_distributed = False
+            try:
+                if rubric.peer_review_distribution.is_distribution_complete:
+                    reviews_were_distributed = True
+            except PeerReviewDistribution.DoesNotExist:
+                pass
+
             reviews.append({
                 'rubric_id': rubric.id,
                 'title': peer_review_assignment.title,
                 'due_date': due_date,
                 'prompt_due_date': prompt_due_date,
-                'review_info': review_info
+                'review_info': review_info,
+                'reviews_were_distributed': reviews_were_distributed
             })
 
         return reviews

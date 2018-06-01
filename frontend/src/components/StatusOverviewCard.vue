@@ -6,16 +6,19 @@
         <div class="mdl-card__supporting-text">
             <div class="status-line">
                 <i class="material-icons">
-                    <template v-if="!rubric.reviewInfo.submissionPresent">
-                        info_outline
+                    <template v-if="rubric.reviewInfo.submissionPresent">
+                        attachment
                     </template>
-                    <template v-else>attachment</template>
+                    <template v-else-if="!rubric.reviewsWereDistributed">
+                        more_horiz
+                    </template>
+                    <template v-else>warning</template>
                 </i>
                 <span>
                     Prompt
                     <template v-if="!rubric.reviewInfo.submissionPresent">not</template>
                     submitted
-                    <template v-if="!rubric.reviewInfo.submissionPresent && !promptDueDatePassed">
+                    <template v-if="!rubric.reviewInfo.submissionPresent && !rubric.reviewsWereDistributed">
                         yet
                     </template>
                 </span>
@@ -23,39 +26,55 @@
         </div>
         <div class="mdl-card__supporting-text">
             <div class="status-line">
-                <i class="material-icons">
-                    <template v-if="allReviewsCompleted && !someCompletedLate">done</template>
-                    <template v-else>info_outline</template>
-                </i>
-                <template v-if="!rubric.reviewInfo.submissionPresent">
-                    Reviews not assigned
+                <template v-if="!rubric.reviewsWereDistributed">
+                    <i class="material-icons">more_horiz</i>
+                    <span>Reviews not assigned yet</span>
+                </template>
+                <template v-else-if="!rubric.reviewInfo.submissionPresent">
+                    <i class="material-icons">warning</i>
+                    <span>Prompt not submitted</span>
                 </template>
                 <template v-else>
-                    Submitted
-                    {{ rubric.reviewInfo.completed }}/{{ rubric.reviewInfo.totalToComplete }}
-                    peer reviews
-                    <template v-if="someCompletedLate">
-                        ({{ rubric.reviewInfo.completedLate }} late)
-                    </template>
+                    <i class="material-icons">
+                        <template v-if="noReviewsCompleted">warning</template>
+                        <template v-else-if="!allReviewsCompleted || someCompletedLate">error_outline</template>
+                        <template v-else>done</template>
+                    </i>
+                    <span>
+                        Submitted
+                        {{ rubric.reviewInfo.completed }}/{{ rubric.reviewInfo.totalToComplete }}
+                        peer reviews
+                        <template v-if="someCompletedLate">
+                            ({{ rubric.reviewInfo.completedLate }} late)
+                        </template>
+                    </span>
                 </template>
             </div>
         </div>
         <div class="mdl-card__supporting-text">
             <div class="status-line">
-                <i class="material-icons">
-                    <template v-if="allReviewsReceived && !someReceivedLate">done</template>
-                    <template v-else>info_outline</template>
-                </i>
-                <template v-if="!rubric.reviewInfo.submissionPresent">
-                    Reviews not assigned
+                <template v-if="!rubric.reviewsWereDistributed">
+                    <i class="material-icons">more_horiz</i>
+                    <span>Reviews not assigned yet</span>
+                </template>
+                <template v-else-if="!rubric.reviewInfo.submissionPresent">
+                    <i class="material-icons">warning</i>
+                    <span>Prompt not submitted</span>
                 </template>
                 <template v-else>
-                    Received
-                    {{ rubric.reviewInfo.received }}/{{ rubric.reviewInfo.totalToReceive }}
-                    peer reviews
-                    <template v-if="someReceivedLate">
-                        ({{ rubric.reviewInfo.receivedLate }} late)
-                    </template>
+                    <i class="material-icons">
+                        <template v-if="noReviewsReceived">warning</template>
+                        <template v-else-if="!allReviewsReceived || someReceivedLate">error_outline</template>
+                        <template v-else>done</template>
+                    </i>
+                    <span>
+                        Received
+                        {{ rubric.reviewInfo.received }}/{{ rubric.reviewInfo.totalToReceive }}
+                        peer reviews
+                        <template v-if="someReceivedLate">
+                            ({{ rubric.reviewInfo.receivedLate }} late)
+                        </template>
+                    </span>
                 </template>
             </div>
         </div>
@@ -105,12 +124,6 @@ export default {
       const {reviewInfo: {receivedLate = null} = {}} = this.rubric;
       return receivedLate !== null && receivedLate > 0;
     },
-    dueDatePassed() {
-      return this.now.isSameOrAfter(this.rubric.dueDate);
-    },
-    promptDueDatePassed() {
-      return this.now.isSameOrAfter(this.rubric.promptDueDate);
-    },
     cardLink() {
       return {
         name: 'AssignmentStatusForRubric',
@@ -120,9 +133,12 @@ export default {
         }
       };
     },
+    dueDatePassed() {
+      return this.now.isSameOrAfter(this.rubric.dueDate);
+    },
     reviewProblemsExist() {
-      const promptMissing = !this.rubric.reviewInfo.submissionPresent && this.promptDueDatePassed;
-      return this.noReviewsCompleted || this.noReviewsReceived || promptMissing;
+      const promptMissing = !this.rubric.reviewInfo.submissionPresent && this.rubric.reviewsWereDistributed;
+      return promptMissing || (this.dueDatePassed && (this.noReviewsCompleted || this.noReviewsReceived));
     },
     titleBarClasses() {
       return {
