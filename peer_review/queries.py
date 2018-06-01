@@ -288,7 +288,8 @@ class ReviewStatus:
             'rubric': {
                 'reviews_were_assigned': reviews_were_assigned,
                 'peer_review_due_date': peer_review_due_date
-            }
+            },
+            'prompt_submitted': True if submission else False
         }
 
         if submission:
@@ -300,7 +301,7 @@ class ReviewStatus:
                 ReviewStatus._make_peer_review_details(pr, True)
                 for pr in submission.total_received_of_a_student
             ]
-        
+
         return data
 
     # TODO refactor to push load onto the DB

@@ -1,5 +1,5 @@
 <template>
-    <div class="mdl-grid">
+    <div class="mdl-grid" v-if="data.promptSubmitted && reviewsWereAssigned">
         <div class="mdl-cell mdl-cell--6-col">
             <div class="mdl-grid">
                 <div class="mdl-cell mdl-cell--12-col">
@@ -49,6 +49,15 @@
             </div>
         </div>
     </div>
+    <div class="centered mdl-grid" v-else>
+        <template v-if="!reviewsWereAssigned">
+            Peer reviews have not yet been assigned for this prompt.
+        </template>
+        <template v-else-if="!data.promptSubmitted">
+            {{ studentFirstName }} did not submit their prompt assignment, so they will not be able to participate
+            in peer review.
+        </template>
+    </div>
 </template>
 
 <script>
@@ -88,6 +97,10 @@ export default {
       const {rubric: {peerReviewDueDate} = {}} = this.data;
       return peerReviewDueDate ? moment.utc(peerReviewDueDate) : null;
     },
+    reviewsWereAssigned() {
+      const {rubric: {reviewsWereAssigned = false} = {}} = this.data;
+      return reviewsWereAssigned;
+    },
     reviewsToBeCompleted() {
       const {completed = []} = this.data;
       return R.sortBy(r => r.id, completed).map(makeReview);
@@ -106,7 +119,6 @@ export default {
   mounted() {
     this.$api.get('/course/{}/rubric/{}/for-student/{}', this.courseId, this.rubricId, this.studentId)
       .then(r => {
-        console.log(r.data);
         this.data = r.data;
       });
   }
@@ -119,5 +131,9 @@ export default {
         font-size: 28px;
         line-height: 28px;
         margin: 8px 0;
+    }
+
+    .centered {
+        justify-content: center;
     }
 </style>
