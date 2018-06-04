@@ -6,7 +6,6 @@ requests==2.13.0
 pytz==2016.10
 user-agents==1.1.0
 django-user-agents==0.3.0
-whitenoise==3.3.1
 brotlipy==0.6.0
 django-role-permissions==2.0.1
 pytest==3.1.3
