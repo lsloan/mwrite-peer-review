@@ -74,8 +74,6 @@ INSTALLED_APPS = [
     'rolepermissions',
     'djangolti',
     'peer_review',
-    'health_check',                   # TODO do we even use this anymore?
-    'health_check.db',                # TODO do we even use this anymore?
     'corsheaders'
 ]
 

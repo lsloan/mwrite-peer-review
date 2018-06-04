@@ -66,8 +66,6 @@ urlpatterns = [
 
         url(r'^favicon.ico$', not_found),  # TODO ...just add a favicon already
 
-        url(r'^health/', include('health_check.urls')),
-
         url(r'^$', CourseIndexView.as_view()),
         url(r'^dashboard/instructor$', InstructorDashboardView.as_view()),
         url(r'^dashboard/student$', StudentDashboardView.as_view()),
