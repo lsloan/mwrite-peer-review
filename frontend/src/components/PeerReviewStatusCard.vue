@@ -1,7 +1,7 @@
 <template>
     <div class="status-card mdl-card mdl-shadow--2dp">
         <div class="title-bar mdl-card__title" :class="{'title-bar': true, 'mdl-card__title': true, 'title-bar__issue': !review.completedAt}">
-           {{ direction }} {{ review.name }}
+           {{ title }}
         </div>
         <div class="mdl-card__supporting-text">
             <div class="status-line">
@@ -33,7 +33,7 @@
             </a>
             <router-link v-else
                 class="mdl-button"
-                :to="{name: 'SingleReview', params: {studentId: subjectId, rubricId: review.rubricId, reviewId: review.id}}">
+                :to="seeReviewLink">
                 See Review
             </router-link>
             <a class="mdl-button" :href="submissionDownloadUrl">See {{ contactName }}'s Submission</a>
@@ -50,6 +50,19 @@ export default {
   computed: {
     courseId() {
       return this.$store.state.userDetails.courseId;
+    },
+    title() {
+      return `${this.direction} ${this.review.name}`;
+    },
+    seeReviewLink() {
+      return {
+        name: 'SingleReview',
+        params: {
+          studentId: this.subjectId,
+          rubricId: this.review.rubricId,
+          reviewId: this.review.id
+        }
+      };
     },
     reviewSubmittedLate() {
       return this.review.completedAt.isSameOrAfter(this.dueDate);
