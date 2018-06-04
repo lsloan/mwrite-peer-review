@@ -16,7 +16,7 @@ class FixedUserAgentMiddleware(MiddlewareMixin, UserAgentMiddleware):
 def safari_iframe_launch_middleware(get_response):
 
     def middleware(request):
-        url_match = re.search('^/course/(?P<course_id>[0-9]+)/launch$', request.path)
+        url_match = re.search('^launch$', request.path)
         browser_is_safari = request.user_agent.browser.family == 'Safari'
         safari_cookie_exists = settings.SAFARI_LAUNCH_COOKIE not in request.COOKIES
 
@@ -24,7 +24,7 @@ def safari_iframe_launch_middleware(get_response):
             logger.debug('Unauthenticated Safari user detected, serving Safari landing page')
             context = {
                 'referer': request.META['HTTP_REFERER'],
-                'course_id': url_match.group('course_id')
+                'course_id': request.session['lti_launch_params']['context_id']
             }
             return render_to_response('safari_launch_iframe.html', context=context)
         else:
