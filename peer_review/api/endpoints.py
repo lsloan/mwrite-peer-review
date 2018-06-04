@@ -1,3 +1,5 @@
+import io
+import csv
 import os.path
 import logging
 import mimetypes
@@ -7,7 +9,7 @@ from datetime import datetime
 from dateutil.tz import tzutc
 from django.db import transaction
 from django.conf import settings
-from django.http import Http404, HttpResponse
+from django.http import Http404, HttpResponse, JsonResponse
 from django.views.decorators.http import require_POST
 from django.core.exceptions import PermissionDenied, ObjectDoesNotExist
 from rolepermissions.roles import get_user_roles
@@ -23,7 +25,7 @@ from peer_review.decorators import authorized_endpoint, authorized_json_endpoint
 from peer_review.models import CanvasCourse, CanvasStudent, CanvasAssignment, CanvasSubmission, \
     Rubric, Criterion, PeerReview, PeerReviewComment, PeerReviewEvaluation, PeerReviewDistribution
 from peer_review.queries import InstructorDashboardStatus, StudentDashboardStatus, ReviewStatus, \
-    RubricForm
+    RubricForm, Comments
 
 
 LOGGER = logging.getLogger(__name__)
@@ -100,7 +102,8 @@ def completed_work(request, course_id, student_id):
     return StudentDashboardStatus.completed_work(course_id, student_id)
 
 
-def _denormalize_reviews(reviews):
+# TODO move this to the queries namespace
+def _denormalize_reviews_given(reviews):
 
     peer_review_ids = sorted(r.id for r in reviews)
     student_numbers = {pr_id: i for i, pr_id in enumerate(peer_review_ids)}
@@ -134,20 +137,10 @@ def reviews_given(request, course_id, student_id, rubric_id):
         .prefetch_related('comments')\
         .order_by('id')
 
-    return _denormalize_reviews(reviews)
+    return _denormalize_reviews_given(reviews)
 
 
-@authorized_json_endpoint(roles=['student'])
-def reviews_received(request, course_id, student_id, rubric_id):
-    raise_if_not_current_user(request, student_id)
-
-    reviews = PeerReview.objects.filter(
-        submission__assignment__course_id=course_id,
-        submission__assignment__rubric_for_prompt__id=rubric_id,
-        submission__author_id=student_id
-    )\
-        .order_by('id')
-
+def _denormalize_reviews_received(reviews):
     peer_review_ids = [r.id for r in reviews]
     student_numbers = {pr_id: i for i, pr_id in enumerate(peer_review_ids)}
 
@@ -173,6 +166,21 @@ def reviews_received(request, course_id, student_id, rubric_id):
             'comment': comment.comment
         })
 
+    return entries
+
+
+@authorized_json_endpoint(roles=['student'])
+def reviews_received(request, course_id, student_id, rubric_id):
+    raise_if_not_current_user(request, student_id)
+
+    reviews = PeerReview.objects.filter(
+        submission__assignment__course_id=course_id,
+        submission__assignment__rubric_for_prompt__id=rubric_id,
+        submission__author_id=student_id
+    )\
+        .order_by('id')
+
+    entries = _denormalize_reviews_received(reviews)
     prompt_title = Rubric.objects.get(id=rubric_id).reviewed_assignment.title
 
     return {
@@ -186,7 +194,7 @@ def reviews_received(request, course_id, student_id, rubric_id):
 @authorized_json_endpoint(roles=['student'])
 def submit_peer_review_evaluation(request, body, course_id, student_id, peer_review_id):
     raise_if_not_current_user(request, student_id)
-    raise_if_peer_review_not_for_student(request, student_id, peer_review_id)
+    raise_if_peer_review_not_given_to_student(request, student_id, peer_review_id)
 
     PeerReviewEvaluation.objects.create(
         peer_review_id=peer_review_id,
@@ -374,3 +382,127 @@ def submit_peer_review(request, params, course_id, review_id):
             comment.save()
 
     return params
+
+
+@authorized_endpoint(roles=['instructor'])
+def csv_for_student_and_rubric(request, course_id, student_id, rubric_id=None):
+
+    try:
+        all_comments = Comments.all_comments_for_student(
+            student_id=student_id,
+            rubric_id=rubric_id
+        )
+    except Rubric.DoesNotExist:
+        LOGGER.error('Rubric %s does not exist to download CSV data', rubric_id)
+        raise Http404
+    except CanvasStudent.DoesNotExist:
+        LOGGER.error('Student %s does not exist to download CSV data', student_id)
+        raise Http404
+
+    rows = [['Prompt', 'Reviewer', 'Author', 'Criterion ID', 'Comment']] + [
+        [
+            comment.peer_review.submission.assignment.title,
+            comment.peer_review.student.sortable_name,
+            comment.peer_review.submission.author.sortable_name,
+            comment.criterion.id,
+            comment.comment
+        ]
+        for comment in all_comments
+    ]
+
+    output = io.StringIO()
+    writer = csv.writer(output, delimiter=',', quoting=csv.QUOTE_MINIMAL)
+    for row in rows:
+        writer.writerow(row)
+    csv_data = output.getvalue()
+
+    response = HttpResponse(csv_data, content_type="text/csv")
+    response["Content-Disposition"] = "attachment"
+
+    return response
+
+
+@authorized_json_endpoint(roles=['instructor'])
+def student_info(request, course_id, student_id):
+    try:
+        student = CanvasStudent.objects.get(id=student_id)
+    except CanvasStudent.DoesNotExist:
+        raise Http404
+
+    # TODO update this when https://github.com/M-Write/mwrite-peer-review/issues/270 is fixed
+    if int(course_id) != student.course_id:
+        msg = 'Student %s is not a part of course %s' % (student_id, course_id)
+        raise APIException(data={'error': msg}, status_code=403)
+
+    return {
+        'id': student.id,
+        'full_name': student.full_name,
+        'sortable_name': student.sortable_name
+    }
+
+
+@authorized_json_endpoint(roles=['instructor'])
+def all_rubrics_for_course(request, course_id):
+    rubrics = Rubric.objects.filter(reviewed_assignment__course__id=course_id)
+    return [
+        {
+            'id': r.id,
+            'prompt_id': r.reviewed_assignment.id,
+            'prompt_title': r.reviewed_assignment.title
+        }
+        for r in rubrics
+    ]
+
+
+@authorized_json_endpoint(roles=['instructor'])
+def all_rubric_statuses_for_student(request, course_id, student_id):
+    try:
+        student = CanvasStudent.objects.get(id=student_id)
+    except CanvasStudent.DoesNotExist:
+        raise Http404
+
+    return ReviewStatus.all_rubric_statuses_for_student(course_id, student)
+
+
+@authorized_json_endpoint(roles=['instructor'])
+def rubric_status_for_student(request, course_id, rubric_id, student_id):
+    try:
+        rubric = Rubric.objects.get(id=rubric_id)
+    except Rubric.DoesNotExist:
+        msg = 'The specified rubric does not exist.'
+        raise APIException(data={'error': msg}, status_code=404)
+
+    try:
+        student = CanvasStudent.objects.get(id=student_id)
+    except CanvasStudent.DoesNotExist:
+        msg = 'The specified student does not exist.'
+        raise APIException(data={'error': msg}, status_code=404)
+
+    return ReviewStatus.detailed_rubric_status_for_student(course_id, student, rubric)
+
+
+@authorized_json_endpoint(roles=['instructor'])
+def single_review(request, course_id, review_id):
+    try:
+        peer_review = PeerReview.objects.get(id=review_id)
+    except PeerReview.DoesNotExist:
+        raise Http404
+
+    return {
+        'prompt_title': peer_review.submission.assignment.title,
+        'entries': _denormalize_reviews_received([peer_review])
+    }
+
+
+# Django doesn't let you declare the HTTP method as part of the URL conf, so...
+# TODO could probably refactor this into something generic
+def dispatch_peer_review_request(*args, **kwargs):
+    request = args[0]
+    if request.method == 'POST':
+        view = submit_peer_review
+    elif request.method == 'GET':
+        view = single_review
+    else:
+        msg = 'Unsupported method %s' % request.method
+        return JsonResponse({'error': msg}, status=405)
+    return view(*args, **kwargs)

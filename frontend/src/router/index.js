@@ -6,11 +6,13 @@ import {redirectToRoleDashboard, authenticatedInstructorsOnly, authenticatedStud
 import Modal from '@/components/Modal';
 import ReviewsGiven from '@/components/ReviewsGiven';
 import ReviewsReceived from '@/components/ReviewsReceived';
+import SingleReview from '@/components/SingleReview';
 
 import Error from '@/pages/Error';
 import InstructorDashboard from '@/pages/InstructorDashboard';
 import StudentList from '@/pages/StudentList';
 import ReviewStatus from '@/pages/ReviewStatus';
+import AssignmentStatus from '@/pages/AssignmentStatus';
 import Rubric from '@/pages/Rubric';
 import StudentDashboard from '@/pages/StudentDashboard';
 import PeerReview from '@/pages/PeerReview';
@@ -63,6 +65,33 @@ const router = new Router({
       component: ReviewStatus,
       beforeEnter: authenticatedInstructorsOnly,
       props: (route) => ({rubricId: route.params.rubricId})
+      // TODO needs breadcrumbPathComponents
+    },
+    {
+      path: '/instructor/reviews/student/:studentId',
+      name: 'AssignmentStatus',
+      component: AssignmentStatus,
+      beforeEnter: authenticatedInstructorsOnly,
+      props: route => ({studentId: parseInt(route.params.studentId)})
+      // TODO needs breadcrumbPathComponents
+    },
+    {
+      path: '/instructor/reviews/student/:studentId/rubric/:rubricId',
+      name: 'AssignmentStatusForRubric',
+      component: AssignmentStatus,
+      beforeEnter: authenticatedInstructorsOnly,
+      props: route => ({
+        studentId: parseInt(route.params.studentId),
+        rubricId: parseInt(route.params.rubricId)
+      }),
+      children: [
+        {
+          path: 'review/:reviewId',
+          name: 'SingleReview',
+          component: Modal,
+          props: route => ({component: SingleReview, childProps: {reviewId: route.params.reviewId}})
+        }
+      ]
       // TODO needs breadcrumbPathComponents
     },
     {

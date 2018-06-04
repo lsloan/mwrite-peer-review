@@ -17,10 +17,28 @@ urlpatterns = [
     url(r'^user/self$', api.logged_in_user_details),
 
     url(r'^course/(?P<course_id>[0-9]+)/', include([
+        url(r'^students/', include([
+            url(r'^$', api.all_students),  # TODO change URI to /all/ ?
+            url(r'^(?P<student_id>[0-9]+)/', include([
+                url(r'^$', api.student_info),
+                url(r'^data/', include([
+                    url(r'^$', api.csv_for_student_and_rubric),
+                    url(r'^rubric/(?P<rubric_id>[0-9]+)', api.csv_for_student_and_rubric)
+                ]))
+            ]))
+        ])),
 
-        url(r'^students/', api.all_students),
+        url(r'^rubric/', include([   # TODO change URI to /rubrics/ ?
+            url(r'^$', api.create_or_update_rubric),
+            url(r'^all/', include([
+                url(r'^$', api.all_rubrics_for_course),
+                url(r'^for-student/(?P<student_id>[0-9]+)/', api.all_rubric_statuses_for_student)
+            ])),
+            url(r'(?P<rubric_id>[0-9]+)/for-student/(?P<student_id>[0-9]+)/',
+                api.rubric_status_for_student
+            )
+        ])),
 
-        url(r'^rubric/$', api.create_or_update_rubric),
         url(
             r'^rubric/peer_review_assignment/(?P<passback_assignment_id>[0-9]+)/',
             api.rubric_info_for_peer_review_assignment
@@ -28,7 +46,7 @@ urlpatterns = [
 
         url(r'^reviews/', include([
             url(r'^(?P<review_id>[0-9]+)/', include([
-                url(r'^$', api.submit_peer_review),
+                url(r'^$', api.dispatch_peer_review_request),
                 url(r'^submission/', api.submission_for_review),
                 url(r'^rubric/', api.rubric_for_review),
             ])),
