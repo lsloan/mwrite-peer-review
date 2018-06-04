@@ -26,21 +26,21 @@ def permission_denied(request, exception, template_name=''):
 
     return JsonResponse(
         {'error': 'You do not have access to the specified resource.'},
-        status_code=403
+        status=403
     )
 
 
 def not_found(request, exception, template_name=''):
     return JsonResponse(
         {'error': 'The specified resource was not found.'},
-        status_code=404
+        status=404
     )
 
 
 def server_error(request, template_name=''):
     return JsonResponse(
         {'error': 'An internal server error occurred.'},
-        status_code=500
+        status=500
     )
 
 
