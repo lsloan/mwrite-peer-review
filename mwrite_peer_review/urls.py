@@ -46,7 +46,7 @@ urlpatterns = [
 
         url(r'^reviews/', include([
             url(r'^(?P<review_id>[0-9]+)/', include([
-                url(r'^$', api.submit_peer_review),
+                url(r'^$', api.dispatch_peer_review_request),
                 url(r'^submission/', api.submission_for_review),
                 url(r'^rubric/', api.rubric_for_review),
             ])),

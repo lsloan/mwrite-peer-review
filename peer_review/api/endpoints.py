@@ -9,7 +9,7 @@ from datetime import datetime
 from dateutil.tz import tzutc
 from django.db import transaction
 from django.conf import settings
-from django.http import Http404, HttpResponse
+from django.http import Http404, HttpResponse, JsonResponse
 from django.views.decorators.http import require_POST
 from django.core.exceptions import PermissionDenied, ObjectDoesNotExist
 from rolepermissions.roles import get_user_roles
@@ -102,7 +102,8 @@ def completed_work(request, course_id, student_id):
     return StudentDashboardStatus.completed_work(course_id, student_id)
 
 
-def _denormalize_reviews(reviews):
+# TODO move this to the queries namespace
+def _denormalize_reviews_given(reviews):
 
     peer_review_ids = sorted(r.id for r in reviews)
     student_numbers = {pr_id: i for i, pr_id in enumerate(peer_review_ids)}
@@ -136,20 +137,10 @@ def reviews_given(request, course_id, student_id, rubric_id):
         .prefetch_related('comments')\
         .order_by('id')
 
-    return _denormalize_reviews(reviews)
+    return _denormalize_reviews_given(reviews)
 
 
-@authorized_json_endpoint(roles=['student'])
-def reviews_received(request, course_id, student_id, rubric_id):
-    raise_if_not_current_user(request, student_id)
-
-    reviews = PeerReview.objects.filter(
-        submission__assignment__course_id=course_id,
-        submission__assignment__rubric_for_prompt__id=rubric_id,
-        submission__author_id=student_id
-    )\
-        .order_by('id')
-
+def _denormalize_reviews_received(reviews):
     peer_review_ids = [r.id for r in reviews]
     student_numbers = {pr_id: i for i, pr_id in enumerate(peer_review_ids)}
 
@@ -175,6 +166,21 @@ def reviews_received(request, course_id, student_id, rubric_id):
             'comment': comment.comment
         })
 
+    return entries
+
+
+@authorized_json_endpoint(roles=['student'])
+def reviews_received(request, course_id, student_id, rubric_id):
+    raise_if_not_current_user(request, student_id)
+
+    reviews = PeerReview.objects.filter(
+        submission__assignment__course_id=course_id,
+        submission__assignment__rubric_for_prompt__id=rubric_id,
+        submission__author_id=student_id
+    )\
+        .order_by('id')
+
+    entries = _denormalize_reviews_received(reviews)
     prompt_title = Rubric.objects.get(id=rubric_id).reviewed_assignment.title
 
     return {
@@ -188,7 +194,7 @@ def reviews_received(request, course_id, student_id, rubric_id):
 @authorized_json_endpoint(roles=['student'])
 def submit_peer_review_evaluation(request, body, course_id, student_id, peer_review_id):
     raise_if_not_current_user(request, student_id)
-    raise_if_peer_review_not_for_student(request, student_id, peer_review_id)
+    raise_if_peer_review_not_given_to_student(request, student_id, peer_review_id)
 
     PeerReviewEvaluation.objects.create(
         peer_review_id=peer_review_id,
@@ -473,3 +479,30 @@ def rubric_status_for_student(request, course_id, rubric_id, student_id):
         raise APIException(data={'error': msg}, status_code=404)
 
     return ReviewStatus.detailed_rubric_status_for_student(course_id, student, rubric)
+
+
+@authorized_json_endpoint(roles=['instructor'])
+def single_review(request, course_id, review_id):
+    try:
+        peer_review = PeerReview.objects.get(id=review_id)
+    except PeerReview.DoesNotExist:
+        raise Http404
+
+    return {
+        'prompt_title': peer_review.submission.assignment.title,
+        'entries': _denormalize_reviews_received([peer_review])
+    }
+
+
+# Django doesn't let you declare the HTTP method as part of the URL conf, so...
+# TODO could probably refactor this into something generic
+def dispatch_peer_review_request(*args, **kwargs):
+    request = args[0]
+    if request.method == 'POST':
+        view = submit_peer_review
+    elif request.method == 'GET':
+        view = single_review
+    else:
+        msg = 'Unsupported method %s' % request.method
+        return JsonResponse({'error': msg}, status=405)
+    return view(*args, **kwargs)
