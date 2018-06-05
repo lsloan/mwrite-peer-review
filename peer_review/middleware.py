@@ -30,6 +30,7 @@ def safari_iframe_launch_middleware(get_response):
             return render_to_response('safari_launch_iframe.html', context=context)
         else:
             response = get_response(request)
+            LOGGER.debug('launch params = %s', request.session.get('lti_launch_params'))
         return response
 
     return middleware
