@@ -8,16 +8,11 @@
         <script defer src="https://code.getmdl.io/1.3.0/material.min.js"></script>
         <script>
             document.addEventListener('DOMContentLoaded', function() {
-                var button = document.querySelector('#launch-button');
-                button.addEventListener('click', function() {
-                    var canvasToolUrl = button.getAttribute('data-referer');
-                    var courseId = button.getAttribute('data-course-id');
-                    var popupUrl = '/course/' + courseId + '/safari';
-
-                    var popup = window.open(popupUrl, 'toolbar=no,status=no,width=100,height=100');
+                document.querySelector('#launch-button').addEventListener('click', function() {
+                    var popup = window.open({% url 'safari_launch_popup' %}, 'toolbar=no,status=no,width=100,height=100');
                     popup.addEventListener('load', function() {
                         popup.close();
-                        window.parent.location.href = canvasToolUrl;
+                        window.parent.location.href = {{ tool_url }};
                     });
                 });
             });

@@ -8,6 +8,8 @@ from peer_review.api.special import permission_denied, not_found, server_error, 
 
 
 urlpatterns = [
+    url(r'^safari$', SafariLaunchPopup.as_view(), name='safari_launch_popup'),
+
     url(r'^launch$', djangolti.views.LaunchView.as_view(), name='launch'),
     url(r'^user/self$', api.logged_in_user_details),
 
@@ -56,8 +58,6 @@ urlpatterns = [
         ])),
 
         url(r'^peer_review/all', api.all_peer_review_assignment_details),
-
-        url(r'^safari$', SafariLaunchPopup.as_view()),
     ]))
 ]
 
