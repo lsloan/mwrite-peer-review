@@ -9,10 +9,10 @@
         <script>
             document.addEventListener('DOMContentLoaded', function() {
                 document.querySelector('#launch-button').addEventListener('click', function() {
-                    var popup = window.open({% url 'safari_launch_popup' %}, 'toolbar=no,status=no,width=100,height=100');
+                    var popup = window.open('{% url 'safari_launch_popup' %}', 'toolbar=no,status=no,width=100,height=100');
                     popup.addEventListener('load', function() {
                         popup.close();
-                        window.parent.location.href = {{ tool_url }};
+                        window.parent.location.href = '{{ tool_url }}';
                     });
                 });
             });
