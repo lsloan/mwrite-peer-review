@@ -14,31 +14,17 @@ class FixedUserAgentMiddleware(MiddlewareMixin, UserAgentMiddleware):
 
 
 def safari_iframe_launch_middleware(get_response):
-
     def middleware(request):
-
-        browser_is_safari = request.user_agent.browser.family == 'Safari'
-        safari_launch_cookie_missing = settings.SAFARI_LAUNCH_COOKIE not in request.COOKIES
-        request_is_for_launch = re.search('^/launch$', request.path)
-
-        LOGGER.debug(
-            'safari launch middleware for %s info = %s, %s, %s, %s',
-            request.path,
-            request.method,
-            browser_is_safari,
-            safari_launch_cookie_missing,
-            request_is_for_launch
-        )
-
-        if browser_is_safari and safari_launch_cookie_missing and request_is_for_launch and request.method == 'POST':
+        if request.user_agent.browser.family == 'Safari' and \
+              settings.SAFARI_LAUNCH_COOKIE not in request.COOKIES and \
+              request.method == 'POST' and \
+              re.search('^/launch$', request.path):
             LOGGER.debug('Unauthenticated Safari user detected, serving Safari landing page')
             context = {
                 'tool_url': request.META['HTTP_REFERER'],
             }
             response = render_to_response('safari_launch_iframe.html', context=context)
-
-        response = get_response(request)
-
+        else:
+            response = get_response(request)
         return response
-
     return middleware
