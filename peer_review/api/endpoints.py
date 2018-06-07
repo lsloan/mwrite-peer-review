@@ -56,7 +56,7 @@ def all_students(request, course_id):
     course = {'id': course_model.id, 'name': course_model.name}
 
     students = []
-    for student in CanvasStudent.objects.filter(course_id=course_id):
+    for student in course_model.students.all():
         sections = []
         for section in student.sections.filter(course_id=course_id):
             sections.append({
