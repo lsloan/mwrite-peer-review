@@ -1,0 +1,9 @@
+<form action="/debug/lti" method="post">
+    {% csrf_token %}
+    <ul style="list-style-type: none; padding-left: 0;">
+        {{ form.as_ul }}
+    </ul>
+    <input type="submit" value="Submit" />
+    {{ form.errors }}
+    {{ form.non_field_errors }}
+</form>
