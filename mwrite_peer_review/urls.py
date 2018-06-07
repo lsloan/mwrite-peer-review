@@ -1,18 +1,15 @@
-from django.http import Http404
 from django.conf import settings
 from django.conf.urls import url, include
 
 import djangolti.views
 import peer_review.api.endpoints as api
-from peer_review.views.core import *
-from peer_review.views.special import DebugLtiParamsView, SafariLaunchPopup, permission_denied
-
-
-def not_found(request):
-    raise Http404
+from peer_review.api.debug import DebugLtiParamsView
+from peer_review.api.special import permission_denied, not_found, server_error, SafariLaunchPopup
 
 
 urlpatterns = [
+    url(r'^safari$', SafariLaunchPopup.as_view(), name='safari_launch_popup'),
+
     url(r'^launch$', djangolti.views.LaunchView.as_view(), name='launch'),
     url(r'^user/self$', api.logged_in_user_details),
 
@@ -61,32 +58,12 @@ urlpatterns = [
         ])),
 
         url(r'^peer_review/all', api.all_peer_review_assignment_details),
-
-        ### old URLs below this point
-
-        url(r'^favicon.ico$', not_found),  # TODO ...just add a favicon already
-
-        url(r'^health/', include('health_check.urls')),
-
-        url(r'^$', CourseIndexView.as_view()),
-        url(r'^dashboard/instructor$', InstructorDashboardView.as_view()),
-        url(r'^dashboard/student$', StudentDashboardView.as_view()),
-        url(r'^status/rubric/(?P<rubric_id>[0-9]+)/all$', AssignmentStatus.as_view()),
-        url(r'^rubric/assignment/(?P<assignment_id>[0-9]+)$', RubricCreationFormView.as_view()),
-        url(r'^submissions/(?P<submission_id>[0-9]+)/download$', SubmissionDownloadView.as_view()),
-        url(r'^review/submission/(?P<submission_id>[0-9]+)$', PeerReviewView.as_view()),
-        url(r'^review/submission/(?P<submission_id>[0-9]+)/completed$', SingleReviewDetailView.as_view()),
-        url(r'^review/students$', AllStudentsReviews.as_view()),
-        url(r'^review/student/(?P<student_id>[0-9]+)$', OverviewForAStudent.as_view()),
-        url(r'^review/student/(?P<student_id>[0-9]+)/download$', OverviewDownload.as_view()),
-        url(r'^review/student/(?P<student_id>[0-9]+)/rubric/(?P<rubric_id>[0-9]+)$', ReviewsForAStudentView.as_view()),
-        url(r'^review/student/(?P<student_id>[0-9]+)/rubric/(?P<rubric_id>[0-9]+)/download$',
-            ReviewsDownload.as_view()),
-        url(r'^safari$', SafariLaunchPopup.as_view()),
     ]))
 ]
 
 handler403 = permission_denied
+handler404 = not_found
+handler500 = server_error
 
 if settings.DEBUG:
     from django.contrib.auth.views import login as auth_login

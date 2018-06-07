@@ -19,7 +19,6 @@ export default {
   components: {FilterableTable},
   data() {
     return {
-      apiUrl: __API_URL__,
       students: null,
       columnMapping: [
         {
@@ -65,7 +64,7 @@ export default {
   },
   methods: {
     makeStudentLink(studentId) {
-      return `${this.apiUrl}/course/${this.courseId}/review/student/${studentId}`;
+      return `#/instructor/reviews/student/${studentId}`;
     },
     goToStudent(studentId) {
       window.location = this.makeStudentLink(studentId);

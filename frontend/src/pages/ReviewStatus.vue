@@ -118,16 +118,15 @@ export default {
   },
   methods: {
     makeReviewLink(studentId) {
-      return `/instructor/reviews/student/${studentId}`;
+      return `#/instructor/reviews/student/${studentId}/rubric/${this.rubricId}`;
     },
     goToReview(studentId) {
-      this.$router.push(this.makeReviewLink(studentId));
+      window.location = this.makeReviewLink(studentId);
     }
   },
   mounted() {
     this.pageLoadTime = moment().utc();
     this.$api.get('/course/{}/reviews/rubric/{}', this.courseId, this.rubricId).then(r => {
-      console.log('rubric status:', r.data);
       this.data = r.data;
     });
   }
