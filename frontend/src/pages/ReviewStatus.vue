@@ -127,7 +127,6 @@ export default {
   mounted() {
     this.pageLoadTime = moment().utc();
     this.$api.get('/course/{}/reviews/rubric/{}', this.courseId, this.rubricId).then(r => {
-      console.log('rubric status:', r.data);
       this.data = r.data;
     });
   }
