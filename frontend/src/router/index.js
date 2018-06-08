@@ -69,8 +69,13 @@ const router = new Router({
       name: 'ReviewStatus',
       component: ReviewStatus,
       beforeEnter: authenticatedInstructorsOnly,
-      props: (route) => ({rubricId: route.params.rubricId})
-      // TODO needs breadcrumbPathComponents
+      props: (route) => ({rubricId: route.params.rubricId}),
+      meta: {
+        breadcrumbPathComponents: info => ([
+          {text: 'Peer Review', href: '/instructor/dashboard'},
+          {text: info['title'], href: `/instructor/reviews/rubric/${info.rubricId}`}
+        ])
+      }
     },
     {
       path: '/instructor/reviews/student/:studentId',
