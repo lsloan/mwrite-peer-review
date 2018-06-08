@@ -127,6 +127,14 @@ export default {
     this.$api.get('/course/{}/rubric/{}/for-student/{}', this.courseId, this.rubricId, this.studentId)
       .then(r => {
         this.data = r.data;
+      })
+      .then(() => {
+        this.$store.commit('updateBreadcrumbInfo', {
+          rubricId: this.rubricId,
+          peerReviewTitle: this.data.rubric.peerReviewTitle,
+          studentId: this.studentId,
+          studentName: this.studentFirstName
+        });
       });
   }
 };

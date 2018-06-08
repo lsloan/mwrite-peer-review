@@ -101,8 +101,14 @@ const router = new Router({
           component: Modal,
           props: route => ({component: SingleReview, childProps: {reviewId: route.params.reviewId}})
         }
-      ]
-      // TODO needs breadcrumbPathComponents
+      ],
+      meta: {
+        breadcrumbPathComponents: info => ([
+          {text: 'Peer Review', href: '/instructor/dashboard'},
+          {text: info.peerReviewTitle, href: `/instructor/reviews/rubric/${info.rubricId}`},
+          {text: info.studentName, href: `/instructor/reviews/student/${info.studentId}/rubric/${info.rubricId}`}
+        ])
+      }
     },
     {
       path: '/student/dashboard',
