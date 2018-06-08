@@ -447,43 +447,15 @@ export default {
         this.models = modelConverter(this.existingRubric);
       }
     },
-    // updatePeerReviewOpenDate(newPromptDueDateLocal) {
-    //   if(newPromptDueDateLocal) {
-    //     const date = moment(newPromptDueDateLocal, DISPLAY_DATE_FORMAT);
-    //     const minute = date.minute();
-
-    //     // TODO the following could be replaced with _.flow(), but only if we use lodash.fp which will be much easier w/ ES6
-    //     let closestMinuteChoice = R.pipe(
-    //       R.filter(c => parseInt(c) >= minute),
-    //       R.minBy(c => Math.abs(minute - parseInt(c)))
-    //     )(this.peerReviewOpenMinuteChoices);
-
-    //     if(!closestMinuteChoice) {
-    //       const minutesToHour = 60 - minute;
-    //       date.add(minutesToHour, 'minutes');
-    //       closestMinuteChoice = '00';
-    //     }
-
-    //     let meridian = 'AM';
-    //     let hour = date.hour();
-    //     if(hour === 0) {
-    //       hour = 12;
-    //     }
-    //     else {
-    //       if(hour >= 12) {
-    //         meridian = 'PM';
-    //         if(hour > 12) {
-    //           hour -= 12;
-    //         }
-    //       }
-    //     }
-
-    //     this.peerReviewOpenHour = hour.toString();
-    //     this.peerReviewOpenMinute = closestMinuteChoice;
-    //     this.peerReviewOpenAMPM = meridian;
-    //     this.selectedPeerReviewOpenDate = date.toDate();
-    //   }
-    // },
+    initializeBreadcrumb() {
+      const prompt = this.models.selectedPrompt
+        ? this.models.selectedPrompt.name
+        : 'Create New';
+      this.$store.commit('updateBreadcrumbInfo', {
+        title: `${prompt} Rubric`,
+        peerReviewAssignmentId: this.peerReviewAssignmentId
+      });
+    },
     addCriterion() {
       this.models.criteria.push(makeCriterion());
     },
@@ -529,7 +501,9 @@ export default {
     }
   },
   mounted() {
-    this.fetchData().then(this.initializeModels);
+    this.fetchData()
+      .then(this.initializeModels)
+      .then(this.initializeBreadcrumb);
   }
 };
 </script>
