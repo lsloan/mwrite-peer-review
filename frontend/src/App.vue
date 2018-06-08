@@ -15,10 +15,12 @@
                 </nav>
               </div>
         </header>
-        <main class="mdl-layout__content">
+        <header>
             <breadcrumb
                 v-if="userIsInstructor && breadcrumbPathComponents"
                 :path-components="breadcrumbPathComponents"/>
+        </header>
+        <main class="mdl-layout__content">
             <router-view/>
         </main>
     </div>
