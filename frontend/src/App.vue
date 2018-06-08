@@ -17,7 +17,7 @@
         </header>
         <header>
             <breadcrumb
-                v-if="userIsInstructor && breadcrumbPathComponents"
+                v-if="showBreadcrumb"
                 :path-components="breadcrumbPathComponents"/>
         </header>
         <main class="mdl-layout__content">
@@ -39,6 +39,9 @@ export default {
     userIsInstructor() {
       const {roles} = this.$store.state.userDetails;
       return roles ? roles.includes('instructor') : false;
+    },
+    showBreadcrumb() {
+      return this.userIsInstructor && this.breadcrumbPathComponents;
     }
   },
   watch: {
