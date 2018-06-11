@@ -56,7 +56,7 @@ def all_students(request, course_id):
     course = {'id': course_model.id, 'name': course_model.name}
 
     students = []
-    for student in CanvasStudent.objects.filter(course_id=course_id):
+    for student in course_model.students.all():
         sections = []
         for section in student.sections.filter(course_id=course_id):
             sections.append({
@@ -429,8 +429,7 @@ def student_info(request, course_id, student_id):
     except CanvasStudent.DoesNotExist:
         raise Http404
 
-    # TODO update this when https://github.com/M-Write/mwrite-peer-review/issues/270 is fixed
-    if int(course_id) != student.course_id:
+    if not student.courses.filter(id=course_id).exists():
         msg = 'Student %s is not a part of course %s' % (student_id, course_id)
         raise APIException(data={'error': msg}, status_code=403)
 
