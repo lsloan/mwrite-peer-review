@@ -82,8 +82,13 @@ const router = new Router({
       name: 'AssignmentStatus',
       component: AssignmentStatus,
       beforeEnter: authenticatedInstructorsOnly,
-      props: route => ({studentId: parseInt(route.params.studentId)})
-      // TODO needs breadcrumbPathComponents
+      props: route => ({studentId: parseInt(route.params.studentId)}),
+      meta: {
+        breadcrumbPathComponents: info => ([
+          {text: 'Students', href: '/instructor/students'},
+          {text: info.studentName, href: `/instructor/reviews/student/${info.studentId}`}
+        ])
+      }
     },
     {
       path: '/instructor/reviews/student/:studentId/rubric/:rubricId',
