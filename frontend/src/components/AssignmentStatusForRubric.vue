@@ -94,10 +94,13 @@ export default {
     courseId() {
       return this.$store.state.userDetails.courseId;
     },
-    studentFirstName() {
+    studentSortableName() {
       const {student: {sortableName} = {}} = this.data;
-      return sortableName
-        ? sortableNameToFirstName(sortableName)
+      return sortableName;
+    },
+    studentFirstName() {
+      return this.studentSortableName
+        ? sortableNameToFirstName(this.studentSortableName)
         : '';
     },
     dueDate() {
@@ -133,7 +136,7 @@ export default {
           rubricId: this.rubricId,
           peerReviewTitle: `${this.data.rubric.peerReviewTitle} Reviews`,
           studentId: this.studentId,
-          studentName: this.studentFirstName
+          studentName: this.studentSortableName
         });
       });
   }
