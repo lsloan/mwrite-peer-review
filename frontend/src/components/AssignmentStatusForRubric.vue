@@ -131,7 +131,7 @@ export default {
       .then(() => {
         this.$store.commit('updateBreadcrumbInfo', {
           rubricId: this.rubricId,
-          peerReviewTitle: this.data.rubric.peerReviewTitle,
+          peerReviewTitle: `${this.data.rubric.peerReviewTitle} Reviews`,
           studentId: this.studentId,
           studentName: this.studentFirstName
         });
