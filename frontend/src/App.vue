@@ -27,14 +27,29 @@
 </template>
 
 <script>
+import * as R from 'ramda';
+
 import Breadcrumb from '@/components/Breadcrumb';
+
+const routeIsForModal = r => R.find(
+  ro => {
+    let {name = ''} = ro.components.default;
+    return name.toLowerCase() === 'modal';
+  },
+  r.matched
+);
 
 export default {
   name: 'App',
   components: {Breadcrumb},
   computed: {
     breadcrumbPathComponents() {
-      return this.$route.meta.breadcrumbPathComponents;
+      const lens = R.lensPath(['meta', 'breadcrumbPathComponents']);
+      const route = R.findLast(R.view(lens), this.$route.matched);
+      if(route) {
+        const {meta: {breadcrumbPathComponents} = {}} = route;
+        return breadcrumbPathComponents;
+      }
     },
     userIsInstructor() {
       const {roles} = this.$store.state.userDetails;
@@ -46,7 +61,9 @@ export default {
   },
   watch: {
     $route(to, from) {
-      this.$store.commit('updateBreadcrumbInfo', null);
+      if(!routeIsForModal(from) && !routeIsForModal(to)) {
+        this.$store.commit('updateBreadcrumbInfo', null);
+      }
     }
   }
 };
