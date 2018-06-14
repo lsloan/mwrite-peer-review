@@ -1,11 +1,11 @@
 <template>
     <div class="breadcrumb">
-        <template v-for="({eventKey, text, href}, i) in resolvedPathComponents">
+        <template v-for="({eventKey, text, href}, i) in pathComponents">
             <breadcrumb-entry
                 :key="i"
                 :text="text"
                 :href="href"
-                :is-last-entry="i >= resolvedPathComponents.length-1"/>
+                :is-last-entry="i >= pathComponents.length-1"/>
         </template>
     </div>
 </template>
@@ -16,28 +16,7 @@ import BreadcrumbEntry from '@/components/BreadcrumbEntry';
 export default {
   name: 'breadcrumb',
   components: {BreadcrumbEntry},
-  props: ['path-components'],
-  computed: {
-    breadcrumbInfo() {
-      return this.$store.state.breadcrumbInfo;
-    },
-    isDynamic() {
-      return typeof this.pathComponents === 'function';
-    },
-    resolvedPathComponents() {
-      if(this.isDynamic) {
-        if(this.breadcrumbInfo) {
-          return this.pathComponents(this.breadcrumbInfo);
-        }
-        else {
-          return [];
-        }
-      }
-      else {
-        return this.pathComponents;
-      }
-    }
-  }
+  props: ['path-components']
 };
 </script>
 

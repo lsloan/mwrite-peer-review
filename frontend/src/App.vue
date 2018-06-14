@@ -6,10 +6,14 @@
                 <span class="mdl-layout__title">M-Write Peer Review</span>
                 <div class="mdl-layout-spacer"></div>
                 <nav v-if="userIsInstructor" class="mdl-navigation">
-                    <router-link class="mdl-navigation__link" to="/instructor/dashboard">
+                    <router-link
+                        :class="{'mdl-navigation__link': true, 'is-active': navTreeHead === 'Peer Review'}"
+                        to="/instructor/dashboard">
                         Peer Review
                     </router-link>
-                    <router-link class="mdl-navigation__link" to="/instructor/students">
+                    <router-link
+                        :class="{'mdl-navigation__link': true, 'is-active': navTreeHead === 'Students'}"
+                        to="/instructor/students">
                         Students
                     </router-link>
                 </nav>
@@ -18,7 +22,7 @@
         <header>
             <breadcrumb
                 v-if="showBreadcrumb"
-                :path-components="breadcrumbPathComponents"/>
+                :path-components="resolvedBreadcrumbPathComponents"/>
         </header>
         <main class="mdl-layout__content">
             <router-view/>
@@ -51,6 +55,32 @@ export default {
         return breadcrumbPathComponents;
       }
     },
+    breadcrumbInfo() {
+      return this.$store.state.breadcrumbInfo;
+    },
+    breadcrumbIsDynamic() {
+      return typeof this.breadcrumbPathComponents === 'function';
+    },
+    resolvedBreadcrumbPathComponents() {
+      if(this.breadcrumbIsDynamic) {
+        if(this.breadcrumbInfo) {
+          return this.breadcrumbPathComponents(this.breadcrumbInfo);
+        }
+        else {
+          return [];
+        }
+      }
+      else {
+        return this.breadcrumbPathComponents;
+      }
+    },
+    navTreeHead() {
+      if(this.resolvedBreadcrumbPathComponents) {
+        const [{text = ''} = {}] = this.resolvedBreadcrumbPathComponents;
+        console.log('nav tree head =', text);
+        return text;
+      }
+    },
     userIsInstructor() {
       const {roles} = this.$store.state.userDetails;
       return roles ? roles.includes('instructor') : false;
@@ -72,6 +102,11 @@ export default {
 <style>
     .mdl-navigation__link {
         text-transform: uppercase;
+    }
+
+    .mdl-navigation__link.is-active {
+        /* TODO MDL's slide-in bottom border would be great, but is suprisingly complicated. later */
+        border-bottom: 4px solid #c9ffff;
     }
 
     .mdl-layout__header-row {
