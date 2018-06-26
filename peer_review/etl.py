@@ -148,29 +148,31 @@ def persist_sections(course_id):
             section.save()
 
 
-def _convert_student(course_id, raw_student):
+def _convert_student(raw_student):
     student_id = raw_student['id']
     if 'login_id' in raw_student:
         username = raw_student['login_id']
     else:
         username = str(student_id)
 
-    return CanvasStudent(id=student_id,
-                         username=username,
-                         full_name=raw_student['name'],
-                         sortable_name=raw_student['sortable_name'],
-                         course_id=course_id)
+    return CanvasStudent(
+        id=student_id,
+        username=username,
+        full_name=raw_student['name'],
+        sortable_name=raw_student['sortable_name']
+    )
 
 
 def persist_students(course_id):
+    course = CanvasCourse.objects.get(id=course_id)
     raw_students = retrieve('students', course_id)
     enrollments_by_student_id = {s['id']: s['enrollments'] for s in raw_students}
-    student_converter = partial(_convert_student, course_id)
-    students = list(map(student_converter, raw_students))
+    students = list(map(_convert_student, raw_students))
 
     with transaction.atomic():
         for student in students:
             student.save()
+            student.courses.add(course)
             for enrollment in enrollments_by_student_id[student.id]:
                 student.sections.add(CanvasSection.objects.get(id=enrollment['course_section_id']))
 

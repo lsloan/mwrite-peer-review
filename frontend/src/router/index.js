@@ -2,14 +2,20 @@ import Vue from 'vue';
 import Router from 'vue-router';
 
 import {redirectToRoleDashboard, authenticatedInstructorsOnly, authenticatedStudentsOnly} from './guards';
-import Error from '@/components/Error';
-import InstructorDashboard from '@/components/InstructorDashboard';
-import StudentDashboard from '@/components/StudentDashboard';
+
 import Modal from '@/components/Modal';
 import ReviewsGiven from '@/components/ReviewsGiven';
 import ReviewsReceived from '@/components/ReviewsReceived';
-import StudentList from '@/components/StudentList';
-import ReviewStatus from '@/components/ReviewStatus';
+import SingleReview from '@/components/SingleReview';
+
+import Error from '@/pages/Error';
+import InstructorDashboard from '@/pages/InstructorDashboard';
+import StudentList from '@/pages/StudentList';
+import ReviewStatus from '@/pages/ReviewStatus';
+import AssignmentStatus from '@/pages/AssignmentStatus';
+import Rubric from '@/pages/Rubric';
+import StudentDashboard from '@/pages/StudentDashboard';
+import PeerReview from '@/pages/PeerReview';
 
 Vue.use(Router);
 
@@ -30,11 +36,20 @@ const router = new Router({
     },
     {
       path: '/instructor/dashboard',
+      name: 'InstructorDashboard',
       component: InstructorDashboard,
       beforeEnter: authenticatedInstructorsOnly,
       meta: {
         breadcrumbPathComponents: [{text: 'Peer Review', href: '/instructor/dashboard'}]
       }
+    },
+    {
+      path: '/instructor/rubric/peer_review_assignment/:peerReviewAssignmentId',
+      name: 'Rubric',
+      component: Rubric,
+      beforeEnter: authenticatedInstructorsOnly,
+      // TODO needs breadcrumbPathComponents
+      props: (route) => ({peerReviewAssignmentId: route.params.peerReviewAssignmentId})
     },
     {
       path: '/instructor/students',
@@ -50,6 +65,34 @@ const router = new Router({
       component: ReviewStatus,
       beforeEnter: authenticatedInstructorsOnly,
       props: (route) => ({rubricId: route.params.rubricId})
+      // TODO needs breadcrumbPathComponents
+    },
+    {
+      path: '/instructor/reviews/student/:studentId',
+      name: 'AssignmentStatus',
+      component: AssignmentStatus,
+      beforeEnter: authenticatedInstructorsOnly,
+      props: route => ({studentId: parseInt(route.params.studentId)})
+      // TODO needs breadcrumbPathComponents
+    },
+    {
+      path: '/instructor/reviews/student/:studentId/rubric/:rubricId',
+      name: 'AssignmentStatusForRubric',
+      component: AssignmentStatus,
+      beforeEnter: authenticatedInstructorsOnly,
+      props: route => ({
+        studentId: parseInt(route.params.studentId),
+        rubricId: parseInt(route.params.rubricId)
+      }),
+      children: [
+        {
+          path: 'review/:reviewId',
+          name: 'SingleReview',
+          component: Modal,
+          props: route => ({component: SingleReview, childProps: {reviewId: route.params.reviewId}})
+        }
+      ]
+      // TODO needs breadcrumbPathComponents
     },
     {
       path: '/student/dashboard',
@@ -69,6 +112,13 @@ const router = new Router({
           props: (route) => ({component: ReviewsReceived, childProps: route.params})
         }
       ]
+    },
+    {
+      name: 'PeerReview',
+      path: '/student/review/:reviewId',
+      component: PeerReview,
+      beforeEnter: authenticatedStudentsOnly,
+      props: route => ({reviewId: route.params.reviewId})
     }
   ]
 });

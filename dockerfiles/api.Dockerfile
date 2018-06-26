@@ -13,8 +13,5 @@ RUN apk --no-cache --virtual build-deps add --update build-base                 
     apk --no-cache del build-deps
 RUN pip --no-cache-dir install gunicorn
 
-# TODO remove the following once all views are ported to VueJS
-RUN python manage.py collectstatic --settings=mwrite_peer_review.settings.build --noinput
-
 EXPOSE 8000
 CMD scripts/start_api.bash

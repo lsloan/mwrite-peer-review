@@ -14,6 +14,7 @@
     "build": "node build/build.js"
   },
   "dependencies": {
+    "autosize": "^4.0.2",
     "axios": "^0.17.1",
     "moment": "^2.20.1",
     "ramda": "^0.25.0",
@@ -23,6 +24,7 @@
     "vue-mdl": "^1.1.1",
     "vue-router": "^3.0.1",
     "vue-router-multiguard": "^1.0.3",
+    "vuejs-datepicker": "^1.2.0",
     "vuex": "^3.0.1"
   },
   "devDependencies": {

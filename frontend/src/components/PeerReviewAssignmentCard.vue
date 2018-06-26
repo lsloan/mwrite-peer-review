@@ -60,12 +60,11 @@
             </div>
         </div>
 
-        <!-- TODO change these <a>s to <router-link>s when these views are ported to VueJS -->
         <div class="mdl-card__actions mdl-card--border">
-            <a :href="rubricActionUrl"
-               class="mdl-button mdl-button--colored mdl-js-button mdl-js-ripple-effect">
+            <router-link class="mdl-button mdl-button--colored mdl-js-button mdl-js-ripple-effect"
+                         :to="{name: 'Rubric', params: {peerReviewAssignmentId: this.peerReviewAssignmentId}}">
                 {{ rubricActionText }} Rubric
-            </a>
+            </router-link>
             <router-link v-if="reviewsInProgress"
                          class="mdl-button mdl-button--colored mdl-js-button mdl-js-ripple-effect"
                          :to="{name: 'ReviewStatus', params: {rubricId: this.rubricId}}">
@@ -77,7 +76,7 @@
 </template>
 
 <script>
-import {validationInfoAsIssues} from '../services/validation';
+import {validationInfoAsIssues} from '@/services/validation';
 import DateFormat from '@/mixins/date-format';
 
 export default {
@@ -96,14 +95,6 @@ export default {
   ],
   mixins: [DateFormat],
   computed: {
-    rubricActionUrl() {
-      // TODO remove __API_URL__ when these views are ported to VueJS
-      return __API_URL__ + '/course/' + this.courseId + '/rubric/assignment/' + this.peerReviewAssignmentId;
-    },
-    viewReviewsUrl() {
-      // TODO remove __API_URL__ when these views are ported to VueJS
-      return __API_URL__ + '/course/' + this.courseId + '/status/rubric/' + this.rubricId + '/all';
-    },
     rubricActionText() {
       return this.reviewsInProgress
         ? 'View'

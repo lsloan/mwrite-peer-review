@@ -68,21 +68,16 @@ INSTALLED_APPS = [
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
-    'whitenoise.runserver_nostatic',  # TODO should be removed once all views are ported to VueJS
-    'django.contrib.staticfiles',     # TODO should be removed once all views are ported to VueJS
     'django_extensions',
     'rolepermissions',
     'djangolti',
     'peer_review',
-    'health_check',                   # TODO do we even use this anymore?
-    'health_check.db',                # TODO do we even use this anymore?
     'corsheaders'
 ]
 
 MIDDLEWARE = [
     'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
-    'whitenoise.middleware.WhiteNoiseMiddleware',  # TODO should be removed once all views are ported to VueJS
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -133,9 +128,7 @@ TEMPLATES = [
                 'django.template.context_processors.debug',
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
-                'django.contrib.messages.context_processors.messages',
-                'peer_review.context_processors.google_analytics',      # TODO remove after views ported to Vue
-                'peer_review.context_processors.frontend_landing_url'   # TODO remove after views ported to Vue
+                'django.contrib.messages.context_processors.messages'
             ],
         },
     },
@@ -180,19 +173,6 @@ USE_L10N = True
 USE_TZ = True
 TIME_ZONE = os.environ['MPR_TIMEZONE']
 TIME_OUTPUT_FORMAT = '%b %-d %-I:%M %p'  # if running on Windows, replace - with #
-
-
-# Static files (CSS, JavaScript, Images)
-# https://docs.djangoproject.com/en/1.10/howto/static-files/
-
-# TODO should eventually turn off static file handling completely once views are ported to VueJS
-STATIC_URL = '/static/'
-if DEBUG:
-    STATIC_ROOT = os.path.join(BASE_DIR, '../../staticfiles')
-else:
-    STATIC_ROOT = os.path.join(BASE_DIR, '../staticfiles')  # TODO ugly dirty hack. clean up
-STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'  # TODO remove after views ported to Vue
-
 
 LOGGING = {
     'version': 1,

@@ -36,15 +36,12 @@
                                 <i class="material-icons evaluation-complete-icon">done</i>
                                 <span>Submitted</span>
                             </div>
-                            <!-- TODO replace with <router-link/> once review submission page is ported to Vue-->
-                            <!-- TODO use peer review ID instead of submission ID? -->
-                            <mdl-anchor-button
+                            <router-link
                                 v-else
-                                class="start-review-button"
-                                colored
-                                :href="apiUrl + '/course/'+ courseId + '/review/submission/' + review.submissionId">
+                                :to="{name: 'PeerReview', params: {reviewId: review.reviewId}}"
+                                class="start-review-button mdl-button mdl-js-button start-review-button mdl-button--colored">
                                 Start Review
-                            </mdl-anchor-button>
+                            </router-link>
                         </div>
                     </div>
                 </div>
@@ -65,11 +62,6 @@ export default {
     courseId() {
       return this.$store.state.userDetails.courseId;
     }
-  },
-  data() {
-    return {
-      apiUrl: __API_URL__ // TODO remove this when review submission page is ported to VueJS
-    };
   }
 };
 </script>
