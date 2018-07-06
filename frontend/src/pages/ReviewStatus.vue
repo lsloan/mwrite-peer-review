@@ -1,7 +1,7 @@
 <template>
     <filterable-table
         class="review-status-table"
-        :table-name="courseName"
+        :table-name="peerReviewTitle"
         :entries="reviews"
         :row-classes="rowClasses"
         :is-loading="!Boolean(data)"
@@ -112,8 +112,10 @@ export default {
     courseId() {
       return this.$store.state.userDetails.courseId;
     },
-    courseName() {
-      return this.$store.state.userDetails.courseName;
+    peerReviewTitle() {
+      return this.data
+        ? this.data.rubric.peerReviewTitle
+        : '';
     }
   },
   methods: {
