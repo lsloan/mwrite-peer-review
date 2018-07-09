@@ -48,8 +48,13 @@ const router = new Router({
       name: 'Rubric',
       component: Rubric,
       beforeEnter: authenticatedInstructorsOnly,
-      // TODO needs breadcrumbPathComponents
-      props: (route) => ({peerReviewAssignmentId: route.params.peerReviewAssignmentId})
+      props: (route) => ({peerReviewAssignmentId: route.params.peerReviewAssignmentId}),
+      meta: {
+        breadcrumbPathComponents: info => ([
+          {text: 'Peer Review', href: '/instructor/dashboard'},
+          {text: info['title'], href: `/instructor/rubric/peer_review_assignment/${info.peerReviewAssignmentId}`}
+        ])
+      }
     },
     {
       path: '/instructor/students',
@@ -64,16 +69,26 @@ const router = new Router({
       name: 'ReviewStatus',
       component: ReviewStatus,
       beforeEnter: authenticatedInstructorsOnly,
-      props: (route) => ({rubricId: route.params.rubricId})
-      // TODO needs breadcrumbPathComponents
+      props: (route) => ({rubricId: route.params.rubricId}),
+      meta: {
+        breadcrumbPathComponents: info => ([
+          {text: 'Peer Review', href: '/instructor/dashboard'},
+          {text: info['title'], href: `/instructor/reviews/rubric/${info.rubricId}`}
+        ])
+      }
     },
     {
       path: '/instructor/reviews/student/:studentId',
       name: 'AssignmentStatus',
       component: AssignmentStatus,
       beforeEnter: authenticatedInstructorsOnly,
-      props: route => ({studentId: parseInt(route.params.studentId)})
-      // TODO needs breadcrumbPathComponents
+      props: route => ({studentId: parseInt(route.params.studentId)}),
+      meta: {
+        breadcrumbPathComponents: info => ([
+          {text: 'Students', href: '/instructor/students'},
+          {text: info.studentName, href: `/instructor/reviews/student/${info.studentId}`}
+        ])
+      }
     },
     {
       path: '/instructor/reviews/student/:studentId/rubric/:rubricId',
@@ -91,8 +106,14 @@ const router = new Router({
           component: Modal,
           props: route => ({component: SingleReview, childProps: {reviewId: route.params.reviewId}})
         }
-      ]
-      // TODO needs breadcrumbPathComponents
+      ],
+      meta: {
+        breadcrumbPathComponents: info => ([
+          {text: 'Peer Review', href: '/instructor/dashboard'},
+          {text: info.peerReviewTitle, href: `/instructor/reviews/rubric/${info.rubricId}`},
+          {text: info.studentName, href: `/instructor/reviews/student/${info.studentId}/rubric/${info.rubricId}`}
+        ])
+      }
     },
     {
       path: '/student/dashboard',

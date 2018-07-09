@@ -1,11 +1,12 @@
 <template>
     <div class="breadcrumb">
-        <breadcrumb-entry
-            v-for="({text, href}, i) in pathComponents"
-            :key="i"
-            :text="text"
-            :href="href"
-            :is-last-entry="i >= pathComponents.length-1"/>
+        <template v-for="({eventKey, text, href}, i) in pathComponents">
+            <breadcrumb-entry
+                :key="i"
+                :text="text"
+                :href="href"
+                :is-last-entry="i >= pathComponents.length-1"/>
+        </template>
     </div>
 </template>
 

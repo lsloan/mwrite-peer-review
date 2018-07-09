@@ -54,6 +54,10 @@ export default {
       const {studentInfo: {fullName = ''} = {}} = this.data;
       return fullName;
     },
+    studentSortableName() {
+      const {studentInfo: {sortableName = ''} = {}} = this.data;
+      return sortableName;
+    },
     prompts() {
       const overviewEntry = {
         to: {
@@ -87,15 +91,27 @@ export default {
       return this.rubricId ? `${baseUrl}rubric/${this.rubricId}/` : baseUrl;
     }
   },
-  mounted() {
-    Promise.all([
-      this.$api.get('/course/{}/students/{}/', this.courseId, this.studentId),
-      this.$api.get('/course/{}/rubric/all/', this.courseId)
-    ]).then(([{data: studentInfo}, {data: rubrics}]) => {
+  methods: {
+    updateData([{data: studentInfo}, {data: rubrics}]) {
       this.data = {
         studentInfo: studentInfo,
         rubrics: rubrics
       };
+    },
+    updateBreadcrumb() {
+      this.$store.commit('updateBreadcrumbInfo', {
+        studentId: this.studentId,
+        studentName: this.studentSortableName
+      });
+    }
+  },
+  mounted() {
+    Promise.all([
+      this.$api.get('/course/{}/students/{}/', this.courseId, this.studentId),
+      this.$api.get('/course/{}/rubric/all/', this.courseId)
+    ]).then(data => {
+      this.updateData(data);
+      this.updateBreadcrumb();
     });
   }
 };

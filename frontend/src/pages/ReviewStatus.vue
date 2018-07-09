@@ -128,9 +128,16 @@ export default {
   },
   mounted() {
     this.pageLoadTime = moment().utc();
-    this.$api.get('/course/{}/reviews/rubric/{}', this.courseId, this.rubricId).then(r => {
-      this.data = r.data;
-    });
+    this.$api.get('/course/{}/reviews/rubric/{}', this.courseId, this.rubricId)
+      .then(r => {
+        this.data = r.data;
+      })
+      .then(() => {
+        this.$store.commit('updateBreadcrumbInfo', {
+          title: `${this.data.rubric.peerReviewTitle} Reviews`,
+          rubricId: this.data.rubric.id
+        });
+      });
   }
 };
 </script>

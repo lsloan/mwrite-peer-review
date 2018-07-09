@@ -8,11 +8,15 @@ Vue.use(Vuex);
 
 export default new Vuex.Store({
   state: {
-    userDetails: {}
+    userDetails: {},
+    breadcrumbInfo: {}
   },
   mutations: {
     userDetails(state, userDetails) {
       state.userDetails = userDetails;
+    },
+    updateBreadcrumbInfo(state, breadcrumbInfo) {
+      state.breadcrumbInfo = breadcrumbInfo;
     }
   },
   actions: {

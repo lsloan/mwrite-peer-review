@@ -94,10 +94,13 @@ export default {
     courseId() {
       return this.$store.state.userDetails.courseId;
     },
-    studentFirstName() {
+    studentSortableName() {
       const {student: {sortableName} = {}} = this.data;
-      return sortableName
-        ? sortableNameToFirstName(sortableName)
+      return sortableName;
+    },
+    studentFirstName() {
+      return this.studentSortableName
+        ? sortableNameToFirstName(this.studentSortableName)
         : '';
     },
     dueDate() {
@@ -127,6 +130,14 @@ export default {
     this.$api.get('/course/{}/rubric/{}/for-student/{}', this.courseId, this.rubricId, this.studentId)
       .then(r => {
         this.data = r.data;
+      })
+      .then(() => {
+        this.$store.commit('updateBreadcrumbInfo', {
+          rubricId: this.rubricId,
+          peerReviewTitle: `${this.data.rubric.peerReviewTitle} Reviews`,
+          studentId: this.studentId,
+          studentName: this.studentSortableName
+        });
       });
   }
 };

@@ -279,13 +279,15 @@ class ReviewStatus:
         except PeerReviewDistribution.DoesNotExist:
             pass
 
-        peer_review_due_date = rubric.passback_assignment.due_date_utc.strftime(API_DATE_FORMAT)
+        peer_review_assignment = rubric.passback_assignment
+        peer_review_due_date = peer_review_assignment.due_date_utc.strftime(API_DATE_FORMAT)
         data = {
             'student': {
                 'sortable_name': student.sortable_name,
                 'email': ReviewStatus._make_email(student)
             },
             'rubric': {
+                'peer_review_title': peer_review_assignment.title,
                 'reviews_were_assigned': reviews_were_assigned,
                 'peer_review_due_date': peer_review_due_date
             },

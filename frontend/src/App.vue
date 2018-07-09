@@ -6,48 +6,94 @@
                 <span class="mdl-layout__title">M-Write Peer Review</span>
                 <div class="mdl-layout-spacer"></div>
                 <nav v-if="userIsInstructor" class="mdl-navigation">
-                    <router-link class="mdl-navigation__link" to="/instructor/dashboard">
+                    <router-link
+                        :class="{'mdl-navigation__link': true, 'is-active': navTreeHead === 'Peer Review'}"
+                        to="/instructor/dashboard">
                         Peer Review
                     </router-link>
-                    <router-link class="mdl-navigation__link" to="/instructor/students">
+                    <router-link
+                        :class="{'mdl-navigation__link': true, 'is-active': navTreeHead === 'Students'}"
+                        to="/instructor/students">
                         Students
                     </router-link>
                 </nav>
               </div>
         </header>
-        <main class="mdl-layout__content">
+        <header>
             <breadcrumb
-                v-if="userIsInstructor && breadcrumbPathComponents"
-                :path-components="breadcrumbPathComponents"/>
+                v-if="showBreadcrumb"
+                :path-components="resolvedBreadcrumbPathComponents"/>
+        </header>
+        <main class="mdl-layout__content">
             <router-view/>
         </main>
     </div>
 </template>
 
 <script>
+import * as R from 'ramda';
+
 import Breadcrumb from '@/components/Breadcrumb';
+
+const routeIsForModal = r => R.find(
+  ro => {
+    let {name = ''} = ro.components.default;
+    return name.toLowerCase() === 'modal';
+  },
+  r.matched
+);
 
 export default {
   name: 'App',
   components: {Breadcrumb},
   computed: {
     breadcrumbPathComponents() {
-      // TODO Eventually we'll need to pull data from parameterized routes as well.
-      // A lot of that logic will probably be best orchestrated here.  This will
-      // also probably need to interact with Vuex as well (e.g. if the user navigates
-      // to /instructor/students/1234 we'll need to know the full / sortable name of
-      // the student with ID 1234 so that we can put it in the breadcrumb).  I'm sort
-      // of envisioning a system whereby we add to the Route object's meta key a
-      // function that takes $route.params and the Vuex store as parameters and returns
-      // a {text: ..., href: ...} object like the others.
-      // This also might end up as a much more flexible / resilient system if we set up
-      // some sort of "meta hierarchy" and then walk the route path.  Undoubtedly slower,
-      // but it would almost let the breadcrumb derive itself.
-      return this.$route.meta.breadcrumbPathComponents;
+      const lens = R.lensPath(['meta', 'breadcrumbPathComponents']);
+      const route = R.findLast(R.view(lens), this.$route.matched);
+      if(route) {
+        const {meta: {breadcrumbPathComponents} = {}} = route;
+        return breadcrumbPathComponents;
+      }
+    },
+    breadcrumbInfo() {
+      return this.$store.state.breadcrumbInfo;
+    },
+    breadcrumbIsDynamic() {
+      return typeof this.breadcrumbPathComponents === 'function';
+    },
+    resolvedBreadcrumbPathComponents() {
+      if(this.breadcrumbIsDynamic) {
+        if(this.breadcrumbInfo) {
+          return this.breadcrumbPathComponents(this.breadcrumbInfo);
+        }
+        else {
+          return [];
+        }
+      }
+      else {
+        return this.breadcrumbPathComponents;
+      }
+    },
+    navTreeHead() {
+      if(this.resolvedBreadcrumbPathComponents) {
+        const [{text = ''} = {}] = this.resolvedBreadcrumbPathComponents;
+        console.log('nav tree head =', text);
+        return text;
+      }
     },
     userIsInstructor() {
       const {roles} = this.$store.state.userDetails;
       return roles ? roles.includes('instructor') : false;
+    },
+    showBreadcrumb() {
+      return this.userIsInstructor && this.breadcrumbPathComponents;
+    }
+  },
+  watch: {
+    $route(to, from) {
+      if(!routeIsForModal(from) && !routeIsForModal(to)) {
+        this.$store.commit('updateBreadcrumbInfo', null);
+      }
     }
   }
 };
@@ -56,6 +102,11 @@ export default {
 <style>
     .mdl-navigation__link {
         text-transform: uppercase;
+    }
+
+    .mdl-navigation__link.is-active {
+        /* TODO MDL's slide-in bottom border would be great, but is suprisingly complicated. later */
+        border-bottom: 4px solid #c9ffff;
     }
 
     .mdl-layout__header-row {
