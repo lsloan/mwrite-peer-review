@@ -9,11 +9,11 @@
             <h1>Submit Your Review</h1>
         </peer-review-section>
         <peer-review-section>
-            <p>{{ rubricDescription }}</p>
+            <p class="preserve-whitespace">{{ rubricDescription }}</p>
         </peer-review-section>
         <form @submit.prevent>
             <peer-review-section v-for="criterion in criteria" :key="criterion.id">
-                <p>{{ criterion.description }}</p>
+                <p class="preserve-whitespace" >{{ criterion.description }}</p>
                 <autosize-textarea
                     class="criterion-input"
                     label="Your comment goes here..."
@@ -133,5 +133,9 @@ export default {
 
     .criterion-input {
         width: 100%;
+    }
+
+    .preserve-whitespace {
+        white-space: pre;
     }
 </style>
