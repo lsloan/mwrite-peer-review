@@ -502,7 +502,9 @@ class RubricForm:
                     {'id': c.id, 'description': c.description}
                     for c in existing_rubric.criteria.all()
                 ],
-                'review_in_progress': review_is_in_progress
+                'review_in_progress': review_is_in_progress,
+                'peer_review_evaluation_is_mandatory': False,
+                'peer_review_evaluation_due_date': None,
             }
         else:
             rubric_data = None

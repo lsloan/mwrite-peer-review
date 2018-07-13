@@ -122,6 +122,65 @@
             <div class="mdl-cell mdl-cell--1-col mdl-cell--1-col-tablet mdl-cell-1-col-phone"></div>
         </div>
 
+        <!-- Evaluation for peer review -->
+        <div class="mdl-grid">
+            <div class="mdl-cell mdl-cell--1-col mdl-cell--1-col-tablet mdl-cell-1-col-phone"></div>
+            <mdl-card
+                    class="mdl-card mdl-shadow--2dp mdl-cell mdl-cell--10-col mdl-cell--6-col-tablet mdl-cell-2-col-phone"
+                    title="Peer Review Evaluation"
+                    supporting-text="slot">
+                <div slot="supporting-text">
+                    <div class="mdl-card__supporting-text">
+                        <mdl-switch v-model="models.peerReviewEvaluationIsMandatory" :disabled="reviewIsInProgress">
+                            Mandatory
+                        </mdl-switch>
+                    </div>
+                    <div v-if="models.peerReviewEvaluationIsMandatory" class="mdl-card__supporting-text datetime-container">
+                        <p>Enter a due date:</p>
+                        <div>
+                            <datepicker
+                                    format="MMM d yyyy"
+                                    placeholder="Day"
+                                    :disabled-dates="{}"
+                                    :disabled="reviewIsInProgress"
+                                    v-model="models.peerReviewEvaluationDueDay">
+                            </datepicker>
+                        </div>
+                        <div>
+                            <mdl-select
+                                    id="peer-review-open-hour-select"
+                                    label="Hour"
+                                    v-model="models.peerReviewEvaluationDueHour"
+                                    :disabled="reviewIsInProgress"
+                                    :options="peerReviewOpenHourChoices">
+                            </mdl-select>
+                        </div>
+                        <div>
+                            <mdl-select
+                                    id="peer-review-open-minute-select"
+                                    label="Minute"
+                                    v-model="models.peerReviewEvaluationDueMinute"
+                                    :disabled="reviewIsInProgress"
+                                    :options="peerReviewOpenMinuteChoices">
+                            </mdl-select>
+                        </div>
+                        <div>
+                            <mdl-select
+                                    id="peer-review-open-ampm-select"
+                                    label="AM / PM"
+                                    v-model="models.peerReviewEvaluationDueMeridian"
+                                    :disabled="reviewIsInProgress"
+                                    :options="peerReviewOpenAMPMChoices">
+                            </mdl-select>
+                        </div>
+
+                    </div>
+                </div>
+            </mdl-card>
+
+            <div class="mdl-cell mdl-cell--1-col mdl-cell--1-col-tablet mdl-cell-1-col-phone"></div>
+        </div>
+
         <template v-if="!(reviewIsInProgress && !models.selectedRevision.value)">
             <div class="mdl-grid">
                 <div class="mdl-cell mdl-cell--1-col mdl-cell--1-col-tablet mdl-cell-1-col-phone"></div>
@@ -285,7 +344,14 @@ export default {
         peerReviewOpenMeridian: null,
         peerReviewOpenDateIsPromptDueDate: true,
         selectedPrompt: null,
-        selectedRevision: NO_REVISION_OPTION
+        selectedRevision: NO_REVISION_OPTION,
+
+        // date picker for peer review evaluation
+        peerReviewEvaluationDueDay: null,
+        peerReviewEvaluationDueHour: null,
+        peerReviewEvaluationDueMinute: null,
+        peerReviewEvaluationDueMeridian: null,
+        peerReviewEvaluationIsMandatory: false
       },
       submissionInProgress: false,
       peerReviewOpenHourChoices: R.range(1, 13).map(i => i.toString()),
