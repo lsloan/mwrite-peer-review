@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 
 MPR_BACKUP_PREFIX="${MPR_BACKUP_PREFIX:-/srv/mwrite-peer-review/backups}"
-MPR_DB_CONFIG_FILE="${MPR_DB_CONFIG_FILE:-/etc/mwrite-peer-review/database.json}"
-MPR_SUBMISSIONS_PATH="${MPR_SUBMISSIONS_PATH:-/srv/mwrite-peer-review/submissions}"
+MPR_BACKUP_DB_CONFIG_FILE="${MPR_BACKUP_DB_CONFIG_FILE:-/etc/mwrite-peer-review/database.json}"
+MPR_BACKUP_SUBMISSIONS_PATH="${MPR_BACKUP_SUBMISSIONS_PATH:-/srv/mwrite-peer-review/submissions}"
 MPR_BACKUP_S3_BUCKET="${MPR_BACKUP_S3_BUCKET:-mwrite-peer-review-backup}"
 MYSQLDUMP_OPTIONS="${MYSQLDUMP_OPTIONS}"
 
@@ -15,8 +15,8 @@ MYSQL_PASSWORD_FILE="${HOME}/.my.cnf"
 create_mysql_password_file() {
     if [ ! -e "${MYSQL_PASSWORD_FILE}" ]
     then
-        local db_user=$(jq -r .USER "${MPR_DB_CONFIG_FILE}")
-        local db_password=$(jq -r .PASSWORD "${MPR_DB_CONFIG_FILE}")
+        local db_user=$(jq -r .USER "${MPR_BACKUP_DB_CONFIG_FILE}")
+        local db_password=$(jq -r .PASSWORD "${MPR_BACKUP_DB_CONFIG_FILE}")
 
         echo '[mysqldump]'              >> "${MYSQL_PASSWORD_FILE}"
         echo "user=${db_user}"          >> "${MYSQL_PASSWORD_FILE}"
@@ -29,9 +29,9 @@ create_backup_directories() {
 }
 
 create_database_backup() {
-    local db_name=$(jq -r .NAME "${MPR_DB_CONFIG_FILE}")
-    local db_host=$(jq -r .HOST "${MPR_DB_CONFIG_FILE}")
-    local db_port=$(jq -r .PORT "${MPR_DB_CONFIG_FILE}")
+    local db_name=$(jq -r .NAME "${MPR_BACKUP_DB_CONFIG_FILE}")
+    local db_host=$(jq -r .HOST "${MPR_BACKUP_DB_CONFIG_FILE}")
+    local db_port=$(jq -r .PORT "${MPR_BACKUP_DB_CONFIG_FILE}")
 
     db_backup_name=mwrite_db_backup_"${datestamp}"
     db_backup_file="${MPR_BACKUP_PREFIX}"/db/"${db_backup_name}".sql
@@ -47,8 +47,8 @@ create_submissions_backup() {
 
     # FIXME what if that ${submission_backup_file} already exists?
     # FIXME check error code
-    cd "$(dirname ${MPR_SUBMISSIONS_PATH})"
-    tar czf "${submission_backup_file}" "$(basename ${MPR_SUBMISSIONS_PATH})" || exit 1
+    cd "$(dirname ${MPR_BACKUP_SUBMISSIONS_PATH})"
+    tar czf "${submission_backup_file}" "$(basename ${MPR_BACKUP_SUBMISSIONS_PATH})" || exit 1
     cd "${OLDPWD}"
 }
 
