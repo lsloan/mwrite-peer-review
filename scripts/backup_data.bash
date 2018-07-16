@@ -38,7 +38,7 @@ create_database_backup() {
 
     # FIXME what if that ${db_name} already exists?
     # FIXME check error code
-    mysqldump ${MYSQLDUMP_OPTIONS} -h "${db_host}" -P "${db_port}" "${db_name}" > "${db_backup_file}"
+    mysqldump ${MYSQLDUMP_OPTIONS} -h "${db_host}" -P "${db_port}" "${db_name}" > "${db_backup_file}" || exit 1
 }
 
 create_submissions_backup() {
@@ -48,13 +48,13 @@ create_submissions_backup() {
     # FIXME what if that ${submission_backup_file} already exists?
     # FIXME check error code
     cd "$(dirname ${MPR_SUBMISSIONS_PATH})"
-    tar czf "${submission_backup_file}" "$(basename ${MPR_SUBMISSIONS_PATH})"
+    tar czf "${submission_backup_file}" "$(basename ${MPR_SUBMISSIONS_PATH})" || exit 1
     cd "${OLDPWD}"
 }
 
 upload_backups_to_s3() {
-    aws s3 mv "${db_backup_file}" s3://"${MPR_BACKUP_S3_BUCKET}"/"$(basename ${db_backup_file})"
-    aws s3 mv "${submission_backup_file}" s3://"${MPR_BACKUP_S3_BUCKET}"/"$(basename ${submission_backup_file})"
+    aws s3 mv "${db_backup_file}" s3://"${MPR_BACKUP_S3_BUCKET}"/"$(basename ${db_backup_file})" || exit 1
+    aws s3 mv "${submission_backup_file}" s3://"${MPR_BACKUP_S3_BUCKET}"/"$(basename ${submission_backup_file})" || exit 1
 }
 
 main() {
