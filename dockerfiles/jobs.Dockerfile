@@ -13,8 +13,11 @@ RUN apk --no-cache --virtual build-deps add --update build-base                 
     apk --no-cache del build-deps
 
 COPY scripts/distribute_reviews.bash /etc/periodic/15min
+COPY scripts/backup_data.bash /etc/periodic/daily
 RUN chmod 0500 /etc/periodic/15min/distribute_reviews.bash
+RUN chmod 0500 /etc/periodic/daily/backup_data.bash
 RUN mv /etc/periodic/15min/distribute_reviews.bash /etc/periodic/15min/distribute_reviews   # otherwise run-parts refuses to run this
+RUN mv /etc/periodic/daily/backup_data.bash /etc/periodic/daily/backup_data                 # otherwise run-parts refuses to run this
 
 RUN mkdir /root/.aws && ln -s /etc/mwrite-peer-review/aws_credentials /root/.aws/credentials
 
