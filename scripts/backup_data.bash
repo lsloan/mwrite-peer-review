@@ -3,13 +3,21 @@
 MPR_BACKUP_PREFIX="${MPR_BACKUP_PREFIX:-/srv/mwrite-peer-review/backups}"
 MPR_BACKUP_DB_CONFIG_FILE="${MPR_BACKUP_DB_CONFIG_FILE:-/etc/mwrite-peer-review/database.json}"
 MPR_BACKUP_SUBMISSIONS_PATH="${MPR_BACKUP_SUBMISSIONS_PATH:-/srv/mwrite-peer-review/submissions}"
-MPR_BACKUP_S3_BUCKET="${MPR_BACKUP_S3_BUCKET:-mwrite-peer-review-backup}"
+MPR_BACKUP_S3_BUCKET="${MPR_BACKUP_S3_BUCKET}"
 MYSQLDUMP_OPTIONS="${MYSQLDUMP_OPTIONS}"
 
 MYSQL_PASSWORD_FILE="${HOME}/.my.cnf"
 
 # TODO currently this writes .tar.gz and .sql files to a temp directory, then 'aws s3 mv'es them to s3. this could also
 # TODO be implemented to just pipe directly to 'aws s3 mv' and thus skip the temp step.  is this wise / robust?
+
+check_parameters() {
+    if [ -z "${MPR_BACKUP_S3_BUCKET}" ]
+    then
+        echo "MPR_BACKUP_S3_BUCKET not set; aborting."
+        exit 1
+    fi
+}
 
 create_mysql_password_file() {
     if [ ! -e "${MYSQL_PASSWORD_FILE}" ]
@@ -62,6 +70,7 @@ cleanup_local_backups() {
 }
 
 main() {
+    check_parameters
     datestamp=$(date +"%m%d%y")
     create_backup_directories
     create_mysql_password_file
