@@ -141,6 +141,12 @@ These should be created in roughly the following order:
           "PORT": "3306"
         }
         ```
+    * `aws_credentials`
+        ```text
+        [default]
+        aws_access_key_id=<...redacted...>
+        aws_secret_access_key=<...redacted...>
+        ```
 2. Create the persistent volume claim for submission file storage:
     ```bash
     $ oc create -f pvc.yaml
