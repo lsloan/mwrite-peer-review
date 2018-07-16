@@ -38,7 +38,7 @@ create_database_backup() {
 
     # FIXME what if that ${db_name} already exists?
     # FIXME check error code
-    mysqldump "${MYSQLDUMP_OPTIONS}" --databases "${db_name}" -h "${db_host}" -P "${db_port}" > "${db_backup_file}"
+    mysqldump ${MYSQLDUMP_OPTIONS} -h "${db_host}" -P "${db_port}" "${db_name}" > "${db_backup_file}"
 }
 
 create_submissions_backup() {
