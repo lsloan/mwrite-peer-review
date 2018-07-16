@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-MPR_BACKUP_PREFIX="${MPR_BACKUP_PREFIX:-/tmp/backups}"
+MPR_BACKUP_PREFIX="${MPR_BACKUP_PREFIX:-/srv/mwrite-peer-review/backups}"
 MPR_DB_CONFIG_FILE="${MPR_DB_CONFIG_FILE:-/etc/mwrite-peer-review/database.json}"
 MPR_SUBMISSIONS_PATH="${MPR_SUBMISSIONS_PATH:-/srv/mwrite-peer-review/submissions}"
 MPR_BACKUP_S3_BUCKET="${MPR_BACKUP_S3_BUCKET:-mwrite-peer-review-backup}"
@@ -57,6 +57,14 @@ upload_backups_to_s3() {
     aws s3 mv "${submission_backup_file}" s3://"${MPR_BACKUP_S3_BUCKET}"/"$(basename ${submission_backup_file})" || exit 1
 }
 
+cleanup_local_backups() {
+    rm "${MPR_BACKUP_PREFIX}"/db/*
+    rmdir "${MPR_BACKUP_PREFIX}"/db
+    rm "${MPR_BACKUP_PREFIX}"/submissions/*
+    rmdir "${MPR_BACKUP_PREFIX}"/submissions
+    rmdir "${MPR_BACKUP_PREFIX}"
+}
+
 main() {
     datestamp=$(date +"%m%d%y")
     create_backup_directories
@@ -64,6 +72,7 @@ main() {
     create_database_backup
     create_submissions_backup
     upload_backups_to_s3
+    cleanup_local_backups
 }
 
 main
