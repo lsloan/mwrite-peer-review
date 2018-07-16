@@ -8,9 +8,8 @@ MYSQLDUMP_OPTIONS="${MYSQLDUMP_OPTIONS}"
 
 MYSQL_PASSWORD_FILE="${HOME}/.my.cnf"
 
-# TODO currently this writes .tar.gz and .sql files to a temp directory, then 'aws s3 mv'es them to
-# TODO s3.  this could also be implemented to just pipe directly to 'aws s3 mv' and thus skip
-# TODO the temp step.  is this wise / robust?
+# TODO currently this writes .tar.gz and .sql files to a temp directory, then 'aws s3 mv'es them to s3. this could also
+# TODO be implemented to just pipe directly to 'aws s3 mv' and thus skip the temp step.  is this wise / robust?
 
 create_mysql_password_file() {
     if [ ! -e "${MYSQL_PASSWORD_FILE}" ]
@@ -36,8 +35,6 @@ create_database_backup() {
     db_backup_name=mwrite_db_backup_"${datestamp}"
     db_backup_file="${MPR_BACKUP_PREFIX}"/db/"${db_backup_name}".sql
 
-    # FIXME what if that ${db_name} already exists?
-    # FIXME check error code
     mysqldump ${MYSQLDUMP_OPTIONS} -h "${db_host}" -P "${db_port}" "${db_name}" > "${db_backup_file}" || exit 1
 }
 
@@ -45,8 +42,6 @@ create_submissions_backup() {
     submission_backup_name=mwrite_submissions_backup_"${datestamp}"
     submission_backup_file="${MPR_BACKUP_PREFIX}"/submissions/"${submission_backup_name}".tar.gz
 
-    # FIXME what if that ${submission_backup_file} already exists?
-    # FIXME check error code
     cd "$(dirname ${MPR_BACKUP_SUBMISSIONS_PATH})"
     tar czf "${submission_backup_file}" "$(basename ${MPR_BACKUP_SUBMISSIONS_PATH})" || exit 1
     cd "${OLDPWD}"
@@ -58,6 +53,7 @@ upload_backups_to_s3() {
 }
 
 cleanup_local_backups() {
+    # aws s3 mv actually takes care of this, but I'll leave this here for now just in case we change to aws s3 cp
     rm "${MPR_BACKUP_PREFIX}"/db/*
     rmdir "${MPR_BACKUP_PREFIX}"/db
     rm "${MPR_BACKUP_PREFIX}"/submissions/*
