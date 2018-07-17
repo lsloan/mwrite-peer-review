@@ -69,6 +69,8 @@ spec:
           value: <...redacted...>
         - name: MPR_SERVER_TO_EMAILS
           value: <...redacted...>
+        - name: MPR_BACKUP_S3_BUCKET
+          value: <...redacted...>
         imagePullPolicy: Always
         name: mwrite-peer-review-dev-jobs
         ports:

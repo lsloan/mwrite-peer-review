@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+source /etc/environment
+
 MPR_BACKUP_PREFIX="${MPR_BACKUP_PREFIX:-/srv/mwrite-peer-review/backups}"
 MPR_BACKUP_DB_CONFIG_FILE="${MPR_BACKUP_DB_CONFIG_FILE:-/etc/mwrite-peer-review/database.json}"
 MPR_BACKUP_SUBMISSIONS_PATH="${MPR_BACKUP_SUBMISSIONS_PATH:-/srv/mwrite-peer-review/submissions}"
