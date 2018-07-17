@@ -74,12 +74,18 @@ cleanup_local_backups() {
 main() {
     check_parameters
     datestamp=$(date +"%m%d%y")
+
+    loggable_date=$(date)
+    echo "Starting M-Write Peer Review backup for ${loggable_date}"
+
     create_backup_directories
     create_mysql_password_file
     create_database_backup
     create_submissions_backup
     upload_backups_to_s3
     cleanup_local_backups
+
+    echo "Finished M-Write Peer Review backup for ${loggable_date}"
 }
 
 main
