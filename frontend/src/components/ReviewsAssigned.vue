@@ -83,7 +83,7 @@ export default {
         flex-direction: row;
         align-items: center;
         padding: 0 20px;
-        background-color: #4183C9;
+        background-color: #3f51b5;
         color: white;
         flex: 0 0 64px;
     }
