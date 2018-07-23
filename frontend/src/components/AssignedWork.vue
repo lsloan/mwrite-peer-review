@@ -57,14 +57,14 @@ import { sortBy } from 'ramda';
 import {byDateAscending} from '@/services/util';
 import DateFormat from '@/mixins/date-format';
 
-const sortReviews = prompt => {
+const sortAndLabelReviews = prompt => {
   const sortedReviews = sortBy(r => r.reviewId, prompt.reviews);
-  return Object.assign({}, prompt, {reviews: sortedReviews});
+  return Object.assign({type: 'review'}, prompt, {reviews: sortedReviews});
 };
 
-const sortEvaluations = evaluation => {
+const sortAndLabelEvaluations = evaluation => {
   const sortedEvaluations = sortBy(r => r.studentId, evaluation.entries);
-  return Object.assign({}, evaluation, {entries: sortedEvaluations});
+  return Object.assign({type: 'evaluation'}, evaluation, {entries: sortedEvaluations});
 };
 
 export default {
@@ -73,10 +73,10 @@ export default {
   mixins: [DateFormat],
   computed: {
     sortedPrompts() {
-      return this.prompts.map(sortReviews);
+      return this.prompts.map(sortAndLabelReviews);
     },
     sortedEvaluations() {
-      return this.evaluations.map(sortEvaluations);
+      return this.evaluations.map(sortAndLabelEvaluations);
     },
     entries() {
       const entries = this.sortedPrompts.concat(this.sortedEvaluations);
