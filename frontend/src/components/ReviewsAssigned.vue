@@ -135,7 +135,7 @@ export default {
         flex-direction: row;
         align-items: center;
         text-transform: uppercase;
-        color: #52A763;
+        color: #2F8540;
         padding: 9px 0;
     }
 
