@@ -28,7 +28,7 @@
                 </mdl-button>
             </peer-review-section>
         </form>
-        <mdl-snackbar display-on="notification"/>
+        <snackbar display-on="notification"/>
     </div>
 </template>
 
@@ -37,15 +37,16 @@ import * as R from 'ramda';
 import {MdlButton, MdlAnchorButton} from 'vue-mdl';
 
 import api from '@/services/api';
+import Snackbar from '@/components/Snackbar';
 import PeerReviewSection from '@/components/PeerReviewSection';
 import AutosizeTextarea from '@/components/AutosizeTextarea';
 
-const NOTIFICATION_TIMEOUT_MS = 5000;
+const NOTIFICATION_TIMEOUT_MS = 7500;
 
 export default {
   name: 'PeerReview',
   props: ['review-id'],
-  components: {PeerReviewSection, AutosizeTextarea, MdlButton, MdlAnchorButton},
+  components: {PeerReviewSection, AutosizeTextarea, Snackbar, MdlButton, MdlAnchorButton},
   data() {
     return {
       data: {},
