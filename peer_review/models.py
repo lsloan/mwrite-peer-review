@@ -148,6 +148,12 @@ class PeerReview(models.Model):
     #     rubric = self.submission.assignment.rubric_for_prompt
     #     return rubric.peer_review_evaluation_is_mandatory
 
+    # TODO blocked on #278
+    # @property
+    # def evaluation_due_date_utc(self):
+    #     rubric = self.submission.assignment.rubric_for_prompt
+    #     return rubric.peer_review_evaluation_due_date_utc
+
     class Meta:
         db_table = 'peer_reviews'
         unique_together = (('student', 'submission'),)
