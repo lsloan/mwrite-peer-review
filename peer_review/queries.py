@@ -551,7 +551,12 @@ class Evaluations:
             student_numbers = {pr_id: i for i, pr_id in enumerate(peer_review_ids, start=1)}
 
             title = reviews_for_rubric[0].submission.assignment.title
-            entry = {'title': title, 'entries': []}
+
+            # TODO blocked on #278; remove everything but the first line once that's done
+            # due_date_utc = reviews_for_rubric[0].evaluation_due_date_utc
+            due_date_utc = '2018-10-08 23:41:54Z'
+
+            entry = {'title': title, 'due_date_utc': due_date_utc, 'entries': []}
 
             for r in reviews_for_rubric:
                 student_id = student_numbers[r.id]
