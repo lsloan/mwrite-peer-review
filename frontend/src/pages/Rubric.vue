@@ -229,7 +229,7 @@
             <div class="mdl-grid">
                 <div class="mdl-cell mdl-cell--1-col mdl-cell--1-col-tablet mdl-cell-1-col-phone"></div>
                 <div class="mdl-cell mdl-cell--10-col mdl-cell--6-col-tablet mdl-cell-2-col-phone">
-                    <mdl-snackbar display-on="notification"></mdl-snackbar>
+                    <snackbar display-on="notification"/>
                 </div>
                 <div class="mdl-cell mdl-cell--1-col mdl-cell--1-col-tablet mdl-cell-1-col-phone"></div>
             </div>
@@ -241,8 +241,9 @@
 import * as R from 'ramda';
 import moment from 'moment';
 import Datepicker from 'vuejs-datepicker';
-import {MdlCard, MdlSwitch, MdlSelect, MdlSnackbar} from 'vue-mdl';
+import {MdlCard, MdlSwitch, MdlSelect} from 'vue-mdl';
 
+import Snackbar from '@/components/Snackbar';
 import Dropdown from '@/components/Dropdown';
 import AutosizeTextarea from '@/components/AutosizeTextarea';
 
@@ -268,7 +269,7 @@ const NO_REVISION_OPTION = {value: null, name: 'No revision'};
 const DISPLAY_DATE_FORMAT = 'MMM D YYYY h:mm A';
 
 export default {
-  components: {Dropdown, Datepicker, AutosizeTextarea, MdlCard, MdlSwitch, MdlSelect, MdlSnackbar},
+  components: {Dropdown, Datepicker, AutosizeTextarea, Snackbar, MdlCard, MdlSwitch, MdlSelect},
   props: ['peer-review-assignment-id'],
   data() {
     return {
