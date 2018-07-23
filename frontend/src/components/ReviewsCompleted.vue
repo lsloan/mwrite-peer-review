@@ -14,7 +14,7 @@
                 <!-- TODO need a case for no completed reviews -->
                 <div class="mdl-grid">
                     <!-- TODO maybe use rubric ID? more semantically relevant-->
-                    <div v-for="review in reviews" :key="review.rubricId"
+                    <div v-for="review in sortedReviews" :key="review.rubricId"
                          class="mdl-card mdl-shadow--2dp mdl-cell mdl-cell--6-col mdl-cell--8-col-tablet mdl-cell--4-col-phone">
                         <div class="mdl-card__title">
                             <h2 class="">{{ review.promptName }}</h2>
@@ -72,6 +72,8 @@
 
 <script>
 import { MdlAnchorButton } from 'vue-mdl';
+
+import {byDateAscending} from '@/services/util';
 import DateFormat from '@/mixins/date-format';
 
 export default {
@@ -81,6 +83,9 @@ export default {
     MdlAnchorButton
   },
   computed: {
+    sortedReviews() {
+      return this.reviews.concat().sort(byDateAscending);
+    },
     studentId() {
       return this.$store.state.userDetails.userId;
     }

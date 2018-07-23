@@ -52,13 +52,36 @@
 </template>
 
 <script>
+import { sortBy } from 'ramda';
+
+import {byDateAscending} from '@/services/util';
 import DateFormat from '@/mixins/date-format';
+
+const sortReviews = prompt => {
+  const sortedReviews = sortBy(r => r.reviewId, prompt.reviews);
+  return Object.assign({}, prompt, {reviews: sortedReviews});
+};
+
+const sortEvaluations = evaluation => {
+  const sortedEvaluations = sortBy(r => r.studentId, evaluation.entries);
+  return Object.assign({}, evaluation, {entries: sortedEvaluations});
+};
 
 export default {
   name: 'AssignedWork',
-  props: ['prompts'],
+  props: ['prompts', 'evaluations'],
   mixins: [DateFormat],
   computed: {
+    sortedPrompts() {
+      return this.prompts.map(sortReviews);
+    },
+    sortedEvaluations() {
+      return this.evaluations.map(sortEvaluations);
+    },
+    entries() {
+      const entries = this.sortedPrompts.concat(this.sortedEvaluations);
+      return entries.sort(byDateAscending);
+    },
     courseId() {
       return this.$store.state.userDetails.courseId;
     }
