@@ -142,6 +142,12 @@ class PeerReview(models.Model):
     submission = models.ForeignKey(CanvasSubmission, on_delete=models.DO_NOTHING,
                                    related_name='peer_reviews_for_submission')
 
+    # TODO blocked on #278
+    # @property
+    # def evaluation_is_mandatory(self):
+    #     rubric = self.submission.assignment.rubric_for_prompt
+    #     return rubric.peer_review_evaluation_is_mandatory
+
     class Meta:
         db_table = 'peer_reviews'
         unique_together = (('student', 'submission'),)
