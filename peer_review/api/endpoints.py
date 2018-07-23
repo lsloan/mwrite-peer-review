@@ -25,7 +25,7 @@ from peer_review.decorators import authorized_endpoint, authorized_json_endpoint
 from peer_review.models import CanvasCourse, CanvasStudent, CanvasAssignment, CanvasSubmission, \
     Rubric, Criterion, PeerReview, PeerReviewComment, PeerReviewEvaluation, PeerReviewDistribution
 from peer_review.queries import InstructorDashboardStatus, StudentDashboardStatus, ReviewStatus, \
-    RubricForm, Comments
+    RubricForm, Comments, Evaluations
 
 
 LOGGER = logging.getLogger(__name__)
@@ -140,6 +140,7 @@ def reviews_given(request, course_id, student_id, rubric_id):
     return _denormalize_reviews_given(reviews)
 
 
+# TODO move to queries module
 def _denormalize_reviews_received(reviews):
     peer_review_ids = [r.id for r in reviews]
     student_numbers = {pr_id: i for i, pr_id in enumerate(peer_review_ids)}
@@ -187,6 +188,11 @@ def reviews_received(request, course_id, student_id, rubric_id):
         'title': prompt_title,
         'entries': entries
     }
+
+
+@authorized_json_endpoint(roles=['student'])
+def mandatory_peer_review_evaluations(request, course_id, student_id):
+    return Evaluations.pending_mandatory_evaluations(course_id, student_id)
 
 
 @require_POST
