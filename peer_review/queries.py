@@ -8,7 +8,8 @@ from django.db.models import BooleanField, Subquery, OuterRef, Count, Case, When
 
 from peer_review.util import some, fetchall_dicts
 from peer_review.models import PeerReview, Criterion, PeerReviewComment, Rubric, \
-    PeerReviewDistribution, CanvasCourse, CanvasStudent, CanvasAssignment, CanvasSubmission
+    PeerReviewDistribution, CanvasCourse, CanvasStudent, CanvasAssignment, CanvasSubmission, \
+    PeerReviewEvaluation
 
 # TODO move to settings
 API_DATE_FORMAT = '%Y-%m-%d %H:%M:%SZ'
@@ -377,7 +378,7 @@ class ReviewStatus:
             })
 
         return reviews
-            
+
     # TODO refactor to push load onto the DB
     # this method was pulled out of peer_review.views.core.AssignmentStatus
     @staticmethod
@@ -536,3 +537,58 @@ class Comments:
         comments_received = PeerReviewComment.objects.filter(**comments_received_args)
 
         return chain(comments_given, comments_received)
+
+
+class Evaluations:
+    @staticmethod
+    def _denormalize_mandatory_evaluations(reviews):
+
+        reviews_by_rubric = groupby(lambda r: r.submission.assignment.rubric_for_prompt.id, reviews)
+
+        rubric_entries = []
+        for _, reviews_for_rubric in reviews_by_rubric.items():
+            peer_review_ids = sorted(r.id for r in reviews_for_rubric)
+            student_numbers = {pr_id: i for i, pr_id in enumerate(peer_review_ids, start=1)}
+
+            title = reviews_for_rubric[0].submission.assignment.title
+            entry = {'title': title, 'entries': []}
+
+            for r in reviews_for_rubric:
+                student_id = student_numbers[r.id]
+                ready_for_evaluation = r.comments.exists()
+
+                evaluation_is_complete = False
+                try:
+                    if r.evaluation:
+                        evaluation_is_complete = True
+                except PeerReviewEvaluation.DoesNotExist:
+                    pass
+
+                sub_entry = {
+                    'id': r.id,
+                    'student_id': student_id,
+                    'ready_for_evaluation': ready_for_evaluation,
+                    'evaluation_is_complete': evaluation_is_complete
+                }
+                entry['entries'].append(sub_entry)
+
+            rubric_entries.append(entry)
+
+        # TODO filter out rubric_entries which are all complete
+
+        return rubric_entries
+
+    @staticmethod
+    def pending_mandatory_evaluations(course_id, student_id):
+        reviews = PeerReview.objects.filter(
+            submission__assignment__course_id=course_id,
+            submission__assignment__rubric_for_prompt__id__isnull=False,
+            submission__author_id=student_id,
+            evaluation__isnull=True
+        )\
+            .order_by('id')
+
+        # TODO blocked on #278
+        #reviews_for_eval = filter(lambda r: r.evaluation_is_mandatory, reviews)
+
+        return Evaluations._denormalize_mandatory_evaluations(reviews)
