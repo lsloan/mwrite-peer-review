@@ -55,7 +55,7 @@
 import DateFormat from '@/mixins/date-format';
 
 export default {
-  name: 'ReviewsAssigned',
+  name: 'AssignedWork',
   props: ['prompts'],
   mixins: [DateFormat],
   computed: {

@@ -1,6 +1,6 @@
 <template>
     <div>
-        <reviews-assigned :prompts="prompts"/>
+        <assigned-work :prompts="prompts"/>
         <reviews-completed :reviews="completedReviews"/>
         <router-view/>
     </div>
@@ -10,7 +10,7 @@
 import { sortBy } from 'ramda';
 import moment from 'moment';
 import { MdlCard, MdlAnchorButton } from 'vue-mdl';
-import ReviewsAssigned from '@/components/ReviewsAssigned';
+import AssignedWork from '@/components/AssignedWork';
 import ReviewsCompleted from '@/components/ReviewsCompleted';
 
 const byDateAscending = (a, b) => {
@@ -29,7 +29,7 @@ export default {
   components: {
     MdlCard,
     MdlAnchorButton,
-    ReviewsAssigned,
+    AssignedWork,
     ReviewsCompleted
   },
   data() {
@@ -52,6 +52,10 @@ export default {
       .then(response => this.setPromptsForReview(response.data));
     this.$api.get('/course/{}/reviews/student/{}/completed', courseId, userId)
       .then(response => this.setCompletedReviews(response.data));
+    this.$api.get('/course/{}/reviews/student/{}/evaluation/pending', courseId, userId)
+      .then(response => {
+        console.log('pending evaluations =', response.data);
+      });
   }
 };
 </script>
