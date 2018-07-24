@@ -39,6 +39,7 @@ export default {
     }
   },
   mounted() {
+    // TODO combine promises?
     const {courseId, userId} = this.$store.state.userDetails;
     this.$api.get('/course/{}/reviews/student/{}/assigned', courseId, userId)
       .then(response => this.setPromptsForReview(response.data));
