@@ -595,7 +595,6 @@ class Evaluations:
             submission__assignment__course_id=course_id,
             submission__assignment__rubric_for_prompt__id__isnull=False,
             submission__author_id=student_id,
-            evaluation__isnull=True
         )\
             .order_by('id')
 
