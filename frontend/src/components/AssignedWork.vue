@@ -42,33 +42,48 @@ const makeEntry = (type, makeLink, title, subEntries, dueDateUtc) => ({
   dueDateUtc
 });
 
-const makeSubEntry = (id, type, isComplete) => ({
+const makeSubEntry = (id, type, isReady, isComplete) => ({
   id,
   type,
+  isReady,
   isComplete
 });
 
 // TODO combine this with evaluationToEntry?
 const promptToEntry = prompt => {
   const sortedReviews = sortBy(r => r.reviewId, prompt.reviews);
-  const subEntries = sortedReviews.map(r => makeSubEntry(r.reviewId, 'review', r.reviewIsComplete));
+  const subEntryType = 'review';
+  const subEntryConversion = r => makeSubEntry(
+    r.reviewId,
+    subEntryType,
+    true,
+    r.reviewIsComplete
+  );
+  const subEntries = sortedReviews.map(subEntryConversion);
   const makeReviewLink = subEntry => ({
     name: 'PeerReview',
     params: {
       reviewId: subEntry.id
     }
   });
-  return makeEntry('review', makeReviewLink, prompt.promptName, subEntries, prompt.dueDateUtc);
+  return makeEntry(subEntryType, makeReviewLink, prompt.promptName, subEntries, prompt.dueDateUtc);
 };
 
 // TODO combine this with promptToEntry?
 const evaluationToEntry = peerReview => {
+  const subEntryType = 'evaluation';
   const sortedEvaluations = sortBy(e => e.studentId, peerReview.evaluations);
-  const subEntries = sortedEvaluations.map(e => makeSubEntry(e.id, 'evaluation', e.evaluationIsComplete));
+  const subEntryConversion = e => makeSubEntry(
+    e.peerReviewId,
+    subEntryType,
+    e.readyForEvaluation,
+    e.evaluationIsComplete
+  );
+  const subEntries = sortedEvaluations.map(subEntryConversion);
   const makeEvaluateLink = subEntry => ({
     // TODO eval route object goes here
   });
-  return makeEntry('evaluation', makeEvaluateLink, peerReview.peerReviewTitle, subEntries, peerReview.dueDateUtc);
+  return makeEntry(subEntryType, makeEvaluateLink, peerReview.peerReviewTitle, subEntries, peerReview.dueDateUtc);
 };
 
 export default {
