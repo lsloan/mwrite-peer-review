@@ -48,6 +48,7 @@ const makeSubEntry = (id, type, isComplete) => ({
   isComplete
 });
 
+// TODO combine this with evaluationToEntry?
 const promptToEntry = prompt => {
   const sortedReviews = sortBy(r => r.reviewId, prompt.reviews);
   const subEntries = sortedReviews.map(r => makeSubEntry(r.reviewId, 'review', r.reviewIsComplete));
@@ -60,6 +61,7 @@ const promptToEntry = prompt => {
   return makeEntry('review', makeReviewLink, prompt.promptName, subEntries, prompt.dueDateUtc);
 };
 
+// TODO combine this with promptToEntry?
 const evaluationToEntry = peerReview => {
   const sortedEvaluations = sortBy(e => e.studentId, peerReview.evaluations);
   const subEntries = sortedEvaluations.map(e => makeSubEntry(e.id, 'evaluation', e.evaluationIsComplete));
