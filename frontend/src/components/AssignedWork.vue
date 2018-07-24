@@ -21,7 +21,7 @@
                 :title="entry.title"
                 :card-type="entry.type"
                 :due-date-utc="entry.dueDateUtc"
-                :entries="entry.entries"
+                :entries="entry.subEntries"
                 :make-link="entry.makeLink"/>
             <div class="mdl-cell mdl-cell--2-col mdl-cell--1-col-tablet mdl-cell--hide-phone"></div>
         </div>
@@ -34,11 +34,11 @@ import { sortBy } from 'ramda';
 import {byDateAscending} from '@/services/util';
 import WorkCard from '@/components/WorkCard';
 
-const makeEntry = (type, makeLink, title, entries, dueDateUtc) => ({
+const makeEntry = (type, makeLink, title, subEntries, dueDateUtc) => ({
   type,
   makeLink,
   title,
-  entries,
+  subEntries,
   dueDateUtc
 });
 
@@ -50,25 +50,23 @@ const makeSubEntry = (id, type, isComplete) => ({
 
 const promptToEntry = prompt => {
   const sortedReviews = sortBy(r => r.reviewId, prompt.reviews);
-  const entries = sortedReviews.map(r => makeSubEntry(r.reviewId, 'review', r.reviewIsComplete));
+  const subEntries = sortedReviews.map(r => makeSubEntry(r.reviewId, 'review', r.reviewIsComplete));
   const makeReviewLink = subEntry => ({
     name: 'PeerReview',
     params: {
       reviewId: subEntry.id
     }
   });
-  return makeEntry('review', makeReviewLink, prompt.promptName, entries, prompt.dueDateUtc);
+  return makeEntry('review', makeReviewLink, prompt.promptName, subEntries, prompt.dueDateUtc);
 };
 
 const evaluationToEntry = peerReview => {
-  console.log('eval =', peerReview);
-
   const sortedEvaluations = sortBy(e => e.studentId, peerReview.evaluations);
-  const entries = sortedEvaluations.map(e => makeSubEntry(e.id, 'evaluation', e.evaluationIsComplete));
+  const subEntries = sortedEvaluations.map(e => makeSubEntry(e.id, 'evaluation', e.evaluationIsComplete));
   const makeEvaluateLink = subEntry => ({
     // TODO eval route object goes here
   });
-  return makeEntry('evaluation', makeEvaluateLink, peerReview.peerReviewTitle, entries, peerReview.dueDateUtc);
+  return makeEntry('evaluation', makeEvaluateLink, peerReview.peerReviewTitle, subEntries, peerReview.dueDateUtc);
 };
 
 export default {
