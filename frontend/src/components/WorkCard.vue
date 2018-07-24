@@ -13,17 +13,22 @@
             <div v-for="(entry, index) in entries" :key="entry.id"
                  class="action-item mdl-cell mdl-cell--4-col">
                 <div class="student-name-container">Student {{ index + 1 }}</div>
-                <div class="action-item-status-container">
-                    <div v-if="entry.isComplete" class="review-complete-container">
-                        <i class="material-icons">done</i>
-                        <span>Submitted</span>
-                    </div>
+                <div class="action-item-container">
                     <router-link
-                        v-else
+                        v-if="entry.isReady && !entry.isComplete"
                         :to="makeLink(entry)"
                         class="start-action-item-button mdl-button mdl-js-button mdl-button--colored">
                         Start {{ entry.type }}
                     </router-link>
+                    <div v-else :class="{'action-item-status-container': true, 'action-item-status-container--done': entry.isComplete}">
+                        <i class="material-icons">
+                            <template v-if="entry.isComplete">done</template>
+                            <template v-else-if="!entry.isReady">query_builder</template>
+                        </i>
+                        <span v-if="!entry.isReady">Pending</span>
+                        <span v-else>Submitted</span>
+                    </div>
+
                 </div>
             </div>
         </div>
@@ -100,7 +105,7 @@ export default {
         padding: 14px 8px;
     }
 
-    .action-item-status-container {
+    .action-item-container {
         text-transform: uppercase;
         padding: 0;
         display: flex;
@@ -114,18 +119,20 @@ export default {
         width: 100%;
     }
 
-    .review-complete-container {
+    .action-item-status-container {
         display: flex;
         flex-direction: row;
         align-items: center;
         text-transform: uppercase;
-        color: #52A763;
         padding: 9px 0;
     }
 
-    .review-complete-container > i.material-icons {
+    .action-item-status-container--done {
+        color: #52A763;
+    }
+
+    .action-item-status-container > i.material-icons {
         font-size: 16px;
         margin-right: 4px;
     }
-
 </style>
