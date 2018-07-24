@@ -550,13 +550,19 @@ class Evaluations:
             peer_review_ids = sorted(r.id for r in reviews_for_rubric)
             student_numbers = {pr_id: i for i, pr_id in enumerate(peer_review_ids, start=1)}
 
-            title = reviews_for_rubric[0].submission.assignment.title
+            prompt = reviews_for_rubric[0].submission.assignment
+            rubric = prompt.rubric_for_prompt
+            peer_review_title = rubric.passback_assignment.title
 
             # TODO blocked on #278; remove everything but the first line once that's done
             # due_date_utc = reviews_for_rubric[0].evaluation_due_date_utc
             due_date_utc = '2018-10-08 23:41:54Z'
 
-            entry = {'title': title, 'due_date_utc': due_date_utc, 'entries': []}
+            entry = {
+                'peer_review_title': peer_review_title,
+                'due_date_utc': due_date_utc,
+                'evaluations': []
+            }
 
             for r in reviews_for_rubric:
                 student_id = student_numbers[r.id]
@@ -570,12 +576,12 @@ class Evaluations:
                     pass
 
                 sub_entry = {
-                    'id': r.id,
+                    'peer_review_id': r.id,
                     'student_id': student_id,
                     'ready_for_evaluation': ready_for_evaluation,
                     'evaluation_is_complete': evaluation_is_complete
                 }
-                entry['entries'].append(sub_entry)
+                entry['evaluations'].append(sub_entry)
 
             rubric_entries.append(entry)
 
