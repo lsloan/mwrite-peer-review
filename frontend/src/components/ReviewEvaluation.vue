@@ -92,7 +92,7 @@ export default {
         usefulness: this.usefulness,
         comment: this.evaluationComment
       };
-      this.$api.post('/course/{}/reviews/student/{}/evaluation/{}', data, courseId, userId, entry.peerReviewId)
+      this.$api.post('/course/{}/reviews/student/{}/evaluation/{}/', data, courseId, userId, entry.peerReviewId)
         .then(() => {
           this.userSubmittedEvaluation = true;
           this.showEvaluation = false;
