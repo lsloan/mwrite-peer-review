@@ -17,8 +17,8 @@
         </div>
         <div class="reviews-body">
             <keep-alive>
-                <reviews-by-reviewer v-if="viewBy === 'reviewer'" :data="data" :allow-evaluation="true"/>
-                <reviews-by-criterion v-else-if="viewBy === 'criterion'" :data="data"/>
+                <reviews-by-reviewer v-if="viewBy === 'reviewer'" :data="reviews" :allow-evaluation="true"/>
+                <reviews-by-criterion v-else-if="viewBy === 'criterion'" :data="reviews"/>
             </keep-alive>
         </div>
     </div>
@@ -35,28 +35,40 @@ export default {
   components: {ReviewsByReviewer, ReviewsByCriterion},
   data() {
     return {
-      viewBy: 'reviewer',
-      unfilteredData: null
+      viewBy: 'reviewer'
     };
   },
   computed: {
-    data() {
-      if(this.unfilteredData) {
-        return denormalizers[this.viewBy](this.unfilteredData.entries);
-      }
+    courseId() {
+      return this.$store.state.userDetails.courseId;
+    },
+    reviewsReceived() {
+      return this.$store.state.reviewsReceived;
+    },
+    rawReviews() {
+      const {entries = []} = this.reviewsReceived;
+      return entries;
+    },
+    reviews() {
+      return denormalizers[this.viewBy](this.rawReviews);
     }
   },
   methods: {
-    setData(data) {
-      this.unfilteredData = data;
-      this.$emit('title-resolved', this.unfilteredData.title);
+    emitTitles() {
+      this.$emit('title-resolved', this.reviewsReceived.title);
       this.$emit('subtitle-resolved', 'Reviews Received');
     }
   },
   mounted() {
-    const courseId = this.$store.state.userDetails.courseId;
-    this.$api.get('/course/{}/reviews/student/{}/received/{}', courseId, this.studentId, this.rubricId)
-      .then(response => this.setData(response.data));
+    const {courseId, studentId, rubricId} = this;
+    const payload = {
+      api: this.$api,
+      courseId,
+      studentId,
+      rubricId
+    };
+    this.$store.dispatch('fetchReviewsReceived', payload)
+      .then(this.emitTitles);
   }
 };
 </script>

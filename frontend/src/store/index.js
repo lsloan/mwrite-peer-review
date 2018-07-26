@@ -9,21 +9,30 @@ Vue.use(Vuex);
 export default new Vuex.Store({
   state: {
     userDetails: {},
-    breadcrumbInfo: {}
+    breadcrumbInfo: {},
+    reviewsReceived: {}
   },
   mutations: {
-    userDetails(state, userDetails) {
+    updateUserDetails(state, userDetails) {
       state.userDetails = userDetails;
     },
     updateBreadcrumbInfo(state, breadcrumbInfo) {
       state.breadcrumbInfo = breadcrumbInfo;
+    },
+    updateReviewsReceived(state, reviewsReceived) {
+      state.reviewsReceived = reviewsReceived;
     }
   },
   actions: {
     fetchUserDetails(context) {
-      return api.get('/user/self').then(response => {
-        context.commit('userDetails', response.data);
-      });
+      return api.get('/user/self').then(response => context.commit('updateUserDetails', response.data));
+    },
+    fetchReviewsReceived(context, payload) {
+      const {courseId, studentId, rubricId} = payload;
+      const apiService = payload.api ? payload.api : api;
+
+      return apiService.get('/course/{}/reviews/student/{}/received/{}', courseId, studentId, rubricId)
+        .then(response => context.commit('updateReviewsReceived', response.data));
     }
   }
 });
