@@ -131,51 +131,18 @@
                     supporting-text="slot">
                 <div slot="supporting-text">
                     <div class="mdl-card__supporting-text">
-                        <mdl-switch v-model="models.peerReviewEvaluationIsMandatory" :disabled="reviewIsInProgress">
+                      <mdl-switch v-model="peerReviewEvaluation.isMandatory" :disabled="reviewIsInProgress">
                             Mandatory
                         </mdl-switch>
                     </div>
-                    <div v-if="models.peerReviewEvaluationIsMandatory" class="mdl-card__supporting-text datetime-container">
-                        <p>Enter a due date:</p>
-                        <div>
-                            <datepicker
-                                    format="MMM d yyyy"
-                                    placeholder="Day"
-                                    :disabled-dates="{}"
+                  <date-time-picker v-if="peerReviewEvaluation.isMandatory"
                                     :disabled="reviewIsInProgress"
-                                    v-model="models.peerReviewEvaluationDueDay">
-                            </datepicker>
+                    :available-start-date="promptDueDate"
+                    :available-end-date="peerReviewDueDate"
+                    v-model="peerReviewEvaluation.dueDateTime"
+                    >
+                  </date-time-picker>
                         </div>
-                        <div>
-                            <mdl-select
-                                    id="peer-review-open-hour-select"
-                                    label="Hour"
-                                    v-model="models.peerReviewEvaluationDueHour"
-                                    :disabled="reviewIsInProgress"
-                                    :options="peerReviewOpenHourChoices">
-                            </mdl-select>
-                        </div>
-                        <div>
-                            <mdl-select
-                                    id="peer-review-open-minute-select"
-                                    label="Minute"
-                                    v-model="models.peerReviewEvaluationDueMinute"
-                                    :disabled="reviewIsInProgress"
-                                    :options="peerReviewOpenMinuteChoices">
-                            </mdl-select>
-                        </div>
-                        <div>
-                            <mdl-select
-                                    id="peer-review-open-ampm-select"
-                                    label="AM / PM"
-                                    v-model="models.peerReviewEvaluationDueMeridian"
-                                    :disabled="reviewIsInProgress"
-                                    :options="peerReviewOpenAMPMChoices">
-                            </mdl-select>
-                        </div>
-
-                    </div>
-                </div>
             </mdl-card>
 
             <div class="mdl-cell mdl-cell--1-col mdl-cell--1-col-tablet mdl-cell-1-col-phone"></div>
@@ -303,6 +270,7 @@ import Datepicker from 'vuejs-datepicker';
 import {MdlCard, MdlSwitch, MdlSelect, MdlSnackbar} from 'vue-mdl';
 
 import Dropdown from '@/components/Dropdown';
+import DateTimePicker from '@/components/DateTimePicker';
 import AutosizeTextarea from '@/components/AutosizeTextarea';
 
 import api from '@/services/api';
@@ -327,7 +295,7 @@ const NO_REVISION_OPTION = {value: null, name: 'No revision'};
 const DISPLAY_DATE_FORMAT = 'MMM D YYYY h:mm A';
 
 export default {
-  components: {Dropdown, Datepicker, AutosizeTextarea, MdlCard, MdlSwitch, MdlSelect, MdlSnackbar},
+  components: {Dropdown, Datepicker, DateTimePicker, AutosizeTextarea, MdlCard, MdlSwitch, MdlSelect, MdlSnackbar},
   props: ['peer-review-assignment-id'],
   data() {
     return {
@@ -335,6 +303,13 @@ export default {
       existingRubric: null,
       validations: {},
       peerReviewDueDate: null,
+
+      // peer review evaluation
+      peerReviewEvaluation: {
+        dueDateTime: null,
+        isMandatory: true
+      },
+
       models: {
         criteria: [makeCriterion()],
         description: '',
@@ -345,13 +320,6 @@ export default {
         peerReviewOpenDateIsPromptDueDate: true,
         selectedPrompt: null,
         selectedRevision: NO_REVISION_OPTION,
-
-        // date picker for peer review evaluation
-        peerReviewEvaluationDueDay: null,
-        peerReviewEvaluationDueHour: null,
-        peerReviewEvaluationDueMinute: null,
-        peerReviewEvaluationDueMeridian: null,
-        peerReviewEvaluationIsMandatory: false
       },
       submissionInProgress: false,
       peerReviewOpenHourChoices: R.range(1, 13).map(i => i.toString()),

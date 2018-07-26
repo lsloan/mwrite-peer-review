@@ -48,7 +48,12 @@ import { MdlSelect } from 'vue-mdl';
 export default {
   components: { Datepicker, MdlSelect },
   name: 'DateTimePicker',
+  model: {
+    prop: 'date-time-model',
+    event: 'change'
+  },
   props: [
+    'date-time-model',
     'text',
     'disabled',
     'available-start-date',
