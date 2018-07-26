@@ -48,12 +48,8 @@ import { MdlSelect } from 'vue-mdl';
 export default {
   components: { Datepicker, MdlSelect },
   name: 'DateTimePicker',
-  model: {
-    prop: 'date-time-model',
-    event: 'change'
-  },
   props: [
-    'date-time-model',
+    'value',
     'text',
     'disabled',
     'available-start-date',
@@ -78,39 +74,40 @@ export default {
   computed: {
     disabledDates() {
       return this.availableStartDate && this.availableEndDate
-        ? { to: this.availableStartDate.local().toDate(), from: this.availableEndDate.local().toDate() }
+        ? {
+            to: this.availableStartDate.local().toDate(),
+            from: this.availableEndDate.local().toDate()
+          }
         : {};
     },
     dateTimeValue() {
-      return this.getSynthesizeDateTimeValue();
-    }
-  },
-  watch: {
-    dateTimeValue: {
-      handler: function(newValue, oldValue) {
-        if(newValue !== oldValue) {
-          this.$emit('change', newValue);
-        }
-      },
-      deep: true
-    }
-  },
-  methods: {
-    getSynthesizeDateTimeValue() {
-      const {selectedDate: date, selectedHour: hour, selectedMinute: minute, selectedMeridian: meridian} = this.models;
-      if(date && hour && minute && meridian) {
+      const {
+        selectedDate: date,
+        selectedHour: hour,
+        selectedMinute: minute,
+        selectedMeridian: meridian
+      } = this.models;
+      if (date && hour && minute && meridian) {
         const hours12 = parseInt(hour);
-        const hours24 = meridian === 'AM'
-          ? (hours12 === 12 ? 0 : hours12)
-          : (hours12 === 12 ? 12 : hours12 + 12);
+        const hours24 =
+          meridian === 'AM'
+            ? hours12 === 12 ? 0 : hours12
+            : hours12 === 12 ? 12 : hours12 + 12;
         const minutes = parseInt(minute);
         return moment(date)
           .hours(hours24)
           .minutes(minutes)
           .utc();
-      }
-      else {
+      } else {
         return null;
+      }
+    }
+  },
+  watch: {
+    dateTimeValue: function(newValue, oldValue) {
+      if (newValue !== oldValue) {
+        alert('input fire');
+        this.$emit('input', newValue);
       }
     }
   }

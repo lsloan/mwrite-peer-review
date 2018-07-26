@@ -122,7 +122,6 @@
             <div class="mdl-cell mdl-cell--1-col mdl-cell--1-col-tablet mdl-cell-1-col-phone"></div>
         </div>
 
-        <!-- Evaluation for peer review -->
         <div class="mdl-grid">
             <div class="mdl-cell mdl-cell--1-col mdl-cell--1-col-tablet mdl-cell-1-col-phone"></div>
             <mdl-card
@@ -131,18 +130,16 @@
                     supporting-text="slot">
                 <div slot="supporting-text">
                     <div class="mdl-card__supporting-text">
-                      <mdl-switch v-model="peerReviewEvaluation.isMandatory" :disabled="reviewIsInProgress">
+                        <mdl-switch v-model="models.peerReviewEvaluation.isMandatory" :disabled="reviewIsInProgress">
                             Mandatory
                         </mdl-switch>
                     </div>
-                  <date-time-picker v-if="peerReviewEvaluation.isMandatory"
-                                    :disabled="reviewIsInProgress"
-                    :available-start-date="promptDueDate"
-                    :available-end-date="peerReviewDueDate"
-                    v-model="peerReviewEvaluation.dueDateTime"
-                    >
-                  </date-time-picker>
-                        </div>
+                    <date-time-picker v-if="models.peerReviewEvaluation.isMandatory"
+                        :disabled="reviewIsInProgress"
+                        :available-start-date="promptDueDate"
+                        :available-end-date="peerReviewDueDate"
+                        v-model="models.peerReviewEvaluation.dueDateTime" />
+                </div>
             </mdl-card>
 
             <div class="mdl-cell mdl-cell--1-col mdl-cell--1-col-tablet mdl-cell-1-col-phone"></div>
@@ -304,12 +301,6 @@ export default {
       validations: {},
       peerReviewDueDate: null,
 
-      // peer review evaluation
-      peerReviewEvaluation: {
-        dueDateTime: null,
-        isMandatory: true
-      },
-
       models: {
         criteria: [makeCriterion()],
         description: '',
@@ -320,6 +311,10 @@ export default {
         peerReviewOpenDateIsPromptDueDate: true,
         selectedPrompt: null,
         selectedRevision: NO_REVISION_OPTION,
+        peerReviewEvaluation: {
+            dueDateTime: null,
+            isMandatory: true
+        },
       },
       submissionInProgress: false,
       peerReviewOpenHourChoices: R.range(1, 13).map(i => i.toString()),
