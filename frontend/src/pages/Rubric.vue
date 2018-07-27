@@ -67,7 +67,7 @@
                         </mdl-switch>
                     </div>                    
                     <date-time-picker v-if="!models.peerReviewOpenDateIsPromptDueDate"
-                        id="peer-review-open-date-time"
+                        id-suffix="peer-review-open-date-time"
                         :disabled="reviewIsInProgress"
                         :available-start-date="promptDueDate"
                         :available-end-date="peerReviewDueDate"
@@ -101,7 +101,7 @@
                         </mdl-switch>
                     </div>
                     <date-time-picker v-if="models.peerReviewEvaluationIsMandatory"
-                        id="peer-review-evaluation-due-date-time"
+                        id-suffix="peer-review-evaluation-due-date-time"
                         :disabled="reviewIsInProgress"
                         :available-start-date="promptDueDate"
                         :available-end-date="peerReviewDueDate"

@@ -1,5 +1,5 @@
 <template>
-    <div :id="id" class='mdl-card__supporting-text datetime-container'>
+    <div class='mdl-card__supporting-text datetime-container'>
         <p>{{ descriptionText }}</p>
         <div>
             <datepicker
@@ -12,7 +12,7 @@
         </div>
         <div>
             <mdl-select
-                    :id="'hour-select-' + id"
+                    :id="'hour-select-' + idSuffix"
                     label='Hour'
                     v-model='models.selectedHour'
                     :options='HOUR_CHOICES'>
@@ -20,7 +20,7 @@
         </div>
         <div>
             <mdl-select
-                    :id="'minute-select-' + id"
+                    :id="'minute-select-' + idSuffix"
                     label='Minute'
                     v-model='models.selectedMinute'
                     :options='MINUTE_CHOICES'>
@@ -28,7 +28,7 @@
         </div>
         <div>
             <mdl-select
-                    :id="'ampm-select-' + id"
+                    :id="'ampm-select-' + idSuffix"
                     label='AM / PM'
                     v-model='models.selectedMeridian'
                     :options='MERIDIAN_CHOICES'>
@@ -48,7 +48,7 @@ export default {
   components: { Datepicker, MdlSelect },
   name: 'DateTimePicker',
   props: [
-    'id',
+    'id-suffix',
     'value',
     'text',
     'disabled',
