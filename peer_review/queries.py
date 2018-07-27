@@ -541,12 +541,12 @@ class Comments:
 
 class Evaluations:
     @staticmethod
-    def _denormalize_mandatory_evaluations(reviews):
+    def _collect_evaluation_data(reviews):
 
         reviews_by_rubric = groupby(lambda r: r.submission.assignment.rubric_for_prompt.id, reviews)
 
-        rubric_entries = []
-        for _, reviews_for_rubric in reviews_by_rubric.items():
+        evaluations = []
+        for rubric_id, reviews_for_rubric in reviews_by_rubric.items():
             peer_review_ids = sorted(r.id for r in reviews_for_rubric)
             student_numbers = {pr_id: i for i, pr_id in enumerate(peer_review_ids, start=1)}
 
@@ -558,13 +558,9 @@ class Evaluations:
             # due_date_utc = reviews_for_rubric[0].evaluation_due_date_utc
             due_date_utc = '2018-10-08 23:41:54Z'
 
-            entry = {
-                'peer_review_title': peer_review_title,
-                'due_date_utc': due_date_utc,
-                'evaluations': []
-            }
-
             for r in reviews_for_rubric:
+                evaluations_for_rubric = []
+
                 student_id = student_numbers[r.id]
                 ready_for_evaluation = r.comments.exists()
 
@@ -575,19 +571,20 @@ class Evaluations:
                 except PeerReviewEvaluation.DoesNotExist:
                     pass
 
-                sub_entry = {
+                evaluations_for_rubric.append({
+                    'rubric_id': rubric_id,
+                    'peer_review_title': peer_review_title,
+                    'due_date_utc': due_date_utc,
                     'peer_review_id': r.id,
                     'student_id': student_id,
                     'ready_for_evaluation': ready_for_evaluation,
                     'evaluation_is_complete': evaluation_is_complete
-                }
-                entry['evaluations'].append(sub_entry)
+                })
 
-            rubric_entries.append(entry)
+                # TODO only add evaluations if all are not completed
+                evaluations.extend(evaluations_for_rubric)
 
-        # TODO filter out rubric_entries which are all complete
-
-        return rubric_entries
+        return evaluations
 
     @staticmethod
     def pending_mandatory_evaluations(course_id, student_id):
@@ -601,4 +598,4 @@ class Evaluations:
         # TODO blocked on #278
         #reviews_for_eval = filter(lambda r: r.evaluation_is_mandatory, reviews)
 
-        return Evaluations._denormalize_mandatory_evaluations(reviews)
+        return Evaluations._collect_evaluation_data(reviews)

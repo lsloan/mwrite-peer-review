@@ -7,10 +7,18 @@
 </template>
 
 <script>
+import * as R from 'ramda';
+
 import { MdlCard, MdlAnchorButton } from 'vue-mdl';
 
 import AssignedWork from '@/components/AssignedWork';
 import ReviewsCompleted from '@/components/ReviewsCompleted';
+
+const makeEvaluationEntry = ([rubricId, evaluations]) => ({
+  peerReviewTitle: evaluations[0].peerReviewTitle,
+  dueDateUtc: evaluations[0].dueDateUtc,
+  evaluations: evaluations
+});
 
 export default {
   name: 'student-dashboard',
@@ -23,9 +31,18 @@ export default {
   data() {
     return {
       prompts: [],
-      evaluations: [],
       completedReviews: []
     };
+  },
+  computed: {
+    evaluations() {
+      return R.pipe(
+        R.groupBy(e => e.rubricId),
+        R.map(evals => R.sortBy(e => e.studentId, evals)),
+        R.toPairs,
+        R.map(makeEvaluationEntry)
+      )(this.$store.state.pendingEvaluations);
+    }
   },
   methods: {
     setPromptsForReview(data) {
@@ -33,9 +50,6 @@ export default {
     },
     setCompletedReviews(data) {
       this.completedReviews = data;
-    },
-    setEvaluations(data) {
-      this.evaluations = data;
     }
   },
   mounted() {
@@ -45,8 +59,11 @@ export default {
       .then(response => this.setPromptsForReview(response.data));
     this.$api.get('/course/{}/reviews/student/{}/completed', courseId, userId)
       .then(response => this.setCompletedReviews(response.data));
-    this.$api.get('/course/{}/reviews/student/{}/evaluation/pending', courseId, userId)
-      .then(response => this.setEvaluations(response.data));
+    this.$store.dispatch('fetchPendingEvaluations', {
+      api: this.$api,
+      courseId,
+      userId
+    });
   }
 };
 </script>

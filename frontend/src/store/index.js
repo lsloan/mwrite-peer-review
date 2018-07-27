@@ -10,7 +10,8 @@ export default new Vuex.Store({
   state: {
     userDetails: {},
     breadcrumbInfo: {},
-    reviewsReceived: {}
+    reviewsReceived: {},
+    pendingEvaluations: []
   },
   mutations: {
     updateUserDetails(state, userDetails) {
@@ -21,6 +22,9 @@ export default new Vuex.Store({
     },
     updateReviewsReceived(state, reviewsReceived) {
       state.reviewsReceived = reviewsReceived;
+    },
+    updatePendingEvaluations(state, pendingEvaluations) {
+      state.pendingEvaluations = pendingEvaluations;
     }
   },
   actions: {
@@ -39,6 +43,13 @@ export default new Vuex.Store({
       const apiService = payload.api ? payload.api : api;
 
       return apiService.post('/course/{}/reviews/student/{}/evaluation/{}/', data, courseId, userId, peerReviewId);
+    },
+    fetchPendingEvaluations(context, payload) {
+      const {courseId, userId} = payload;
+      const apiService = payload.api ? payload.api : api;
+
+      apiService.get('/course/{}/reviews/student/{}/evaluation/pending', courseId, userId)
+        .then(response => context.commit('updatePendingEvaluations', response.data));
     }
   }
 });
