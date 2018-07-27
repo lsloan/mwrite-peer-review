@@ -17,7 +17,7 @@
         </div>
         <div class="reviews-body">
             <keep-alive>
-                <reviews-by-reviewer v-if="viewBy === 'reviewer'" :data="reviews" :allow-evaluation="true"/>
+                <reviews-by-reviewer v-if="viewBy === 'reviewer'" :data="reviews"/>
                 <reviews-by-criterion v-else-if="viewBy === 'criterion'" :data="reviews"/>
             </keep-alive>
         </div>

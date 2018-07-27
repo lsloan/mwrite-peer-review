@@ -1,6 +1,6 @@
 <template>
     <div class="evaluation-container">
-        <div v-if="evaluationSubmitted" class="evaluation-complete">
+        <div v-if="evaluationIsComplete" class="evaluation-complete">
             <i class="material-icons evaluation-complete-icon">done</i>
             <span>Submitted</span>
         </div>
@@ -41,7 +41,7 @@
                         <span class="form-label">Please provide any additional feedback on this review</span>
                         <mdl-textfield
                             class="feedback-input"
-                            v-model="evaluationComment"/>
+                            v-model="comment"/>
                     </label>
                 </div>
                 <div class="form-section">
@@ -49,7 +49,7 @@
                         colored
                         raised
                         :disabled="!usefulness"
-                        @click.native="submitEvaluation(entry)">
+                        @click.native="submitEvaluation()">
                         Submit
                     </mdl-button>
                     <mdl-button
@@ -68,7 +68,7 @@ import { MdlButton } from 'vue-mdl';
 
 export default {
   name: 'ReviewEvaluation',
-  props: ['entry'],
+  props: ['evaluation'],
   components: {
     MdlButton
   },
@@ -76,28 +76,24 @@ export default {
     return {
       showEvaluation: false,
       usefulness: null,
-      evaluationComment: null,
-      userSubmittedEvaluation: false
+      comment: null
     };
   },
   computed: {
-    evaluationSubmitted() {
-      return this.userSubmittedEvaluation || this.entry.evaluationSubmitted;
+    evaluationIsComplete() {
+      const {evaluation: {evaluationIsComplete = false} = {}} = this;
+      return evaluationIsComplete;
     }
   },
   methods: {
-    // TODO refactor to not have to imperatively mark eval as complete
-    completeEvaluation() {
-      this.userSubmittedEvaluation = true;
-      this.showEvaluation = false;
+    markAsComplete() {
+      const {peerReviewId} = this.evaluation;
+      this.$store.commit('markEvaluationCompleteForReview', peerReviewId);
     },
-    submitEvaluation(entry) {
+    submitEvaluation() {
       const {courseId, userId} = this.$store.state.userDetails;
-      const {peerReviewId} = entry;
-      const data = {
-        usefulness: this.usefulness,
-        comment: this.evaluationComment
-      };
+      const {usefulness, comment, evaluation: {peerReviewId}} = this;
+      const data = {usefulness, comment};
       const payload = {
         api: this.$api,
         courseId,
@@ -106,8 +102,7 @@ export default {
         data
       };
       this.$store.dispatch('submitEvaluation', payload)
-        .then(this.completeEvaluation)
-        .then(() => this.$store.commit('markEvaluationCompleteForReview', entry.peerReviewId));
+        .then(this.markAsComplete);
     }
   }
 };

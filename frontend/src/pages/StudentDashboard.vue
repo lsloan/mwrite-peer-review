@@ -1,6 +1,6 @@
 <template>
     <div>
-        <assigned-work :prompts="prompts" :evaluations="evaluations"/>
+        <assigned-work :prompts="prompts" :evaluations="mandatoryEvaluations"/>
         <reviews-completed :reviews="completedReviews"/>
         <router-view/>
     </div>
@@ -35,7 +35,8 @@ export default {
     };
   },
   computed: {
-    evaluations() {
+    mandatoryEvaluations() {
+      // TODO filter out non-mandatory evaluations
       // TODO filter out rubric / eval entry if all evals are complete
       return R.pipe(
         R.groupBy(e => e.rubricId),
