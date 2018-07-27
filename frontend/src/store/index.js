@@ -25,6 +25,10 @@ export default new Vuex.Store({
     },
     updatePendingEvaluations(state, pendingEvaluations) {
       state.pendingEvaluations = pendingEvaluations;
+    },
+    markEvaluationCompleteForReview(state, peerReviewId) {
+      const evaluation = state.pendingEvaluations.find(e => e.peerReviewId === peerReviewId);
+      evaluation.evaluationIsComplete = true;
     }
   },
   actions: {

@@ -36,6 +36,7 @@ export default {
   },
   computed: {
     evaluations() {
+      // TODO filter out rubric / eval entry if all evals are complete
       return R.pipe(
         R.groupBy(e => e.rubricId),
         R.map(evals => R.sortBy(e => e.studentId, evals)),

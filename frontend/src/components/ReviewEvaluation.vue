@@ -86,10 +86,10 @@ export default {
     }
   },
   methods: {
+    // TODO refactor to not have to imperatively mark eval as complete
     completeEvaluation() {
       this.userSubmittedEvaluation = true;
       this.showEvaluation = false;
-      // TODO need to mark pending eval in the vuex store as complete
     },
     submitEvaluation(entry) {
       const {courseId, userId} = this.$store.state.userDetails;
@@ -106,7 +106,8 @@ export default {
         data
       };
       this.$store.dispatch('submitEvaluation', payload)
-        .then(this.completeEvaluation);
+        .then(this.completeEvaluation)
+        .then(() => this.$store.commit('markEvaluationCompleteForReview', entry.peerReviewId));
     }
   }
 };
