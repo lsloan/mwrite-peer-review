@@ -1,7 +1,7 @@
 <template>
     <div>
         <assigned-work :prompts="prompts" :evaluations="mandatoryEvaluations"/>
-        <reviews-completed :reviews="completedReviews"/>
+        <completed-work :reviews="completedReviews"/>
         <router-view/>
     </div>
 </template>
@@ -12,7 +12,7 @@ import * as R from 'ramda';
 import { MdlCard, MdlAnchorButton } from 'vue-mdl';
 
 import AssignedWork from '@/components/AssignedWork';
-import ReviewsCompleted from '@/components/ReviewsCompleted';
+import CompletedWork from '@/components/CompletedWork';
 
 const makeEvaluationEntry = ([rubricId, evaluations]) => ({
   peerReviewTitle: evaluations[0].peerReviewTitle,
@@ -26,7 +26,7 @@ export default {
     MdlCard,
     MdlAnchorButton,
     AssignedWork,
-    ReviewsCompleted
+    CompletedWork
   },
   data() {
     return {

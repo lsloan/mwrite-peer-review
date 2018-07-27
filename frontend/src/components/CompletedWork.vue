@@ -77,7 +77,7 @@ import {byDateAscending} from '@/services/util';
 import DateFormat from '@/mixins/date-format';
 
 export default {
-  name: 'ReviewsCompleted',
+  name: 'CompletedWork',
   props: ['reviews'],
   components: {
     MdlAnchorButton
