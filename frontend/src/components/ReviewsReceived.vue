@@ -57,17 +57,20 @@ export default {
     emitTitles() {
       this.$emit('title-resolved', this.reviewsReceived.title);
       this.$emit('subtitle-resolved', 'Reviews Received');
+    },
+    fetchReviewsReceived() {
+      const {courseId, studentId, rubricId} = this;
+      const payload = {
+        api: this.$api,
+        courseId,
+        studentId,
+        rubricId
+      };
+      return this.$store.dispatch('fetchReviewsReceived', payload);
     }
   },
   mounted() {
-    const {courseId, studentId, rubricId} = this;
-    const payload = {
-      api: this.$api,
-      courseId,
-      studentId,
-      rubricId
-    };
-    this.$store.dispatch('fetchReviewsReceived', payload)
+    this.fetchReviewsReceived()
       .then(this.emitTitles);
   }
 };

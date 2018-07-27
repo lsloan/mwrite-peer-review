@@ -33,6 +33,12 @@ export default new Vuex.Store({
 
       return apiService.get('/course/{}/reviews/student/{}/received/{}', courseId, studentId, rubricId)
         .then(response => context.commit('updateReviewsReceived', response.data));
+    },
+    submitEvaluation(context, payload) {
+      const {courseId, userId, peerReviewId, data} = payload;
+      const apiService = payload.api ? payload.api : api;
+
+      return apiService.post('/course/{}/reviews/student/{}/evaluation/{}/', data, courseId, userId, peerReviewId);
     }
   }
 });

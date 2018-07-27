@@ -86,17 +86,27 @@ export default {
     }
   },
   methods: {
+    completeEvaluation() {
+      this.userSubmittedEvaluation = true;
+      this.showEvaluation = false;
+      // TODO need to mark pending eval in the vuex store as complete
+    },
     submitEvaluation(entry) {
       const {courseId, userId} = this.$store.state.userDetails;
+      const {peerReviewId} = entry;
       const data = {
         usefulness: this.usefulness,
         comment: this.evaluationComment
       };
-      this.$api.post('/course/{}/reviews/student/{}/evaluation/{}/', data, courseId, userId, entry.peerReviewId)
-        .then(() => {
-          this.userSubmittedEvaluation = true;
-          this.showEvaluation = false;
-        });
+      const payload = {
+        api: this.$api,
+        courseId,
+        userId,
+        peerReviewId,
+        data
+      };
+      this.$store.dispatch('submitEvaluation', payload)
+        .then(this.completeEvaluation);
     }
   }
 };
