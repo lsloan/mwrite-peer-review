@@ -109,11 +109,6 @@ export default {
         this.$emit('input', newValue);
       }
     }
-  },
-  method: {
-    generateRandomString() {
-      return (+new Date).toString(36);
-    }
   }
 };
 </script>
