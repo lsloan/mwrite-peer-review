@@ -12,7 +12,7 @@
         </div>
         <div>
             <mdl-select
-                    id='peer-review-open-hour-select'
+                    :id="'hour-select' + MDL_SELECT_ID_SUFFIX"
                     label='Hour'
                     v-model='models.selectedHour'
                     :options='HOUR_CHOICES'>
@@ -20,7 +20,7 @@
         </div>
         <div>
             <mdl-select
-                    id='peer-review-open-minute-select'
+                    :id="'minute-select' + MDL_SELECT_ID_SUFFIX"
                     label='Minute'
                     v-model='models.selectedMinute'
                     :options='MINUTE_CHOICES'>
@@ -28,13 +28,12 @@
         </div>
         <div>
             <mdl-select
-                    id='peer-review-open-ampm-select'
+                    :id="'ampm-select' + MDL_SELECT_ID_SUFFIX"
                     label='AM / PM'
                     v-model='models.selectedMeridian'
                     :options='MERIDIAN_CHOICES'>
             </mdl-select>
         </div>
-
     </div>
 </template>
 
@@ -66,6 +65,7 @@ export default {
         selectedMeridian: null
       },
 
+      MDL_SELECT_ID_SUFFIX: '_' + (+new Date).toString(36),
       HOUR_CHOICES: R.range(1, 13).map(i => i.toString()),
       MINUTE_CHOICES: ['00', '15', '30', '45'],
       MERIDIAN_CHOICES: ['AM', 'PM']
@@ -106,9 +106,13 @@ export default {
   watch: {
     dateTimeValue: function(newValue, oldValue) {
       if (newValue !== oldValue) {
-        alert('input fire');
         this.$emit('input', newValue);
       }
+    }
+  },
+  method: {
+    generateRandomString() {
+      return (+new Date).toString(36);
     }
   }
 };

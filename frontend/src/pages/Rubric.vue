@@ -65,47 +65,12 @@
                         <mdl-switch v-model="models.peerReviewOpenDateIsPromptDueDate" :disabled="reviewIsInProgress">
                             Use the writing prompt's due date as the peer review open date
                         </mdl-switch>
-                    </div>
-                    <div v-if="!models.peerReviewOpenDateIsPromptDueDate" class="mdl-card__supporting-text datetime-container">
-                        <p>Enter a custom date:</p>
-                        <div>
-                            <datepicker
-                                    format="MMM d yyyy"
-                                    placeholder="Day"
-                                    :disabled-dates="peerReviewOpenDisabledDates"
-                                    :disabled="reviewIsInProgress"
-                                    v-model="models.peerReviewOpenDay">
-                            </datepicker>
-                        </div>
-                        <div>
-                            <mdl-select
-                                    id="peer-review-open-hour-select"
-                                    label="Hour"
-                                    v-model="models.peerReviewOpenHour"
-                                    :disabled="reviewIsInProgress"
-                                    :options="peerReviewOpenHourChoices">
-                            </mdl-select>
-                        </div>
-                        <div>
-                            <mdl-select
-                                    id="peer-review-open-minute-select"
-                                    label="Minute"
-                                    v-model="models.peerReviewOpenMinute"
-                                    :disabled="reviewIsInProgress"
-                                    :options="peerReviewOpenMinuteChoices">
-                            </mdl-select>
-                        </div>
-                        <div>
-                            <mdl-select
-                                    id="peer-review-open-ampm-select"
-                                    label="AM / PM"
-                                    v-model="models.peerReviewOpenMeridian"
-                                    :disabled="reviewIsInProgress"
-                                    :options="peerReviewOpenAMPMChoices">
-                            </mdl-select>
-                        </div>
-
-                    </div>
+                    </div>                    
+                    <date-time-picker v-if="!models.peerReviewOpenDateIsPromptDueDate"
+                        :disabled="reviewIsInProgress"
+                        :available-start-date="promptDueDate"
+                        :available-end-date="peerReviewDueDate"
+                        v-model="models.peerReviewOpenDateTime" />
                     <div class="mdl-card__supporting-text">
                         <p v-if="peerReviewOpenDateIsValid">
                             Peer reviews will be distributed at {{ peerReviewOpenDateDisplay }}.  Students who have
@@ -130,15 +95,15 @@
                     supporting-text="slot">
                 <div slot="supporting-text">
                     <div class="mdl-card__supporting-text">
-                        <mdl-switch v-model="models.peerReviewEvaluation.isMandatory" :disabled="reviewIsInProgress">
+                        <mdl-switch v-model="models.peerReviewEvaluationIsMandatory" :disabled="reviewIsInProgress">
                             Mandatory
                         </mdl-switch>
                     </div>
-                    <date-time-picker v-if="models.peerReviewEvaluation.isMandatory"
+                    <date-time-picker v-if="models.peerReviewEvaluationIsMandatory"
                         :disabled="reviewIsInProgress"
                         :available-start-date="promptDueDate"
                         :available-end-date="peerReviewDueDate"
-                        v-model="models.peerReviewEvaluation.dueDateTime" />
+                        v-model="models.peerReviewEvaluationDueDateTime" />
                 </div>
             </mdl-card>
 
@@ -304,22 +269,14 @@ export default {
       models: {
         criteria: [makeCriterion()],
         description: '',
-        peerReviewOpenDay: null,
-        peerReviewOpenHour: null,
-        peerReviewOpenMinute: null,
-        peerReviewOpenMeridian: null,
+        peerReviewOpenDateTime: null,
         peerReviewOpenDateIsPromptDueDate: true,
+        peerReviewEvaluationDueDateTime: null,
+        peerReviewEvaluationIsMandatory: false,
         selectedPrompt: null,
         selectedRevision: NO_REVISION_OPTION,
-        peerReviewEvaluation: {
-            dueDateTime: null,
-            isMandatory: true
-        },
       },
-      submissionInProgress: false,
-      peerReviewOpenHourChoices: R.range(1, 13).map(i => i.toString()),
-      peerReviewOpenMinuteChoices: ['00', '15', '30', '45'],
-      peerReviewOpenAMPMChoices: ['AM', 'PM']
+      submissionInProgress: false
     };
   },
   computed: {
@@ -416,18 +373,7 @@ export default {
         return this.promptDueDate;
       }
       else {
-        const {peerReviewOpenDay, peerReviewOpenHour, peerReviewOpenMinute, peerReviewOpenMeridian} = this.models;
-        if(peerReviewOpenDay && peerReviewOpenHour && peerReviewOpenMinute && peerReviewOpenMeridian) {
-          const hours12 = parseInt(peerReviewOpenHour);
-          const hours24 = peerReviewOpenMeridian === 'AM'
-            ? (hours12 === 12 ? 0 : hours12)
-            : (hours12 === 12 ? 12 : hours12 + 12);
-          const minutes = parseInt(peerReviewOpenMinute);
-          return moment(peerReviewOpenDay)
-            .hours(hours24)
-            .minutes(minutes)
-            .utc();
-        }
+        return this.models.peerReviewOpenDateTime;
       }
     },
     peerReviewOpenDateDisplay() {
