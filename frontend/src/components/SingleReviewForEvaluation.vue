@@ -6,6 +6,8 @@
 import {conversions} from '@/services/reviews';
 import ReviewByReviewer from '@/components/ReviewByReviewer';
 
+// TODO consider combining this with SingleReview component
+
 export default {
   name: 'SingleReviewForEvaluation',
   props: ['student-id', 'peer-review-id'],
