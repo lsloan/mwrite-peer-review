@@ -4,7 +4,7 @@
             <p class="heading">{{ subEntry.heading }}</p>
             <p>{{ subEntry.content }}</p>
         </div>
-        <review-evaluation :evaluation="evaluation"/>
+        <review-evaluation :evaluation="evaluation" :always-show="alwaysShowEvaluation"/>
     </div>
 </template>
 
@@ -13,7 +13,7 @@ import ReviewEvaluation from '@/components/ReviewEvaluation';
 
 export default {
   name: 'ReviewByReviewer',
-  props: ['review'],
+  props: ['review', 'always-show-evaluation'],
   components: {ReviewEvaluation},
   computed: {
     evaluation() {

@@ -5,7 +5,7 @@
             <span>Submitted</span>
         </div>
         <div v-else>
-            <div v-if="!showEvaluation">
+            <div v-if="!alwaysShow && !showEvaluation">
                 <button class="evaluation-button" @click="showEvaluation = true">Rate This Evaluation</button>
             </div>
             <form v-else class="evaluation-card" v-on:submit.prevent>
@@ -53,6 +53,7 @@
                         Submit
                     </mdl-button>
                     <mdl-button
+                        v-if="!alwaysShow"
                         colored
                         @click.native="showEvaluation = false">
                         Cancel
@@ -68,13 +69,13 @@ import { MdlButton } from 'vue-mdl';
 
 export default {
   name: 'ReviewEvaluation',
-  props: ['evaluation'],
+  props: ['evaluation', 'always-show'],
   components: {
     MdlButton
   },
   data() {
     return {
-      showEvaluation: false,
+      showEvaluation: this.alwaysShow,
       usefulness: null,
       comment: null
     };
