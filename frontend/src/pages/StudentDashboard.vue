@@ -37,12 +37,12 @@ export default {
   computed: {
     mandatoryEvaluations() {
       // TODO filter out non-mandatory evaluations
-      // TODO filter out rubric / eval entry if all evals are complete
       return R.pipe(
         R.groupBy(e => e.rubricId),
         R.map(evals => R.sortBy(e => e.studentId, evals)),
         R.toPairs,
-        R.map(makeEvaluationEntry)
+        R.map(makeEvaluationEntry),
+        R.filter(entry => !R.all(e => e.evaluationIsComplete, entry.evaluations))
       )(this.$store.state.pendingEvaluations);
     }
   },
