@@ -1,4 +1,5 @@
 import json
+import logging
 from itertools import chain
 from toolz.dicttoolz import valfilter
 from toolz.functoolz import thread_last
@@ -10,6 +11,8 @@ from peer_review.util import some, fetchall_dicts
 from peer_review.models import PeerReview, Criterion, PeerReviewComment, Rubric, \
     PeerReviewDistribution, CanvasCourse, CanvasStudent, CanvasAssignment, CanvasSubmission, \
     PeerReviewEvaluation
+
+logger = logging.getLogger(__name__)
 
 # TODO move to settings
 API_DATE_FORMAT = '%Y-%m-%d %H:%M:%SZ'
@@ -599,3 +602,64 @@ class Evaluations:
         #reviews_for_eval = filter(lambda r: r.evaluation_is_mandatory, reviews)
 
         return Evaluations._collect_evaluation_data(reviews)
+
+
+class Reviews:
+
+    @staticmethod
+    def _collect_received_reviews_data(reviews):
+
+        comments = []
+
+        reviews_by_rubric = groupby(lambda r: r.submission.assignment.rubric_for_prompt.id, reviews)
+
+        for rubric_id, reviews_for_rubric in reviews_by_rubric.items():
+            prompt_title = reviews_for_rubric[0].submission.assignment.title
+            peer_review_ids = [r.id for r in reviews_for_rubric]
+            student_numbers = {pr_id: i for i, pr_id in enumerate(peer_review_ids, start=1)}
+
+            review_comments = list(chain(*map(lambda r: r.comments.all(), reviews)))
+            criterion_ids = set(c.criterion_id for c in review_comments)
+            criterion_numbers = {cr_id: i for i, cr_id in enumerate(criterion_ids, start=1)}
+
+            for comment in review_comments:
+                peer_review = comment.peer_review
+                try:
+                    peer_review.evaluation
+                    evaluation_submitted = True
+                except PeerReviewEvaluation.DoesNotExist:
+                    evaluation_submitted = False
+
+                peer_review_id = peer_review.id
+
+                comments.append({
+                    'rubric_id': rubric_id,
+                    'prompt_title': prompt_title,
+                    'peer_review_id': peer_review_id,
+                    'evaluation_submitted': evaluation_submitted,
+                    'reviewer_id': student_numbers[peer_review_id],
+                    'comment_id': comment.id,
+                    'comment': comment.comment,
+                    'criterion_id': criterion_numbers[comment.criterion_id],
+                    'criterion': comment.criterion.description
+                })
+
+        return comments
+
+    @staticmethod
+    def single_review(course_id, review_id):
+        peer_review = PeerReview.objects.get(id=review_id)
+        return Reviews._collect_received_reviews_data([peer_review])
+
+    @staticmethod
+    def reviews_received(course_id, student_id, rubric_id=None):
+        reviews = PeerReview.objects.filter(
+            submission__assignment__course_id=course_id,
+            submission__author_id=student_id
+        )
+        if rubric_id:
+            reviews = reviews.filter(
+                submission__assignment__rubric_for_prompt__id=rubric_id
+            )
+        reviews = reviews.order_by('id')
+        return Reviews._collect_received_reviews_data(reviews)
