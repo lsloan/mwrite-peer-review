@@ -29,7 +29,7 @@
 </template>
 
 <script>
-import { sortBy } from 'ramda';
+import * as R from 'ramda';
 
 import {byDateAscending} from '@/services/util';
 import WorkCard from '@/components/WorkCard';
@@ -51,7 +51,7 @@ const makeSubEntry = (id, type, isReady, isComplete) => ({
 
 // TODO combine this with evaluationToEntry?
 const promptToEntry = prompt => {
-  const sortedReviews = sortBy(r => r.reviewId, prompt.reviews);
+  const sortedReviews = R.sortBy(r => r.reviewId, prompt.reviews);
   const subEntryType = 'review';
   const subEntryConversion = r => makeSubEntry(
     r.reviewId,
@@ -70,9 +70,9 @@ const promptToEntry = prompt => {
 };
 
 // TODO combine this with promptToEntry?
-const evaluationToEntry = peerReview => {
+const evaluationToEntry = (reviewerId, peerReview) => {
   const subEntryType = 'evaluation';
-  const sortedEvaluations = sortBy(e => e.studentId, peerReview.evaluations);
+  const sortedEvaluations = R.sortBy(e => e.studentId, peerReview.evaluations);
   const subEntryConversion = e => makeSubEntry(
     e.peerReviewId,
     subEntryType,
@@ -81,7 +81,11 @@ const evaluationToEntry = peerReview => {
   );
   const subEntries = sortedEvaluations.map(subEntryConversion);
   const makeEvaluateLink = subEntry => ({
-    // TODO eval route object goes here
+    name: 'MandatoryEvaluation',
+    params: {
+      studentId: reviewerId,
+      peerReviewId: subEntry.id
+    }
   });
   return makeEntry(subEntryType, makeEvaluateLink, peerReview.peerReviewTitle, subEntries, peerReview.dueDateUtc);
 };
@@ -91,11 +95,15 @@ export default {
   props: ['prompts', 'evaluations'],
   components: {WorkCard},
   computed: {
+    userId() {
+      return this.$store.state.userDetails.userId;
+    },
     promptEntries() {
       return this.prompts.map(promptToEntry);
     },
     evaluationEntries() {
-      return this.evaluations.map(evaluationToEntry);
+      const conversion = R.partial(evaluationToEntry, [this.userId]);
+      return this.evaluations.map(conversion);
     },
     entries() {
       const entries = this.promptEntries.concat(this.evaluationEntries);
