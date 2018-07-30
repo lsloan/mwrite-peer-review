@@ -442,10 +442,23 @@ def rubric_status_for_student(request, course_id, rubric_id, student_id):
     return ReviewStatus.detailed_rubric_status_for_student(course_id, student, rubric)
 
 
-@authorized_json_endpoint(roles=['instructor'])
+@authorized_json_endpoint(roles=['instructor', 'student'])
 def single_review(request, course_id, review_id):
+
     try:
-        return Reviews.single_review(course_id, review_id)
+        peer_review = PeerReview.objects.get(id=review_id)
+
+        if has_role(request.user, 'student'):
+            logged_in_user_id = int(request.session['lti_launch_params']['custom_canvas_user_id'])
+            review_given_by_user = logged_in_user_id == peer_review.student_id
+            review_received_by_user = logged_in_user_id == peer_review.submission.author_id
+
+            if not review_given_by_user and not review_received_by_user:
+                msg = 'User %s tried to download submission for a peer review (ID %s) they were not assigned'
+                LOGGER.warning(msg, logged_in_user_id, review_id)
+                raise PermissionDenied
+
+        return Reviews.single_review(course_id, peer_review)
     except PeerReview.DoesNotExist:
         raise Http404
 
