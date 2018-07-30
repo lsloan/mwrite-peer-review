@@ -70,7 +70,7 @@ export default {
         studentId,
         rubricId
       };
-      return this.$store.dispatch('fetchCommentsReceived', payload);
+      return this.$store.dispatch('fetchCommentsForRubric', payload);
     }
   },
   mounted() {

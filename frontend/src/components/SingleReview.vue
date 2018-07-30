@@ -1,5 +1,5 @@
 <template>
-    <reviews-by-criterion class="reviews" :data="entries"/>
+    <reviews-by-criterion class="reviews" :data="review"/>
 </template>
 
 <script>
@@ -10,28 +10,40 @@ export default {
   name: 'SingleReview',
   props: ['review-id'],
   components: {ReviewsByCriterion},
-  data() {
-    return {
-      review: []
-    };
-  },
   computed: {
     courseId() {
       return this.$store.state.userDetails.courseId;
     },
-    entries() {
-      return this.review.map(conversions.criterion);
+    comments() {
+      const reviewId = parseInt(this.reviewId);
+      return this.$store.getters.commentsBy.peerReview[reviewId];
+    },
+    review() {
+      return this.comments
+        ? [this.comments].map(conversions.criterion)
+        : [];
     },
     promptTitle() {
-      return this.review[0][0].promptTitle;
+      return this.comments && this.comments.length > 0
+        ? this.comments[0].promptTitle
+        : '';
+    }
+  },
+  methods: {
+    fetchReview() {
+      return this.$store.dispatch('fetchCommentsForReview', {
+        courseId: this.courseId,
+        peerReviewId: this.reviewId,
+        api: this.$api
+      });
+    },
+    emitTitle() {
+      this.$emit('title-resolved', this.promptTitle);
     }
   },
   mounted() {
-    this.$api.get('/course/{}/reviews/{}', this.courseId, this.reviewId)
-      .then(r => {
-        this.review = [r.data];
-        this.$emit('title-resolved', this.promptTitle);
-      });
+    this.fetchReview()
+      .then(this.emitTitle);
   }
 };
 </script>

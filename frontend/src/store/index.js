@@ -12,19 +12,21 @@ export default new Vuex.Store({
   state: {
     userDetails: {},
     breadcrumbInfo: {},
-    commentsReceived: [],
+    commentsById: {},
     pendingEvaluations: []
   },
   getters: {
     commentsBy(state) {
+      const comments = R.values(state.commentsById);
       return {
-        'rubric': R.pipe(
+        rubric: R.pipe(
           R.groupBy(c => c.rubricId),
           R.map(comments => ({
             'reviewer': R.groupBy(c => c.reviewerId, comments),
             'criterion': R.groupBy(c => c.criterionId, comments)
           }))
-        )(state.commentsReceived)
+        )(comments),
+        peerReview: R.groupBy(c => c.peerReviewId, comments)
       };
     }
   },
@@ -35,8 +37,8 @@ export default new Vuex.Store({
     updateBreadcrumbInfo(state, breadcrumbInfo) {
       state.breadcrumbInfo = breadcrumbInfo;
     },
-    updateCommentsReceived(state, commentsReceived) {
-      state.commentsReceived = commentsReceived;
+    mergeComments(state, newCommentsById) {
+      state.commentsById = R.merge(state.commentsById, newCommentsById);
     },
     updatePendingEvaluations(state, pendingEvaluations) {
       state.pendingEvaluations = pendingEvaluations;
@@ -50,13 +52,17 @@ export default new Vuex.Store({
     fetchUserDetails(context) {
       return api.get('/user/self').then(response => context.commit('updateUserDetails', response.data));
     },
-    fetchCommentsReceived(context, payload) {
-      const {courseId, studentId} = payload;
-      const rubricId = payload.rubricId ? payload.rubricId : 'all';
+    fetchCommentsForRubric(context, payload) {
+      const {courseId, studentId, rubricId} = payload;
       const apiService = payload.api ? payload.api : api;
-
       return apiService.get('/course/{}/reviews/student/{}/received/{}', courseId, studentId, rubricId)
-        .then(response => context.commit('updateCommentsReceived', response.data));
+        .then(response => context.commit('mergeComments', response.data));
+    },
+    fetchCommentsForReview(context, payload) {
+      const {courseId, peerReviewId} = payload;
+      const apiService = payload.api ? payload.api : api;
+      return apiService.get('/course/{}/reviews/{}', courseId, peerReviewId)
+        .then(response => context.commit('mergeComments', response.data));
     },
     submitEvaluation(context, payload) {
       const {courseId, userId, peerReviewId, data} = payload;

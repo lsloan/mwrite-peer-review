@@ -1,9 +1,11 @@
 import json
 import logging
 from itertools import chain
+
 from toolz.dicttoolz import valfilter
 from toolz.functoolz import thread_last
 from toolz.itertoolz import groupby, unique
+
 from django.db import connection
 from django.db.models import BooleanField, Subquery, OuterRef, Count, Case, When, Value, F, Q
 
@@ -609,7 +611,7 @@ class Reviews:
     @staticmethod
     def _collect_received_reviews_data(reviews):
 
-        comments = []
+        comments_by_id = {}
 
         reviews_by_rubric = groupby(lambda r: r.submission.assignment.rubric_for_prompt.id, reviews)
 
@@ -632,7 +634,7 @@ class Reviews:
 
                 peer_review_id = peer_review.id
 
-                comments.append({
+                comments_by_id[comment.id] = {
                     'rubric_id': rubric_id,
                     'prompt_title': prompt_title,
                     'peer_review_id': peer_review_id,
@@ -642,9 +644,9 @@ class Reviews:
                     'comment': comment.comment,
                     'criterion_id': criterion_numbers[comment.criterion_id],
                     'criterion': comment.criterion.description
-                })
+                }
 
-        return comments
+        return comments_by_id
 
     @staticmethod
     def single_review(course_id, review_id):
