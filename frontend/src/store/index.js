@@ -1,5 +1,7 @@
 import Vue from 'vue';
 import Vuex from 'vuex';
+import * as R from 'ramda';
+
 import api from '@/services/api';
 
 Vue.use(Vuex);
@@ -10,8 +12,21 @@ export default new Vuex.Store({
   state: {
     userDetails: {},
     breadcrumbInfo: {},
-    reviewsReceived: {},
+    commentsReceived: [],
     pendingEvaluations: []
+  },
+  getters: {
+    commentsBy(state) {
+      return {
+        'rubric': R.pipe(
+          R.groupBy(c => c.rubricId),
+          R.map(comments => ({
+            'reviewer': R.groupBy(c => c.reviewerId, comments),
+            'criterion': R.groupBy(c => c.criterionId, comments)
+          }))
+        )(state.commentsReceived)
+      };
+    }
   },
   mutations: {
     updateUserDetails(state, userDetails) {
@@ -20,8 +35,8 @@ export default new Vuex.Store({
     updateBreadcrumbInfo(state, breadcrumbInfo) {
       state.breadcrumbInfo = breadcrumbInfo;
     },
-    updateReviewsReceived(state, reviewsReceived) {
-      state.reviewsReceived = reviewsReceived;
+    updateCommentsReceived(state, commentsReceived) {
+      state.commentsReceived = commentsReceived;
     },
     updatePendingEvaluations(state, pendingEvaluations) {
       state.pendingEvaluations = pendingEvaluations;
@@ -35,12 +50,13 @@ export default new Vuex.Store({
     fetchUserDetails(context) {
       return api.get('/user/self').then(response => context.commit('updateUserDetails', response.data));
     },
-    fetchReviewsReceived(context, payload) {
-      const {courseId, studentId, rubricId} = payload;
+    fetchCommentsReceived(context, payload) {
+      const {courseId, studentId} = payload;
+      const rubricId = payload.rubricId ? payload.rubricId : 'all';
       const apiService = payload.api ? payload.api : api;
 
       return apiService.get('/course/{}/reviews/student/{}/received/{}', courseId, studentId, rubricId)
-        .then(response => context.commit('updateReviewsReceived', response.data));
+        .then(response => context.commit('updateCommentsReceived', response.data));
     },
     submitEvaluation(context, payload) {
       const {courseId, userId, peerReviewId, data} = payload;

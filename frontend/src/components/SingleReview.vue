@@ -3,7 +3,7 @@
 </template>
 
 <script>
-import {denormalizers} from '@/services/reviews';
+import {conversions} from '@/services/reviews';
 import ReviewsByCriterion from '@/components/ReviewsByCriterion';
 
 export default {
@@ -12,7 +12,7 @@ export default {
   components: {ReviewsByCriterion},
   data() {
     return {
-      data: {}
+      review: []
     };
   },
   computed: {
@@ -20,19 +20,17 @@ export default {
       return this.$store.state.userDetails.courseId;
     },
     entries() {
-      const {entries = []} = this.data;
-      return denormalizers['criterion'](entries);
+      return this.review.map(conversions.criterion);
     },
-    title() {
-      const {promptTitle = ''} = this.data;
-      return promptTitle;
+    promptTitle() {
+      return this.review[0][0].promptTitle;
     }
   },
   mounted() {
     this.$api.get('/course/{}/reviews/{}', this.courseId, this.reviewId)
       .then(r => {
-        this.data = r.data;
-        this.$emit('title-resolved', this.title);
+        this.review = [r.data];
+        this.$emit('title-resolved', this.promptTitle);
       });
   }
 };

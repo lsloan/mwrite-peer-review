@@ -25,7 +25,9 @@
 </template>
 
 <script>
-import {denormalizers} from '@/services/reviews';
+import * as R from 'ramda';
+
+import {conversions} from '@/services/reviews';
 import ReviewsByReviewer from '@/components/ReviewsByReviewer';
 import ReviewsByCriterion from '@/components/ReviewsByCriterion';
 
@@ -42,20 +44,22 @@ export default {
     courseId() {
       return this.$store.state.userDetails.courseId;
     },
-    reviewsReceived() {
-      return this.$store.state.reviewsReceived;
+    commentsForRubric() {
+      const rubricId = parseInt(this.rubricId);
+      const commentsForRubric = this.$store.getters.commentsBy.rubric[rubricId];
+      return commentsForRubric ? commentsForRubric[this.viewBy] : {};
     },
-    rawReviews() {
-      const {entries = []} = this.reviewsReceived;
-      return entries;
+    promptTitle() {
+      return Object.values(this.commentsForRubric)[0][0].promptTitle;
     },
     reviews() {
-      return denormalizers[this.viewBy](this.rawReviews);
+      const convertedReviews = R.map(conversions[this.viewBy], this.commentsForRubric);
+      return R.values(convertedReviews);
     }
   },
   methods: {
     emitTitles() {
-      this.$emit('title-resolved', this.reviewsReceived.title);
+      this.$emit('title-resolved', this.promptTitle);
       this.$emit('subtitle-resolved', 'Reviews Received');
     },
     fetchReviewsReceived() {
@@ -66,7 +70,7 @@ export default {
         studentId,
         rubricId
       };
-      return this.$store.dispatch('fetchReviewsReceived', payload);
+      return this.$store.dispatch('fetchCommentsReceived', payload);
     }
   },
   mounted() {
@@ -118,5 +122,4 @@ export default {
     .control-button:focus {
         outline: 0;
     }
-
 </style>
