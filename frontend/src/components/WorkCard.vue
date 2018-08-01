@@ -20,7 +20,7 @@
                         class="start-action-item-button mdl-button mdl-js-button mdl-button--colored">
                         Start {{ entry.type }}
                     </router-link>
-                    <div v-else :class="{'action-item-status-container': true, 'action-item-status-container--done': entry.isComplete}">
+                    <div v-else :class="{'action-item-status-container': true, 'action-item-status-container--info': entry.isComplete}">
                         <i class="material-icons">
                             <template v-if="entry.isComplete">done</template>
                             <template v-else-if="!entry.isReady">query_builder</template>
@@ -127,7 +127,7 @@ export default {
         padding: 9px 0;
     }
 
-    .action-item-status-container--done {
+    .action-item-status-container--info {
         color: #52A763;
     }
 
