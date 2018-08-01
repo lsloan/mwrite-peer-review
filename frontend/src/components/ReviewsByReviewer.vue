@@ -1,7 +1,7 @@
 <template>
     <mdl-tabs v-model="selectedTab" class="tabs">
         <mdl-tab v-for="entry in data" :key="entry.id" :tab="entry.title">
-            <review-by-reviewer :review="entry"/>
+            <review-by-reviewer :allow-evaluation="allowEvaluation" :review="entry"/>
         </mdl-tab>
     </mdl-tabs>
 </template>
@@ -13,7 +13,7 @@ import ReviewByReviewer from '@/components/ReviewByReviewer';
 
 export default {
   name: 'reviews-by-reviewer',
-  props: ['data'],
+  props: ['data', 'allow-evaluation'],
   components: {MdlTab, MdlTabs, ReviewByReviewer},
   data() {
     return {

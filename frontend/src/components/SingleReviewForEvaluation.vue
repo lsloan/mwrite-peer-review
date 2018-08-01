@@ -1,5 +1,5 @@
 <template>
-    <review-by-reviewer class="review" :review="review" :always-show-evaluation="true"/>
+    <review-by-reviewer class="review" :review="review" :allow-evaluation="true" :always-show-evaluation="true"/>
 </template>
 
 <script>

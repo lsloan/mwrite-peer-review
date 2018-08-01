@@ -1,6 +1,6 @@
 <template>
     <div class="reviews-body">
-        <reviews-by-reviewer :data="reviewEntries"/>
+        <reviews-by-reviewer :allow-evaluation="false" :data="reviewEntries"/>
     </div>
 </template>
 
