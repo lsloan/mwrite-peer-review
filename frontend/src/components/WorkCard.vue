@@ -25,7 +25,7 @@
                             <template v-if="entry.isComplete">done</template>
                             <template v-else-if="!entry.isReady">query_builder</template>
                         </i>
-                        <span v-if="!entry.isReady">Review Not Received</span>
+                        <span v-if="!entry.isReady">Not Received</span>
                         <span v-else>Submitted</span>
                     </div>
 
