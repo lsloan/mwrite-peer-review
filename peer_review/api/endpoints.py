@@ -7,6 +7,7 @@ from itertools import chain
 from datetime import datetime
 
 from dateutil.tz import tzutc
+from toolz.itertoolz import join
 from django.db import transaction
 from django.conf import settings
 from django.http import Http404, HttpResponse, JsonResponse
@@ -16,6 +17,7 @@ from rolepermissions.roles import get_user_roles
 from rolepermissions.checkers import has_role
 
 import peer_review.etl as etl
+import peer_review.canvas as canvas
 from peer_review.api.util import merge_validations, validate_rubric, raise_if_not_current_user, \
     raise_if_peer_review_not_given_to_student
 from peer_review.util import to_camel_case, keymap_all
@@ -25,7 +27,7 @@ from peer_review.decorators import authorized_endpoint, authorized_json_endpoint
 from peer_review.models import CanvasCourse, CanvasStudent, CanvasAssignment, CanvasSubmission, \
     Rubric, Criterion, PeerReview, PeerReviewComment, PeerReviewEvaluation, PeerReviewDistribution
 from peer_review.queries import InstructorDashboardStatus, StudentDashboardStatus, ReviewStatus, \
-    RubricForm, Comments
+    RubricForm, Comments, Students
 
 
 LOGGER = logging.getLogger(__name__)
@@ -505,3 +507,39 @@ def dispatch_peer_review_request(*args, **kwargs):
         msg = 'Unsupported method %s' % request.method
         return JsonResponse({'error': msg}, status=405)
     return view(*args, **kwargs)
+
+
+@authorized_json_endpoint(roles=['instructor'])
+def non_reviewers_for_rubric(request, course_id, rubric_id):
+    try:
+        rubric = Rubric.objects.get(id=rubric_id)
+    except Rubric.DoesNotExist:
+        raise Http404
+
+    etl.persist_students(course_id)
+
+    non_reviewers = Students.non_reviewers_for_rubric(course_id, rubric)
+    submissions = canvas.retrieve('submissions', course_id, rubric.reviewed_assignment.id)
+
+    non_reviewers_and_submission_statuses = join(
+        lambda st: st.id, non_reviewers,
+        lambda su: su['user_id'], submissions
+    )
+
+    entries = []
+    for non_reviewer, submission_status in non_reviewers_and_submission_statuses:
+        submitted = submission_status['workflow_state'] != 'unsubmitted'
+        submitted_late = not submitted or submission_status['late'] is True
+        sections = non_reviewer.sections.all().values_list('name', flat=True)
+        entries.append({
+            'student_id': non_reviewer.id,
+            'student_sortable_name': non_reviewer.sortable_name,
+            'student_sections': ', '.join(sections),
+            'submitted': submitted,
+            'submitted_late': submitted_late
+        })
+
+    return {
+        'peer_review_title': rubric.passback_assignment.title,
+        'students': entries
+    }
