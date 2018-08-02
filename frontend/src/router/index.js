@@ -16,6 +16,7 @@ import AssignmentStatus from '@/pages/AssignmentStatus';
 import Rubric from '@/pages/Rubric';
 import StudentDashboard from '@/pages/StudentDashboard';
 import PeerReview from '@/pages/PeerReview';
+import ManualDistribution from '@/pages/ManualDistribution';
 
 Vue.use(Router);
 
@@ -76,6 +77,12 @@ const router = new Router({
           {text: info['title'], href: `/instructor/reviews/rubric/${info.rubricId}`}
         ])
       }
+    },
+    {
+      path: '/instructor/reviews/rubric/:rubricId/unassigned',
+      component: ManualDistribution,
+      beforeEnter: authenticatedInstructorsOnly,
+      props: route => ({rubricId: route.params.rubricId})
     },
     {
       path: '/instructor/reviews/student/:studentId',
