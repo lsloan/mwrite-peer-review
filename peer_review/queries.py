@@ -377,7 +377,7 @@ class ReviewStatus:
             })
 
         return reviews
-            
+
     # TODO refactor to push load onto the DB
     # this method was pulled out of peer_review.views.core.AssignmentStatus
     @staticmethod
@@ -536,3 +536,18 @@ class Comments:
         comments_received = PeerReviewComment.objects.filter(**comments_received_args)
 
         return chain(comments_given, comments_received)
+
+
+class Students:
+
+    @staticmethod
+    def reviewers_for_rubric(rubric):
+        reviews = PeerReview.objects.filter(submission__assignment__rubric_for_prompt__id=rubric.id)
+        students = reviews.values('student')
+        return CanvasStudent.objects.filter(id__in=students)
+
+    @staticmethod
+    def non_reviewers_for_rubric(course_id, rubric):
+        reviewers = Students.reviewers_for_rubric(rubric)
+        return CanvasStudent.objects.filter(courses=course_id) \
+            .exclude(id__in=reviewers)
