@@ -458,7 +458,7 @@ def single_review(request, course_id, review_id):
                 LOGGER.warning(msg, logged_in_user_id, review_id)
                 raise PermissionDenied
 
-        return Reviews.single_review(course_id, peer_review)
+        return Reviews.single_review(peer_review)
     except PeerReview.DoesNotExist:
         raise Http404
 

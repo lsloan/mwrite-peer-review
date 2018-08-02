@@ -647,7 +647,7 @@ class Reviews:
         return comments_by_id
 
     @staticmethod
-    def single_review(course_id, peer_review):
+    def single_review(peer_review):
         return Reviews._collect_received_reviews_data([peer_review])
 
     @staticmethod
