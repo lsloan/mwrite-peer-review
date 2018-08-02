@@ -147,8 +147,8 @@ def reviews_received(request, course_id, student_id, rubric_id):
 
 
 @authorized_json_endpoint(roles=['student'])
-def mandatory_peer_review_evaluations(request, course_id, student_id):
-    return Evaluations.pending_mandatory_evaluations(course_id, student_id)
+def peer_review_evaluations(request, course_id, student_id):
+    return Evaluations.pending_evaluations(course_id, student_id)
 
 
 @require_POST

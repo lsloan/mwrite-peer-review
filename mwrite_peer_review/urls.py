@@ -55,7 +55,7 @@ urlpatterns = [
                 url(r'^received/(?P<rubric_id>[0-9]+)', api.reviews_received),
                 url(r'^evaluation/', include([
                     url(r'(?P<peer_review_id>[0-9]+)/', api.submit_peer_review_evaluation),
-                    url(r'pending/', api.mandatory_peer_review_evaluations)
+                    url(r'pending/', api.peer_review_evaluations)
                 ]))
             ]))
         ])),

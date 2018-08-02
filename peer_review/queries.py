@@ -563,15 +563,15 @@ class Evaluations:
             # due_date_utc = reviews_for_rubric[0].evaluation_due_date_utc
             due_date_utc = '2018-10-08 23:41:54Z'
 
-            for r in reviews_for_rubric:
+            for review in reviews_for_rubric:
                 evaluations_for_rubric = []
 
-                student_id = student_numbers[r.id]
-                ready_for_evaluation = r.comments.exists()
+                student_id = student_numbers[review.id]
+                ready_for_evaluation = review.comments.exists()
 
                 evaluation_is_complete = False
                 try:
-                    if r.evaluation:
+                    if review.evaluation:
                         evaluation_is_complete = True
                 except PeerReviewEvaluation.DoesNotExist:
                     pass
@@ -580,10 +580,11 @@ class Evaluations:
                     'rubric_id': rubric_id,
                     'peer_review_title': peer_review_title,
                     'due_date_utc': due_date_utc,
-                    'peer_review_id': r.id,
+                    'peer_review_id': review.id,
                     'student_id': student_id,
                     'ready_for_evaluation': ready_for_evaluation,
-                    'evaluation_is_complete': evaluation_is_complete
+                    'evaluation_is_complete': evaluation_is_complete,
+                    'evaluation_is_mandatory': True  # review.evaluation_is_mandatory # TODO blocked on #278
                 })
 
                 # TODO only add evaluations if all are not completed
@@ -592,16 +593,13 @@ class Evaluations:
         return evaluations
 
     @staticmethod
-    def pending_mandatory_evaluations(course_id, student_id):
+    def pending_evaluations(course_id, student_id):
         reviews = PeerReview.objects.filter(
             submission__assignment__course_id=course_id,
             submission__assignment__rubric_for_prompt__id__isnull=False,
             submission__author_id=student_id,
         )\
             .order_by('id')
-
-        # TODO blocked on #278
-        #reviews_for_eval = filter(lambda r: r.evaluation_is_mandatory, reviews)
 
         return Evaluations._collect_evaluation_data(reviews)
 

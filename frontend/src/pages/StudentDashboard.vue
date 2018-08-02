@@ -36,8 +36,9 @@ export default {
   },
   computed: {
     mandatoryEvaluations() {
-      // TODO filter out non-mandatory evaluations
+      // TODO consider moving some of this logic to Vuex getter(s)
       return R.pipe(
+        R.filter(e => e.evaluationIsMandatory),
         R.groupBy(e => e.rubricId),
         R.map(evals => R.sortBy(e => e.studentId, evals)),
         R.toPairs,
