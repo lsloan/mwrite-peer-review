@@ -1,6 +1,6 @@
 <template>
     <div>
-        <div class="mdl-grid">
+        <div class="mdl-grid" v-if="tableName">
             <div class="mdl-cell mdl-cell--12-col">
                 <h1 class="title">{{ tableName }}</h1>
             </div>
@@ -8,7 +8,7 @@
         <div class="mdl-grid">
             <div v-for="{key, filter: {type, makeFilterChoices}} in filterableColumns"
                  :key="key"
-                 class="mdl-cell mdl-cell--3-col mdl-cell--3-col-tablet mdl-cell--4-col-phone">
+                 class="filter-container mdl-cell mdl-cell--3-col mdl-cell--3-col-tablet mdl-cell--4-col-phone">
                 <div v-if="type === 'absolute'" class="mdl-textfield flexbox">
                     <input v-model="filterValues[key]"
                             class="mdl-textfield__input clickable absolute-filter"
@@ -259,6 +259,10 @@ export default {
 </script>
 
 <style scoped>
+    .filter-container {
+        padding-left: 24px;
+    }
+
     .title {
         font-size: 30px;
         font-weight: 700;
