@@ -530,11 +530,14 @@ def non_reviewers_for_rubric(request, course_id, rubric_id):
     for non_reviewer, submission_status in non_reviewers_and_submission_statuses:
         submitted = submission_status['workflow_state'] != 'unsubmitted'
         submitted_late = not submitted or submission_status['late'] is True
-        sections = non_reviewer.sections.all().values_list('name', flat=True)
+        sections = non_reviewer.sections \
+            .filter(course_id=course_id) \
+            .values_list('name', flat=True)
+        sections_display = ', '.join(sections)
         entries.append({
             'student_id': non_reviewer.id,
             'student_sortable_name': non_reviewer.sortable_name,
-            'student_sections': ', '.join(sections),
+            'student_sections': sections_display,
             'submitted': submitted,
             'submitted_late': submitted_late
         })
