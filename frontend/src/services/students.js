@@ -11,11 +11,13 @@ export const makeStudentEntry = student => ({
   sections: student.sections
 });
 
-export const alphabeticalComparator = (a, b) => {
-  if(a.name.toLowerCase() < b.name.toLowerCase()) {
+export const alphabeticalComparator = (a, b, accessor = R.prop('name')) => {
+  const aValue = accessor(a);
+  const bValue = accessor(b);
+  if(aValue.toLowerCase() < bValue.toLowerCase()) {
     return -1;
   }
-  if(a.name.toLowerCase() > b.name.toLowerCase()) {
+  if(aValue.toLowerCase() > bValue.toLowerCase()) {
     return 1;
   }
   return 0;
@@ -51,8 +53,8 @@ export const entriesToFilterChoices = entries => {
     .sort((a, b) => a.value - b.value);
 };
 
-export const rowMatchesStudentNameFilter = (value, entry) => {
-  return value === '' || entry.name.toLowerCase().includes(value.toLowerCase());
+export const rowMatchesStudentNameFilter = (value, entry, accessor = R.prop('name')) => {
+  return value === '' || accessor(entry).toLowerCase().includes(value.toLowerCase());
 };
 
 export const rowMatchesSectionFilter = (value, entry) => {

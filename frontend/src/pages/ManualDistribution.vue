@@ -17,21 +17,62 @@
             </div>
             <div class="mdl-cell mdl-cell--4-col"></div>
         </div>
-        <div class="mdl-grid">
-            <div class="mdl-cell mdl-cell--12-col">
-                <p>TODO table for rubric {{rubricId}} goes here</p>
-            </div>
-        </div>
+        <filterable-table
+            :entries="students"
+            :column-mapping="columnMapping"/>
     </div>
 </template>
 
 <script>
+import * as R from 'ramda';
+
+import {alphabeticalComparator, rowMatchesStudentNameFilter} from '@/services/students';
+import FilterableTable from '@/components/FilterableTable';
+
+const COLUMN_MAPPING = [
+  {
+    key: 'studentSortableName',
+    description: 'Student Name',
+    transform: R.identity,
+    filter: {
+      type: 'absolute',
+      defaultValue: '',
+      predicate: R.partialRight(rowMatchesStudentNameFilter, [R.prop('studentSortableName')]),
+      saveToSessionStorage: false
+    }
+  },
+  {
+    key: 'studentSections',
+    description: 'Sections',
+    transform: R.identity
+  },
+  {
+    key: 'submissionState',
+    description: 'Submission Status',
+    transform: R.identity
+  }
+];
+
+const submissionStateForStudent = student => {
+  if(!student.submitted) {
+    return 'not-submitted';
+  }
+  else if(student.submittedLate) {
+    return 'submitted-late';
+  }
+  else {
+    return 'unknown';
+  }
+};
+
 export default {
   name: 'ManualDistribution',
   props: ['rubric-id'],
+  components: {FilterableTable},
   data() {
     return {
-      data: {}
+      data: {},
+      columnMapping: COLUMN_MAPPING
     };
   },
   computed: {
@@ -42,6 +83,12 @@ export default {
     peerReviewTitle() {
       const {peerReviewTitle = '...'} = this.data;
       return peerReviewTitle;
+    },
+    students() {
+      const {students = []} = this.data;
+      return students
+        .map(s => R.assoc('submissionState', submissionStateForStudent(s), s))
+        .sort(R.partialRight(alphabeticalComparator, [R.prop('studentSortableName')]));
     }
   },
   mounted() {

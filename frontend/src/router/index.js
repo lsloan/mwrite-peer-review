@@ -80,6 +80,7 @@ const router = new Router({
     },
     {
       path: '/instructor/reviews/rubric/:rubricId/unassigned',
+      name: 'UnassignedStudents',
       component: ManualDistribution,
       beforeEnter: authenticatedInstructorsOnly,
       props: route => ({rubricId: route.params.rubricId})
