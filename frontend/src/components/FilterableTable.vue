@@ -50,10 +50,11 @@
                             v-on:click="clickRow(row.id)"
                             v-for="row in paginatedFilteredEntries" :key="row.index"
                             :class="resolveRowClasses(row)">
-                            <td v-for="{key, transform} in columnMapping"
+                            <td v-for="{key, transform, component} in columnMapping"
                                 :key="key"
                                 :class="tableCellClasses">
-                                {{ transform(row[key]) }}
+                                <component v-if="component" :is="component" v-bind="transform(row)"/>
+                                <template v-else>{{ transform(row[key]) }}</template>
                             </td>
                         </tr>
                     </tbody>
