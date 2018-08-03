@@ -47,12 +47,12 @@
                             </td>
                         </tr>
                         <tr v-else
-                            v-on:click="rowClickHandler(row.id)"
+                            v-on:click="clickRow(row.id)"
                             v-for="row in paginatedFilteredEntries" :key="row.index"
                             :class="resolveRowClasses(row)">
                             <td v-for="{key, transform} in columnMapping"
                                 :key="key"
-                                class="mdl-data-table__cell--non-numeric clickable student-table-cell">
+                                :class="tableCellClasses">
                                 {{ transform(row[key]) }}
                             </td>
                         </tr>
@@ -115,6 +115,16 @@ export default {
     };
   },
   computed: {
+    rowsAreClickable() {
+      return Boolean(this.rowClickHandler);
+    },
+    tableCellClasses() {
+      return {
+        'mdl-data-table__cell--non-numeric': true,
+        'student-table-cell': true,
+        'clickable': this.rowsAreClickable
+      };
+    },
     filterableColumns() {
       const filterableColumns = this.columnMapping.filter(({filter = null}) => filter);
       return filterableColumns.reverse();
@@ -237,6 +247,11 @@ export default {
       }
 
       return range;
+    },
+    clickRow(rowId) {
+      if(this.rowsAreClickable) {
+        this.rowClickHandler(rowId);
+      }
     }
   },
   watch: {
