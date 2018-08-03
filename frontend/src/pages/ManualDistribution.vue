@@ -21,6 +21,14 @@
             :is-loading="isLoading"
             :entries="students"
             :column-mapping="columnMapping"/>
+        <div class="mdl-grid">
+            <button type="button"
+                    class="assign-reviews-button mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect mdl-button--accent"
+                    :disabled="studentsToBeAssigned.length === 0"
+                    @click="assignReviews">
+                Assign Reviews
+            </button>
+        </div>
     </div>
 </template>
 
@@ -116,6 +124,10 @@ export default {
   methods: {
     selectStudent({studentId, checked}) {
       Vue.set(this.selectedStudents, studentId, checked);
+    },
+    assignReviews() {
+      // TODO implement this
+      console.log('would have assigned review to', this.studentsToBeAssigned);
     }
   },
   mounted() {
@@ -141,5 +153,9 @@ export default {
 
     .caption-row {
         padding-right: 0; /* to prevent text reflow when the table dimensions necessitate a scrollbar */
+    }
+
+    .assign-reviews-button {
+        margin: 0 auto;
     }
 </style>
