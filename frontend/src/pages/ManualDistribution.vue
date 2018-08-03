@@ -25,12 +25,26 @@
 </template>
 
 <script>
+import Vue from 'vue';
 import * as R from 'ramda';
 
 import {alphabeticalComparator, rowMatchesStudentNameFilter} from '@/services/students';
 import FilterableTable from '@/components/FilterableTable';
 
+import StudentCheckbox from '@/components/StudentCheckbox';
+
+const EventBus = new Vue();
+
 const COLUMN_MAPPING = [
+  {
+    component: StudentCheckbox,
+    description: '',
+    transform: row => ({
+      'student-id': row.studentId,
+      'student-name': row.studentSortableName,
+      'event-bus': EventBus
+    })
+  },
   {
     key: 'studentSortableName',
     description: 'Student Name',
@@ -73,6 +87,7 @@ export default {
   data() {
     return {
       isLoading: true,
+      selectedStudents: {},
       data: {},
       columnMapping: COLUMN_MAPPING
     };
@@ -91,6 +106,16 @@ export default {
       return students
         .map(s => R.assoc('submissionState', submissionStateForStudent(s), s))
         .sort(R.partialRight(alphabeticalComparator, [R.prop('studentSortableName')]));
+    },
+    studentsToBeAssigned() {
+      const selectedStudents = R.filter(R.identity, this.selectedStudents);
+      const selectedStudentIds = R.keys(selectedStudents);
+      return selectedStudentIds.map(id => parseInt(id));
+    }
+  },
+  methods: {
+    selectStudent({studentId, checked}) {
+      Vue.set(this.selectedStudents, studentId, checked);
     }
   },
   mounted() {
@@ -99,6 +124,10 @@ export default {
         this.data = response.data;
         this.isLoading = false;
       });
+    EventBus.$on('select-student', this.selectStudent);
+  },
+  destroyed() {
+    EventBus.$off('select-student', this.selectStudent);
   }
 };
 </script>
