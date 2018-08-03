@@ -5,7 +5,7 @@
                 <h2 class="peer-review-title">{{ peerReviewTitle }}</h2>
             </div>
         </div>
-        <div class="mdl-grid">
+        <div class="mdl-grid caption-row">
             <div class="mdl-cell mdl-cell--8-col">
                 <p>
                     The students listed below have not been assigned peer reviews because they did not submit their
@@ -18,6 +18,7 @@
             <div class="mdl-cell mdl-cell--4-col"></div>
         </div>
         <filterable-table
+            :is-loading="isLoading"
             :entries="students"
             :column-mapping="columnMapping"/>
     </div>
@@ -71,6 +72,7 @@ export default {
   components: {FilterableTable},
   data() {
     return {
+      isLoading: true,
       data: {},
       columnMapping: COLUMN_MAPPING
     };
@@ -95,6 +97,7 @@ export default {
     this.$api.get('/course/{}/reviews/rubric/{}/unassigned', this.courseId, this.rubricId)
       .then(response => {
         this.data = response.data;
+        this.isLoading = false;
       });
   }
 };
@@ -105,5 +108,9 @@ export default {
         font-size: 24px;
         line-height: 32px;
         margin: 24px 0 0;
+    }
+
+    .caption-row {
+        padding-right: 0; /* to prevent text reflow when the table dimensions necessitate a scrollbar */
     }
 </style>
