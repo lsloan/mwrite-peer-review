@@ -70,6 +70,12 @@
                          :to="{name: 'ReviewStatus', params: {rubricId: this.rubricId}}">
                 See Reviews
             </router-link>
+            <router-link v-if="reviewsInProgress"
+                         class="mdl-button mdl-button--colored mdl-js-button mdl-js-ripple-effect"
+                         :to="{name: 'UnassignedStudents', params: {rubricId: rubricId}}">
+                Assign Reviews
+            </router-link>
+
         </div>
 
     </div>
