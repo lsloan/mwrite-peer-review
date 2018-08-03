@@ -59,7 +59,8 @@
                     </tbody>
                 </table>
             </div>
-            <div class="flexbox pagination-container x-scrollable" v-if="isLoading === false">
+            <div v-if="isLoading === false && buttonsToShow.length > 1"
+                 class="flexbox pagination-container x-scrollable">
                 <button class="pagination-button" type="button" v-on:click="goToPrevPage">Prev</button>
 
                 <div v-for="(currentButton, index) in buttonsToShow" v-bind:key="index">
