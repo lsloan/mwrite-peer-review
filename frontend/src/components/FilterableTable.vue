@@ -30,7 +30,7 @@
                 </div>
 
                 <!-- control types -->
-                <div v-if="controlType === 'control' && data.type === 'button'">
+                <div v-if="controlType === 'control' && data.type === 'button'" class="control-button">
                     <button type="button"
                             class="mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect mdl-button--accent"
                             @click="data.eventBus.$emit(data.event)">
@@ -306,6 +306,10 @@ export default {
 <style scoped>
     .filter-container {
         padding-left: 24px;
+    }
+
+    .control-button {
+        padding: 20px 0;
     }
 
     .title {
