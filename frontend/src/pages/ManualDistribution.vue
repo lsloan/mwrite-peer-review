@@ -143,6 +143,24 @@ export default {
     }
   },
   methods: {
+    initializeEventBus() {
+      EventBus.$on('select-student', this.selectStudent);
+      EventBus.$on(SELECT_NON_SUBMITTER_EVENT, this.selectNonSubmittingStudents);
+      EventBus.$on(SELECT_LATE_SUBMITTER_EVENT, this.selectLateSubmittingStudents);
+    },
+    cleanUpEventBus() {
+      EventBus.$off('select-student', this.selectStudent);
+      EventBus.$off(SELECT_NON_SUBMITTER_EVENT, this.selectNonSubmittingStudents);
+      EventBus.$off(SELECT_LATE_SUBMITTER_EVENT, this.selectLateSubmittingStudents);
+    },
+    selectNonSubmittingStudents() {
+      // TODO implement this
+      console.log('would have selected non-submitting students');
+    },
+    selectLateSubmittingStudents() {
+      // TODO implement this
+      console.log('would have selected late-submitting students');
+    },
     selectStudent({studentId, checked}) {
       Vue.set(this.selectedStudents, studentId, checked);
     },
@@ -157,10 +175,10 @@ export default {
         this.data = response.data;
         this.isLoading = false;
       });
-    EventBus.$on('select-student', this.selectStudent);
+    this.initializeEventBus();
   },
   destroyed() {
-    EventBus.$off('select-student', this.selectStudent);
+    this.cleanUpEventBus();
   }
 };
 </script>
