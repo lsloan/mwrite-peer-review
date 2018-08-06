@@ -135,10 +135,6 @@ export default {
 </script>
 
 <style scoped>
-    .peer-review-assignment-card {
-        /*width: 330px;*/
-    }
-
     .mdl-card__actions {
         display: block;
         text-align: center;
