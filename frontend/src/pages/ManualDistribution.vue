@@ -25,16 +25,18 @@
         <div class="mdl-grid">
             <button type="button"
                     class="assign-reviews-button mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect mdl-button--accent"
-                    :disabled="studentsToBeAssigned.length === 0"
+                    :disabled="isLoading || studentsToBeAssigned.length === 0"
                     @click="assignReviews">
                 Assign Reviews
             </button>
         </div>
+        <mdl-snackbar display-on="notification"/> <!-- TODO replace this with Snackbar component when PR #325 is merged -->
     </div>
 </template>
 
 <script>
 import Vue from 'vue';
+import {MdlSnackbar} from 'vue-mdl'; // TODO replace this with Snackbar component when PR #325 is merged
 import * as R from 'ramda';
 
 import {alphabeticalComparator, rowMatchesStudentNameFilter} from '@/services/students';
@@ -116,7 +118,7 @@ const submissionStateForStudent = student => {
 export default {
   name: 'ManualDistribution',
   props: ['rubric-id'],
-  components: {FilterableTable},
+  components: {FilterableTable, MdlSnackbar},
   data() {
     return {
       isLoading: true,
@@ -155,13 +157,12 @@ export default {
       EventBus.$off(SELECT_LATE_SUBMITTER_EVENT, this.selectLateSubmittingStudents);
     },
     initializeData() {
-      this.isLoading = true;
-      this.$api.get('/course/{}/reviews/rubric/{}/unassigned', this.courseId, this.rubricId)
+      this.$store.commit('resetManualReviewDistribution');
+      return this.$api.get('/course/{}/reviews/rubric/{}/unassigned', this.courseId, this.rubricId)
         .then(response => {
           this.data = response.data;
           this.isLoading = false;
         });
-      this.$store.commit('resetManualReviewDistribution');
     },
     selectStudents(predicate) {
       this.students
@@ -181,14 +182,22 @@ export default {
       this.selectStudents(s => s.submissionState === SUBMISSION_STATE_SUBMITTED_LATE);
     },
     assignReviews() {
-      // TODO implement this
-      console.log('would have assigned review to', this.studentsToBeAssigned);
-      this.initializeData();
+      this.isLoading = true;
+      const payload = {
+        studentIds: this.studentsToBeAssigned
+      };
+      this.$api.post('/course/{}/reviews/rubric/{}/assign/', payload, this.courseId, this.rubricId)
+        .then(this.initializeData)
+        .then(() => {
+          this.$root.$emit('notification', {
+            message: 'The specified students were successfully assigned reviews.'
+          });
+        });
     }
   },
   mounted() {
-    this.initializeData();
     this.initializeEventBus();
+    this.initializeData();
   },
   destroyed() {
     this.cleanUpEventBus();
