@@ -152,6 +152,15 @@ export default {
       EventBus.$off(SELECT_NON_SUBMITTER_EVENT, this.selectNonSubmittingStudents);
       EventBus.$off(SELECT_LATE_SUBMITTER_EVENT, this.selectLateSubmittingStudents);
     },
+    initializeData() {
+      this.isLoading = true;
+      this.$api.get('/course/{}/reviews/rubric/{}/unassigned', this.courseId, this.rubricId)
+        .then(response => {
+          this.data = response.data;
+          this.isLoading = false;
+        });
+      this.$store.commit('resetManualReviewDistribution');
+    },
     selectStudents(predicate) {
       this.students
         .filter(predicate)
@@ -172,15 +181,11 @@ export default {
     assignReviews() {
       // TODO implement this
       console.log('would have assigned review to', this.studentsToBeAssigned);
+      this.initializeData();
     }
   },
   mounted() {
-    this.$api.get('/course/{}/reviews/rubric/{}/unassigned', this.courseId, this.rubricId)
-      .then(response => {
-        this.data = response.data;
-        this.isLoading = false;
-      });
-    this.$store.commit('resetManualReviewDistribution');
+    this.initializeData();
     this.initializeEventBus();
   },
   destroyed() {
