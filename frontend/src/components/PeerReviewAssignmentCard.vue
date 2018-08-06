@@ -1,5 +1,5 @@
 <template>
-    <div class="peer-review-assignment-card mdl-card mdl-cell mdl-cell--3-col mdl-shadow--2dp">
+    <div class="peer-review-assignment-card mdl-card mdl-cell mdl-cell--4-col mdl-cell--8-col-tablet mdl-cell--4-col-phone mdl-shadow--2dp">
 
         <div class="mdl-card__title mdl-card--expand">
             <!-- TODO should be an h1? -->
@@ -136,7 +136,7 @@ export default {
 
 <style scoped>
     .peer-review-assignment-card {
-        width: 330px;
+        /*width: 330px;*/
     }
 
     .mdl-card__actions {
