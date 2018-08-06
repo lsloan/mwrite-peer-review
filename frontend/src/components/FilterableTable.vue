@@ -5,26 +5,31 @@
                 <h1 class="title">{{ tableName }}</h1>
             </div>
         </div>
-        <div class="mdl-grid">
-            <div v-for="{key, filter: {type, makeFilterChoices}} in filterableColumns"
+        <div class="mdl-grid" v-if="tableControls.length > 0">
+            <div v-for="{controlType, key, data} in tableControls"
                  :key="key"
                  class="filter-container mdl-cell mdl-cell--3-col mdl-cell--3-col-tablet mdl-cell--4-col-phone">
-                <div v-if="type === 'absolute'" class="mdl-textfield flexbox">
-                    <input v-model="filterValues[key]"
+
+                <!-- filter types -->
+                <div v-if="controlType === 'filter' && data.filter.type === 'absolute'" class="mdl-textfield flexbox">
+                    <input v-model="filterValues[data.key]"
                             class="mdl-textfield__input clickable absolute-filter"
                             type="text"
                             placeholder="Search for a student">
                     <i class="material-icons filter-icon">search</i>
                 </div>
-                <div v-else-if="type === 'choices'"
+                <div v-else-if="controlType === 'filter' && data.filter.type === 'choices'"
                      class="mdl-textfield">
                     <dropdown
                         :id="key"
                         label="Section Filter"
-                        v-model="filterValues[key]"
-                        :options="makeFilterChoices(entries)"
+                        v-model="filterValues[data.key]"
+                        :options="data.filter.makeFilterChoices(entries)"
                         :disabled="false"/>
                 </div>
+
+                <!-- control types -->
+
             </div>
             <div class="mdl-cell mdl-cell--6-col mdl-cell--2-col-tablet mdl-cell--hide-phone"></div>
         </div>
@@ -104,7 +109,11 @@ export default {
     },
     rowClickHandler: Function,
     makeRowLink: Function,
-    filterSessionStorageKey: String
+    filterSessionStorageKey: String,
+    controls: {
+      type: Array,
+      default: () => ([])
+    }
   },
   components: {MdlSpinner, Dropdown},
   data() {
@@ -126,9 +135,21 @@ export default {
         'clickable': this.rowsAreClickable
       };
     },
+    tableControls() {
+      const filterControls = this.filterableColumns.map(c => ({
+        key: c.key,
+        controlType: 'filter',
+        data: c
+      }));
+      const controls = this.controls.map(c => ({
+        key: c.key,
+        controlType: 'control',
+        data: c
+      }));
+      return R.reverse(R.concat(filterControls, controls));
+    },
     filterableColumns() {
-      const filterableColumns = this.columnMapping.filter(({filter = null}) => filter);
-      return filterableColumns.reverse();
+      return this.columnMapping.filter(({filter = null}) => filter);
     },
     filterPredicate() {
       const columnsWithFilterValues = this.filterableColumns.filter(c => this.filterValues[c.key]);
