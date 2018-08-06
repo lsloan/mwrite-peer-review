@@ -39,8 +39,8 @@ import * as R from 'ramda';
 
 import {alphabeticalComparator, rowMatchesStudentNameFilter} from '@/services/students';
 import FilterableTable from '@/components/FilterableTable';
-
 import StudentCheckbox from '@/components/StudentCheckbox';
+import DistributionSubmissionStatus from '@/components/DistributionSubmissionStatus';
 
 const EventBus = new Vue();
 const SELECT_LATE_SUBMITTER_EVENT = 'select-late-submitters';
@@ -72,9 +72,11 @@ const COLUMN_MAPPING = [
     transform: R.identity
   },
   {
-    key: 'submissionState',
     description: 'Submission Status',
-    transform: R.identity
+    component: DistributionSubmissionStatus,
+    transform: row => ({
+      'submission-status': row.submissionState
+    })
   }
 ];
 
