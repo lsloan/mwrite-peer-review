@@ -53,10 +53,11 @@
             </div>
         </div>
 
-        <div class="mdl-card__supporting-text" v-if="reviewsInProgress">
+        <div class="mdl-card__supporting-text">
             <div class="icon-container">
                 <i class="material-icons icon-24px">trending_up</i>
-                <span class="icon-caption">{{ numberOfCompletedReviews }} out of {{ numberOfAssignedReviews }} reviews received</span>
+                <span class="icon-caption" v-if="reviewsInProgress">{{ numberOfCompletedReviews }} out of {{ numberOfAssignedReviews }} reviews received</span>
+                <span class="icon-caption" v-else>Reviews not yet assigned</span>
             </div>
         </div>
 
