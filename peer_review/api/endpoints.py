@@ -18,13 +18,14 @@ from rolepermissions.checkers import has_role
 
 import peer_review.etl as etl
 import peer_review.canvas as canvas
-from peer_review.api.util import merge_validations, validate_rubric, raise_if_not_current_user, \
-    raise_if_peer_review_not_given_to_student
 from peer_review.util import to_camel_case, keymap_all
+from peer_review.distribution import add_to_distribution
 from peer_review.exceptions import ReviewsInProgressException, APIException
 from peer_review.decorators import authorized_endpoint, authorized_json_endpoint, \
     authenticated_json_endpoint, json_body
-from peer_review.models import CanvasCourse, CanvasStudent, CanvasAssignment, CanvasSubmission, \
+from peer_review.api.util import merge_validations, validate_rubric, raise_if_not_current_user, \
+    raise_if_peer_review_not_given_to_student
+from peer_review.models import CanvasCourse, CanvasStudent, CanvasAssignment, \
     Rubric, Criterion, PeerReview, PeerReviewComment, PeerReviewEvaluation, PeerReviewDistribution
 from peer_review.queries import InstructorDashboardStatus, StudentDashboardStatus, ReviewStatus, \
     RubricForm, Comments, Students
@@ -546,3 +547,28 @@ def non_reviewers_for_rubric(request, course_id, rubric_id):
         'peer_review_title': rubric.passback_assignment.title,
         'students': entries
     }
+
+
+@require_POST
+@json_body
+@authorized_json_endpoint(roles=['instructor'], default_status_code=201)
+def add_students_to_distribution(request, params, course_id, rubric_id):
+    try:
+        rubric = Rubric.objects.get(id=rubric_id)
+    except Rubric.DoesNotExist:
+        msg = 'The specified rubric does not exist.'
+        raise APIException(data={'error': msg}, status_code=404)
+
+    if rubric.reviewed_assignment.course_id != int(course_id):
+        msg = 'The specified rubric is not part of that course.'
+        raise APIException(data={'error': msg}, status_code=403)
+
+    student_ids = params['student_ids']
+    students = CanvasStudent.objects.filter(id__in=student_ids)
+    if students.count() != len(student_ids):
+        msg = 'One or more of the specified students do not exist.'
+        raise APIException(data={'error': msg}, status_code=404)
+
+    add_to_distribution(rubric, students)
+
+    return params
