@@ -6,6 +6,7 @@
             </div>
         </div>
         <div class="mdl-grid" v-if="tableControls.length > 0">
+            <!-- TODO this section needs to be broken up into separate components -->
             <div v-for="{controlType, key, data} in tableControls"
                  :key="key"
                  class="filter-container mdl-cell mdl-cell--3-col mdl-cell--3-col-tablet mdl-cell--4-col-phone">
@@ -29,7 +30,13 @@
                 </div>
 
                 <!-- control types -->
-
+                <div v-if="controlType === 'control' && data.type === 'button'">
+                    <button type="button"
+                            class="mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect mdl-button--accent"
+                            @click="data.eventBus.$emit(data.event)">
+                        {{ data.caption }}
+                    </button>
+                </div>
             </div>
             <div class="mdl-cell mdl-cell--6-col mdl-cell--2-col-tablet mdl-cell--hide-phone"></div>
         </div>

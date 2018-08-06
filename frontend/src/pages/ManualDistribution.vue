@@ -20,7 +20,8 @@
         <filterable-table
             :is-loading="isLoading"
             :entries="students"
-            :column-mapping="columnMapping"/>
+            :column-mapping="columnMapping"
+            :controls="tableControls"/>
         <div class="mdl-grid">
             <button type="button"
                     class="assign-reviews-button mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect mdl-button--accent"
@@ -42,6 +43,8 @@ import FilterableTable from '@/components/FilterableTable';
 import StudentCheckbox from '@/components/StudentCheckbox';
 
 const EventBus = new Vue();
+const SELECT_LATE_SUBMITTER_EVENT = 'select-late-submitters';
+const SELECT_NON_SUBMITTER_EVENT = 'select-non-submitters';
 
 const COLUMN_MAPPING = [
   {
@@ -76,6 +79,23 @@ const COLUMN_MAPPING = [
   }
 ];
 
+const TABLE_CONTROLS = [
+  {
+    key: SELECT_LATE_SUBMITTER_EVENT,
+    type: 'button',
+    caption: 'Select Late-Submitting Students',
+    event: SELECT_LATE_SUBMITTER_EVENT,
+    eventBus: EventBus
+  },
+  {
+    key: SELECT_NON_SUBMITTER_EVENT,
+    type: 'button',
+    caption: 'Select Non-Submitting Students',
+    event: SELECT_NON_SUBMITTER_EVENT,
+    eventBus: EventBus
+  }
+];
+
 const submissionStateForStudent = student => {
   if(!student.submitted) {
     return 'not-submitted';
@@ -97,7 +117,8 @@ export default {
       isLoading: true,
       selectedStudents: {},
       data: {},
-      columnMapping: COLUMN_MAPPING
+      columnMapping: COLUMN_MAPPING,
+      tableControls: TABLE_CONTROLS
     };
   },
   computed: {
