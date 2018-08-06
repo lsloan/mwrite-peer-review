@@ -95,15 +95,19 @@ const TABLE_CONTROLS = [
   }
 ];
 
+const SUBMISSION_STATE_NOT_SUBMITTED = 'not-submitted';
+const SUBMISSION_STATE_SUBMITTED_LATE = 'submitted-late';
+const SUBMISSION_STATE_UNKNOWN = 'unknown';
+
 const submissionStateForStudent = student => {
   if(!student.submitted) {
-    return 'not-submitted';
+    return SUBMISSION_STATE_NOT_SUBMITTED;
   }
   else if(student.submittedLate) {
-    return 'submitted-late';
+    return SUBMISSION_STATE_SUBMITTED_LATE;
   }
   else {
-    return 'unknown';
+    return SUBMISSION_STATE_UNKNOWN;
   }
 };
 
@@ -148,13 +152,22 @@ export default {
       EventBus.$off(SELECT_NON_SUBMITTER_EVENT, this.selectNonSubmittingStudents);
       EventBus.$off(SELECT_LATE_SUBMITTER_EVENT, this.selectLateSubmittingStudents);
     },
+    selectStudents(predicate) {
+      this.students
+        .filter(predicate)
+        .map(({studentId}) => studentId)
+        .forEach(studentId => {
+          this.$store.commit('setStudentForReview', {
+            studentId,
+            checked: true
+          });
+        });
+    },
     selectNonSubmittingStudents() {
-      // TODO implement this
-      console.log('would have selected non-submitting students');
+      this.selectStudents(s => s.submissionState === SUBMISSION_STATE_NOT_SUBMITTED);
     },
     selectLateSubmittingStudents() {
-      // TODO implement this
-      console.log('would have selected late-submitting students');
+      this.selectStudents(s => s.submissionState === SUBMISSION_STATE_SUBMITTED_LATE);
     },
     assignReviews() {
       // TODO implement this
