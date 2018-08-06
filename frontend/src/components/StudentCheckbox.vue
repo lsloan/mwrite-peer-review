@@ -23,8 +23,17 @@ export default {
       }
     }
   },
+  watch: {
+    checked() {
+      this.$nextTick(() => {
+        const checkboxRoot = this.$refs['checkbox-root'];
+        checkboxRoot.MaterialCheckbox.checkToggleState();
+      });
+    }
+  },
   mounted() {
-    componentHandler.upgradeElement(this.$el); // eslint-disable-line no-undef
+    const checkboxRoot = this.$refs['checkbox-root'];
+    componentHandler.upgradeElement(checkboxRoot); // eslint-disable-line no-undef
   }
 };
 </script>
