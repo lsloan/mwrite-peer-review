@@ -52,8 +52,7 @@ const COLUMN_MAPPING = [
     description: '',
     transform: row => ({
       'student-id': row.studentId,
-      'student-name': row.studentSortableName,
-      'event-bus': EventBus
+      'student-name': row.studentSortableName
     })
   },
   {
@@ -137,19 +136,15 @@ export default {
         .sort(R.partialRight(alphabeticalComparator, [R.prop('studentSortableName')]));
     },
     studentsToBeAssigned() {
-      const selectedStudents = R.filter(R.identity, this.selectedStudents);
-      const selectedStudentIds = R.keys(selectedStudents);
-      return selectedStudentIds.map(id => parseInt(id));
+      return this.$store.getters.studentsToBeAssignedReviews;
     }
   },
   methods: {
     initializeEventBus() {
-      EventBus.$on('select-student', this.selectStudent);
       EventBus.$on(SELECT_NON_SUBMITTER_EVENT, this.selectNonSubmittingStudents);
       EventBus.$on(SELECT_LATE_SUBMITTER_EVENT, this.selectLateSubmittingStudents);
     },
     cleanUpEventBus() {
-      EventBus.$off('select-student', this.selectStudent);
       EventBus.$off(SELECT_NON_SUBMITTER_EVENT, this.selectNonSubmittingStudents);
       EventBus.$off(SELECT_LATE_SUBMITTER_EVENT, this.selectLateSubmittingStudents);
     },
@@ -160,9 +155,6 @@ export default {
     selectLateSubmittingStudents() {
       // TODO implement this
       console.log('would have selected late-submitting students');
-    },
-    selectStudent({studentId, checked}) {
-      Vue.set(this.selectedStudents, studentId, checked);
     },
     assignReviews() {
       // TODO implement this
@@ -175,6 +167,7 @@ export default {
         this.data = response.data;
         this.isLoading = false;
       });
+    this.$store.commit('resetManualReviewDistribution');
     this.initializeEventBus();
   },
   destroyed() {

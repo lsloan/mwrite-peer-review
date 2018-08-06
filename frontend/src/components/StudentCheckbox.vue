@@ -8,28 +8,23 @@
 <script>
 export default {
   name: 'StudentCheckbox',
-  props: ['student-id', 'student-name', 'event-bus'],
-  data() {
-    return {
-      checked: false
-    };
-  },
+  props: ['student-id', 'student-name'],
   computed: {
     controlId() {
       return `checkbox-${this.studentId}`;
+    },
+    checked: {
+      get() {
+        return this.$store.state.manualReviewDistribution[this.studentId];
+      },
+      set(checked) {
+        const studentId = this.studentId;
+        this.$store.commit('setStudentForReview', {studentId, checked});
+      }
     }
   },
   mounted() {
     componentHandler.upgradeElement(this.$el); // eslint-disable-line no-undef
-  },
-  watch: {
-    checked(value) {
-      const eventBus = this.eventBus || this;
-      eventBus.$emit('select-student', {
-        studentId: this.studentId,
-        checked: value
-      });
-    }
   }
 };
 </script>

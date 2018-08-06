@@ -1,5 +1,7 @@
+import * as R from 'ramda';
 import Vue from 'vue';
 import Vuex from 'vuex';
+
 import api from '@/services/api';
 
 Vue.use(Vuex);
@@ -9,7 +11,8 @@ Vue.use(Vuex);
 export default new Vuex.Store({
   state: {
     userDetails: {},
-    breadcrumbInfo: {}
+    breadcrumbInfo: {},
+    manualReviewDistribution: {}
   },
   mutations: {
     userDetails(state, userDetails) {
@@ -17,6 +20,19 @@ export default new Vuex.Store({
     },
     updateBreadcrumbInfo(state, breadcrumbInfo) {
       state.breadcrumbInfo = breadcrumbInfo;
+    },
+    resetManualReviewDistribution(state) {
+      state.manualReviewDistribution = {};
+    },
+    setStudentForReview(state, {studentId, checked}) {
+      Vue.set(state.manualReviewDistribution, studentId, checked);
+    }
+  },
+  getters: {
+    studentsToBeAssignedReviews(state) {
+      const selectedStudents = R.filter(R.identity, state.manualReviewDistribution);
+      const selectedStudentIds = R.keys(selectedStudents);
+      return selectedStudentIds.map(id => parseInt(id));
     }
   },
   actions: {
