@@ -54,7 +54,7 @@
                     </thead>
                     <tbody>
                         <tr v-if="isLoading">
-                            <td colspan="2" class="centralized student-table-cell">
+                            <td :colspan="columnMapping.length" class="centralized student-table-cell">
                                 <mdl-spinner single-color></mdl-spinner>
                             </td>
                         </tr>
