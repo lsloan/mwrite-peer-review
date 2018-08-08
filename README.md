@@ -7,7 +7,7 @@ for the different parts of the application.  They are:
 
 - [dockerfiles/api.Dockerfile](dockerfiles/api.Dockerfile) -- The Django-based API (and legacy views, for now) hosted with [gunicorn](http://gunicorn.org/)
 - [dockerfiles/frontend.Dockerfile](dockerfiles/frontend.Dockerfile) -- A Vue.js SPA frontend hosted with Apache httpd
-- [dockerfiles/api.Dockerfile](dockerfiles/api.Dockerfile) -- A backend container for scheduled jobs (currently just review distribution)
+- [dockerfiles/jobs.Dockerfile](dockerfiles/jobs.Dockerfile) -- A backend container for scheduled jobs (currently just review distribution)
 
 With the proper build arguments (see [here](#build-configuration)) and runtime environment variables (see [here](#runtime-environment)),
 this app should be able to be run just using Docker; however, documentation for running M-Write Peer Review
