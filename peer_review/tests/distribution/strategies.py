@@ -10,8 +10,11 @@ def students(draw, min_size=1, average_size=10, max_size=25):
 
 
 @composite
-def students_and_submissions(draw):
+def students_and_submissions(draw, assignment_id=None):
     _students = draw(students(min_size=50, average_size=1000, max_size=5000))
     ids = (s.id for s in _students)
-    submissions = {CanvasSubmission(id=i, author_id=i) for i in ids}
+    submissions = {
+        CanvasSubmission(id=i, author_id=i, assignment_id=assignment_id)
+        for i in ids
+    }
     return _students, submissions

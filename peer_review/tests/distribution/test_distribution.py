@@ -5,16 +5,17 @@ from statistics import mean, stdev
 from hypothesis import given
 from hypothesis.strategies import integers
 
-from peer_review.tests.distribution.fixtures import test_models, rubric_tree_with_mocked_requests
+
+from .strategies import students, students_and_submissions
 from peer_review.models import CanvasStudent, CanvasSubmission, PeerReview
-from peer_review.distribution import make_distribution, review_distribution_task
-from .strategies import students_and_submissions
+from peer_review.tests.distribution.fixtures import test_models, rubric_tree_with_mocked_requests
+from peer_review.distribution import make_distribution, review_distribution_task, add_to_distribution
 
 
 @given(sns=students_and_submissions(), n=integers(min_value=1, max_value=5))
 def test_distribution(sns, n):
-    students, submissions = sns
-    reviews, counts = make_distribution(students, submissions, n)
+    _students, submissions = sns
+    reviews, counts = make_distribution(_students, submissions, n)
     for student_id, submissions_to_review in reviews.items():
         assert student_id not in submissions_to_review
         assert len(submissions_to_review) == len(set(submissions_to_review))
@@ -84,3 +85,31 @@ def test_distribution_task_within_sections(rubric_tree_with_mocked_requests):
             submission_id__in=submissions_not_to_review.values_list('id', flat=True)
         )
         assert not erroneous_peer_reviews.exists()
+
+
+# noinspection PyShadowingNames
+# @pytest.mark.django_db(True)
+# def test_adding_students_to_existing_distribution(rubric_tree_with_mocked_requests, sns):
+#     rubric = rubric_tree_with_mocked_requests
+#     review_distribution_task(datetime.utcnow(), True)
+#     existing_reviews = PeerReview.objects.filter(
+#         submission__assignment=rubric.reviewed_assignment
+#     )
+#     # existing_submissions = CanvasSubmission.objects.filter(
+#     #     id__in=existing_reviews.values_list('submission_id', flat=True)
+#     # )
+#
+#     add_to_distribution(rubric, students)
+#
+#     new_reviews = PeerReview.objects.filter(student__in=students)
+#     assert new_reviews.exists()
+#
+#     existing_submission_ids = set(existing_reviews.values_list('submission_id', flat=True))
+#     new_review_submissions_ids = set(new_reviews.values_list('submission_id', flat=True))
+#     assert existing_submission_ids.issubset(new_review_submissions_ids)
+
+    # TODO need some submissions for these students
+    # TODO assert that the new students' submissions are receiving no reviews
+
+
+
