@@ -25,7 +25,7 @@ from peer_review.decorators import authorized_endpoint, authorized_json_endpoint
 from peer_review.models import CanvasCourse, CanvasStudent, CanvasAssignment, CanvasSubmission, \
     Rubric, Criterion, PeerReview, PeerReviewComment, PeerReviewEvaluation, PeerReviewDistribution
 from peer_review.queries import InstructorDashboardStatus, StudentDashboardStatus, ReviewStatus, \
-    RubricForm, Comments
+    RubricForm, Comments, Evaluations, Reviews
 
 
 LOGGER = logging.getLogger(__name__)
@@ -140,53 +140,15 @@ def reviews_given(request, course_id, student_id, rubric_id):
     return _denormalize_reviews_given(reviews)
 
 
-def _denormalize_reviews_received(reviews):
-    peer_review_ids = [r.id for r in reviews]
-    student_numbers = {pr_id: i for i, pr_id in enumerate(peer_review_ids)}
-
-    comments = list(chain(*map(lambda r: r.comments.all(), reviews)))
-    criterion_ids = set(c.criterion_id for c in comments)
-    criterion_numbers = {cr_id: i for i, cr_id in enumerate(criterion_ids)}
-
-    entries = []
-    for comment in comments:
-        try:
-            comment.peer_review.evaluation
-            evaluation_submitted = True
-        except ObjectDoesNotExist:
-            evaluation_submitted = False
-
-        entries.append({
-            'peer_review_id': comment.peer_review_id,
-            'evaluation_submitted': evaluation_submitted,
-            'reviewer_id': student_numbers[comment.peer_review_id],
-            'criterion_id': criterion_numbers[comment.criterion_id],
-            'criterion': comment.criterion.description,
-            'comment_id': comment.id,
-            'comment': comment.comment
-        })
-
-    return entries
-
-
 @authorized_json_endpoint(roles=['student'])
 def reviews_received(request, course_id, student_id, rubric_id):
     raise_if_not_current_user(request, student_id)
+    return Reviews.reviews_received(course_id, student_id, rubric_id=rubric_id)
 
-    reviews = PeerReview.objects.filter(
-        submission__assignment__course_id=course_id,
-        submission__assignment__rubric_for_prompt__id=rubric_id,
-        submission__author_id=student_id
-    )\
-        .order_by('id')
 
-    entries = _denormalize_reviews_received(reviews)
-    prompt_title = Rubric.objects.get(id=rubric_id).reviewed_assignment.title
-
-    return {
-        'title': prompt_title,
-        'entries': entries
-    }
+@authorized_json_endpoint(roles=['student'])
+def peer_review_evaluations(request, course_id, student_id):
+    return Evaluations.pending_evaluations(course_id, student_id)
 
 
 @require_POST
@@ -480,17 +442,25 @@ def rubric_status_for_student(request, course_id, rubric_id, student_id):
     return ReviewStatus.detailed_rubric_status_for_student(course_id, student, rubric)
 
 
-@authorized_json_endpoint(roles=['instructor'])
+@authorized_json_endpoint(roles=['instructor', 'student'])
 def single_review(request, course_id, review_id):
+
     try:
         peer_review = PeerReview.objects.get(id=review_id)
+
+        if has_role(request.user, 'student'):
+            logged_in_user_id = int(request.session['lti_launch_params']['custom_canvas_user_id'])
+            review_given_by_user = logged_in_user_id == peer_review.student_id
+            review_received_by_user = logged_in_user_id == peer_review.submission.author_id
+
+            if not review_given_by_user and not review_received_by_user:
+                msg = 'User %s tried to download submission for a peer review (ID %s) they were not assigned'
+                LOGGER.warning(msg, logged_in_user_id, review_id)
+                raise PermissionDenied
+
+        return Reviews.single_review(peer_review)
     except PeerReview.DoesNotExist:
         raise Http404
-
-    return {
-        'prompt_title': peer_review.submission.assignment.title,
-        'entries': _denormalize_reviews_received([peer_review])
-    }
 
 
 # Django doesn't let you declare the HTTP method as part of the URL conf, so...
