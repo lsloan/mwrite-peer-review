@@ -10,6 +10,9 @@ from peer_review.models import Criterion, Rubric, CanvasSection, CanvasCourse, C
     CanvasSubmission
 
 
+# TODO refactor parts of this to be based on Hypothesis strategies
+
+
 def next_id(model, id_field='id'):
     """Helper function for getting next IDs of non-autoincrement models.  Should only be used for tests."""
     max_key = id_field + '__max'
