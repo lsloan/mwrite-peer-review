@@ -5,7 +5,7 @@ from statistics import mean, stdev
 from hypothesis import given
 from hypothesis.strategies import integers
 
-from peer_review.tests.canvas.fixtures import test_models, rubric_tree_with_mocked_requests
+from peer_review.tests.distribution.fixtures import test_models, rubric_tree_with_mocked_requests
 from peer_review.models import CanvasStudent, CanvasSubmission, PeerReview
 from peer_review.distribution import make_distribution, review_distribution_task
 from .strategies import students_and_submissions
