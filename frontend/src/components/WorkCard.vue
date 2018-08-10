@@ -128,7 +128,7 @@ export default {
     }
 
     .action-item-status-container--info {
-        color: #52A763;
+        color: #2F8540;
     }
 
     .action-item-status-container > i.material-icons {
