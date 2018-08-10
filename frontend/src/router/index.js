@@ -7,6 +7,7 @@ import Modal from '@/components/Modal';
 import ReviewsGiven from '@/components/ReviewsGiven';
 import ReviewsReceived from '@/components/ReviewsReceived';
 import SingleReview from '@/components/SingleReview';
+import SingleReviewForEvaluation from '@/components/SingleReviewForEvaluation';
 
 import Error from '@/pages/Error';
 import InstructorDashboard from '@/pages/InstructorDashboard';
@@ -124,13 +125,19 @@ const router = new Router({
           path: 'student/:studentId/reviews/:rubricId/given/',
           name: 'ReviewsGiven',
           component: Modal,
-          props: (route) => ({component: ReviewsGiven, childProps: route.params})
+          props: route => ({component: ReviewsGiven, childProps: route.params})
         },
         {
           path: 'student/:studentId/reviews/:rubricId/received/',
           name: 'ReviewsReceived',
           component: Modal,
-          props: (route) => ({component: ReviewsReceived, childProps: route.params})
+          props: route => ({component: ReviewsReceived, childProps: route.params})
+        },
+        {
+          path: 'student/:studentId/evaluation/:peerReviewId',
+          name: 'MandatoryEvaluation',
+          component: Modal,
+          props: route => ({component: SingleReviewForEvaluation, childProps: route.params})
         }
       ]
     },

@@ -1,4 +1,4 @@
-FROM python:3-alpine
+FROM python:3.6-alpine
 ARG MPR_WORKING_DIRECTORY=/usr/src/app
 
 RUN mkdir -p $MPR_WORKING_DIRECTORY

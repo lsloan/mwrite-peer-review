@@ -17,15 +17,17 @@
         </div>
         <div class="reviews-body">
             <keep-alive>
-                <reviews-by-reviewer v-if="viewBy === 'reviewer'" :data="data" :allow-evaluation="true"/>
-                <reviews-by-criterion v-else-if="viewBy === 'criterion'" :data="data"/>
+                <reviews-by-reviewer v-if="viewBy === 'reviewer'" :allow-evaluation="true" :data="reviews"/>
+                <reviews-by-criterion v-else-if="viewBy === 'criterion'" :data="reviews"/>
             </keep-alive>
         </div>
     </div>
 </template>
 
 <script>
-import {denormalizers} from '@/services/reviews';
+import * as R from 'ramda';
+
+import {conversions} from '@/services/reviews';
 import ReviewsByReviewer from '@/components/ReviewsByReviewer';
 import ReviewsByCriterion from '@/components/ReviewsByCriterion';
 
@@ -35,28 +37,45 @@ export default {
   components: {ReviewsByReviewer, ReviewsByCriterion},
   data() {
     return {
-      viewBy: 'reviewer',
-      unfilteredData: null
+      viewBy: 'reviewer'
     };
   },
   computed: {
-    data() {
-      if(this.unfilteredData) {
-        return denormalizers[this.viewBy](this.unfilteredData.entries);
-      }
+    courseId() {
+      return this.$store.state.userDetails.courseId;
+    },
+    commentsForRubric() {
+      const rubricId = parseInt(this.rubricId);
+      const commentsForRubric = this.$store.getters.commentsBy.rubric[rubricId];
+      return commentsForRubric ? commentsForRubric[this.viewBy] : {};
+    },
+    promptTitle() {
+      return Object.values(this.commentsForRubric)[0][0].promptTitle;
+    },
+    reviews() {
+      const convertedReviews = R.map(conversions[this.viewBy], this.commentsForRubric);
+      return R.values(convertedReviews);
     }
   },
   methods: {
-    setData(data) {
-      this.unfilteredData = data;
-      this.$emit('title-resolved', this.unfilteredData.title);
+    emitTitles() {
+      this.$emit('title-resolved', this.promptTitle);
       this.$emit('subtitle-resolved', 'Reviews Received');
+    },
+    fetchReviewsReceived() {
+      const {courseId, studentId, rubricId} = this;
+      const payload = {
+        api: this.$api,
+        courseId,
+        studentId,
+        rubricId
+      };
+      return this.$store.dispatch('fetchCommentsForRubric', payload);
     }
   },
   mounted() {
-    const courseId = this.$store.state.userDetails.courseId;
-    this.$api.get('/course/{}/reviews/student/{}/received/{}', courseId, this.studentId, this.rubricId)
-      .then(response => this.setData(response.data));
+    this.fetchReviewsReceived()
+      .then(this.emitTitles);
   }
 };
 </script>
@@ -103,5 +122,4 @@ export default {
     .control-button:focus {
         outline: 0;
     }
-
 </style>

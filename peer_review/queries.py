@@ -1,14 +1,20 @@
 import json
+import logging
 from itertools import chain
+
 from toolz.dicttoolz import valfilter
 from toolz.functoolz import thread_last
 from toolz.itertoolz import groupby, unique
+
 from django.db import connection
 from django.db.models import BooleanField, Subquery, OuterRef, Count, Case, When, Value, F, Q
 
 from peer_review.util import some, fetchall_dicts
 from peer_review.models import PeerReview, Criterion, PeerReviewComment, Rubric, \
-    PeerReviewDistribution, CanvasCourse, CanvasStudent, CanvasAssignment, CanvasSubmission
+    PeerReviewDistribution, CanvasCourse, CanvasStudent, CanvasAssignment, CanvasSubmission, \
+    PeerReviewEvaluation
+
+logger = logging.getLogger(__name__)
 
 # TODO move to settings
 API_DATE_FORMAT = '%Y-%m-%d %H:%M:%SZ'
@@ -377,7 +383,7 @@ class ReviewStatus:
             })
 
         return reviews
-            
+
     # TODO refactor to push load onto the DB
     # this method was pulled out of peer_review.views.core.AssignmentStatus
     @staticmethod
@@ -536,3 +542,123 @@ class Comments:
         comments_received = PeerReviewComment.objects.filter(**comments_received_args)
 
         return chain(comments_given, comments_received)
+
+
+class Evaluations:
+    @staticmethod
+    def _collect_evaluation_data(reviews):
+
+        reviews_by_rubric = groupby(lambda r: r.submission.assignment.rubric_for_prompt.id, reviews)
+
+        evaluations = []
+        for rubric_id, reviews_for_rubric in reviews_by_rubric.items():
+            peer_review_ids = sorted(r.id for r in reviews_for_rubric)
+            student_numbers = {pr_id: i for i, pr_id in enumerate(peer_review_ids, start=1)}
+
+            prompt = reviews_for_rubric[0].submission.assignment
+            rubric = prompt.rubric_for_prompt
+            peer_review_title = rubric.passback_assignment.title
+
+            # TODO blocked on #278; remove everything but the first line once that's done
+            # due_date_utc = reviews_for_rubric[0].evaluation_due_date_utc
+            due_date_utc = '2018-10-08 23:41:54Z'
+
+            for review in reviews_for_rubric:
+                evaluations_for_rubric = []
+
+                student_id = student_numbers[review.id]
+                ready_for_evaluation = review.comments.exists()
+
+                evaluation_is_complete = False
+                try:
+                    if review.evaluation:
+                        evaluation_is_complete = True
+                except PeerReviewEvaluation.DoesNotExist:
+                    pass
+
+                evaluations_for_rubric.append({
+                    'rubric_id': rubric_id,
+                    'peer_review_title': peer_review_title,
+                    'due_date_utc': due_date_utc,
+                    'peer_review_id': review.id,
+                    'student_id': student_id,
+                    'ready_for_evaluation': ready_for_evaluation,
+                    'evaluation_is_complete': evaluation_is_complete,
+                    'evaluation_is_mandatory': True  # review.evaluation_is_mandatory # TODO blocked on #278
+                })
+
+                # TODO only add evaluations if all are not completed
+                evaluations.extend(evaluations_for_rubric)
+
+        return evaluations
+
+    @staticmethod
+    def pending_evaluations(course_id, student_id):
+        reviews = PeerReview.objects.filter(
+            submission__assignment__course_id=course_id,
+            submission__assignment__rubric_for_prompt__id__isnull=False,
+            submission__author_id=student_id,
+        )\
+            .order_by('id')
+
+        return Evaluations._collect_evaluation_data(reviews)
+
+
+class Reviews:
+
+    @staticmethod
+    def _collect_received_reviews_data(reviews):
+
+        comments_by_id = {}
+
+        reviews_by_rubric = groupby(lambda r: r.submission.assignment.rubric_for_prompt.id, reviews)
+
+        for rubric_id, reviews_for_rubric in reviews_by_rubric.items():
+            prompt_title = reviews_for_rubric[0].submission.assignment.title
+            peer_review_ids = [r.id for r in reviews_for_rubric]
+            student_numbers = {pr_id: i for i, pr_id in enumerate(peer_review_ids, start=1)}
+
+            review_comments = list(chain(*map(lambda r: r.comments.all(), reviews)))
+            criterion_ids = set(c.criterion_id for c in review_comments)
+            criterion_numbers = {cr_id: i for i, cr_id in enumerate(criterion_ids, start=1)}
+
+            for comment in review_comments:
+                peer_review = comment.peer_review
+                try:
+                    peer_review.evaluation
+                    evaluation_submitted = True
+                except PeerReviewEvaluation.DoesNotExist:
+                    evaluation_submitted = False
+
+                peer_review_id = peer_review.id
+
+                comments_by_id[comment.id] = {
+                    'rubric_id': rubric_id,
+                    'prompt_title': prompt_title,
+                    'peer_review_id': peer_review_id,
+                    'evaluation_submitted': evaluation_submitted,
+                    'reviewer_id': student_numbers[peer_review_id],
+                    'comment_id': comment.id,
+                    'comment': comment.comment,
+                    'criterion_id': criterion_numbers[comment.criterion_id],
+                    'criterion': comment.criterion.description
+                }
+
+        return comments_by_id
+
+    @staticmethod
+    def single_review(peer_review):
+        return Reviews._collect_received_reviews_data([peer_review])
+
+    @staticmethod
+    def reviews_received(course_id, student_id, rubric_id=None):
+        reviews = PeerReview.objects.filter(
+            submission__assignment__course_id=course_id,
+            submission__author_id=student_id
+        )
+        if rubric_id:
+            reviews = reviews.filter(
+                submission__assignment__rubric_for_prompt__id=rubric_id
+            )
+        reviews = reviews.order_by('id')
+        return Reviews._collect_received_reviews_data(reviews)

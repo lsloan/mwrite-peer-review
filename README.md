@@ -172,6 +172,10 @@ These should be created in roughly the following order:
     $ oc create -f config/server/example/openshift/bc/jobs-bc.yaml
     ```
     N.B. Make sure the `source.git` sections match the desired repository and branch details.
+    
+    You can also create GitHub webhooks for automatically building images, if desired; see
+    [the OpenShift documentation](https://docs.openshift.com/container-platform/3.6/dev_guide/builds/triggering_builds.html#github-webhooks)
+    and [the GitHub documentation](https://developer.github.com/webhooks/).
 6. Create the deployment configs for each container:
     ```bash
     $ oc create -f config/server/example/openshift/dc/api-dc.yaml
