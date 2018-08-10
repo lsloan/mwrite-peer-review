@@ -28,6 +28,10 @@ const makeReviewEntry = review => ({
   reviewsReceived: {
     completed: review.received,
     total: review.totalCompleted
+  },
+  evaluationsGiven: {
+    completed: 0,
+    total: review.received
   }
 });
 
@@ -73,6 +77,11 @@ export default {
         {
           key: 'reviewsReceived',
           description: 'Reviews Received',
+          transform: reviewsForDisplay
+        },
+        {
+          key: 'evaluationsGiven',
+          description: 'Evaluations Given',
           transform: reviewsForDisplay
         }
       ]
