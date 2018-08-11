@@ -243,7 +243,7 @@ import moment from 'moment';
 import Datepicker from 'vuejs-datepicker';
 import {MdlCard, MdlSwitch, MdlSelect} from 'vue-mdl';
 
-import Snackbar from '@/components/Snackbar';
+import {default as Snackbar, notificationTime} from '@/components/Snackbar';
 import Dropdown from '@/components/Dropdown';
 import AutosizeTextarea from '@/components/AutosizeTextarea';
 
@@ -267,6 +267,11 @@ const makeAssignmentOptions = (assignmentNamesById, ...excludedAssignmentIds) =>
 
 const NO_REVISION_OPTION = {value: null, name: 'No revision'};
 const DISPLAY_DATE_FORMAT = 'MMM D YYYY h:mm A';
+
+const RUBRIC_UPDATE_SUCCESS_MESSAGE = 'The rubric was successfully created.  You will be returned to the dashboard.';
+const RUBRIC_UPDATE_FAILURE_MESSAGE = 'An error occurred.  Please try again later.';
+
+const REDIRECT_TIME = notificationTime(RUBRIC_UPDATE_SUCCESS_MESSAGE);
 
 export default {
   components: {Dropdown, Datepicker, AutosizeTextarea, Snackbar, MdlCard, MdlSwitch, MdlSelect},
@@ -464,15 +469,11 @@ export default {
       this.models.criteria = R.reject(c => c.id === id, this.models.criteria);
     },
     rubricUpdateSuccess() {
-      this.$root.$emit('notification', {
-        message: 'The rubric was successfully created.  You will be returned to the dashboard.'
-      });
-      setTimeout(() => this.$router.push({name: 'InstructorDashboard'}), 5000);
+      this.$root.$emit('notification', RUBRIC_UPDATE_SUCCESS_MESSAGE);
+      setTimeout(() => this.$router.push({name: 'InstructorDashboard'}), REDIRECT_TIME);
     },
     rubricUpdateFailure() {
-      this.$root.$emit('notification', {
-        message: 'An error occurred.  Please try again later.'
-      });
+      this.$root.$emit('notification', RUBRIC_UPDATE_FAILURE_MESSAGE);
     },
     submitRubricForm() {
       if(this.rubricIsValid) {

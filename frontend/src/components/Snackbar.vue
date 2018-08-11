@@ -9,6 +9,8 @@
 </template>
 
 <script>
+export const notificationTime = message => 3000 + 120 * message.length;
+
 export default {
   name: 'Snackbar',
   props: {
@@ -25,7 +27,11 @@ export default {
     }
   },
   methods: {
-    showSnackbar(config) {
+    showSnackbar(message) {
+      const config = {
+        message,
+        timeout: notificationTime(message)
+      };
       this.$el.MaterialSnackbar.showSnackbar(config);
     }
   },
