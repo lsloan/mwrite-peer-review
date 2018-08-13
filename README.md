@@ -75,7 +75,7 @@ Refer frequently to the OpenShift Container Platform [documentation](https://doc
 
 The jobs container uses a weekly cron job to back up the configured database and submission storage volume to S3.
 See `[dockerfiles/jobs.Dockerfile](dockerfiles/jobs.Dockerfile)` and `[scripts/backup_data.bash](backup_data.bash)` for
-implementation details.  See [#runtime-environment](above) for information about the related environment variables.
+implementation details.  See [above](#runtime-environment) for information about the related environment variables.
 
 ### Accessing Private Github Repositories
 
