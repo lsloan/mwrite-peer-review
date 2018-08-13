@@ -61,7 +61,8 @@ The jobs container also uses the following environment variables:
 | MPR_BACKUP_DB_CONFIG_FILE   | path                | Yes                   | Path to M-Write Peer Review's database config JSON file; defaults to /etc/mwrite-peer-review/database.json          |
 | MPR_BACKUP_SUBMISSIONS_PATH | path                | Yes                   | Path to M-Write Peer Review's submission storage path; defaults to /srv/mwrite-peer-review/submissions              |
 | MYSQLDUMP_OPTIONS           | string              | Yes                   | Command line options for mysqldump; required because MySQL 8 has different default behavior than 5.7                |
-See the [API's OpenShift deployment](config/server/example/openshift/dc/api-dc.yaml) config for examples.
+
+See the [API's]](config/server/example/openshift/dc/api-dc.yaml) and [job container's](config/server/example/openshift/dc/jobs-dc.yaml) OpenShift deployment config for examples.
   
 ## OpenShift Setup
 
