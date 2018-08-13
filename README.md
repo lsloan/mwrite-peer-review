@@ -26,6 +26,8 @@ pass these as environment variables in OpenShift.
 
 ## Runtime Environment
 
+### Backend Environment Variables
+
 The API and jobs containers derive their runtime configuration from the following environment variables:
 
 | Variable                         | Type                  | Optional (Default) | Description                                                                                                                        |
@@ -45,6 +47,8 @@ The API and jobs containers derive their runtime configuration from the followin
 | MPR_TIMEZONE                     | Unix timezone         | No                 | Sets Django's [TIME_ZONE](https://docs.djangoproject.com/en/1.11/ref/settings/#time-zone) setting                                  | 
 | MPR_SESSION_COOKIE_DOMAIN        | domain name only      | No                 | Sets Django's [SESSION_COOKIE_DOMAIN](https://docs.djangoproject.com/en/1.11/ref/settings/#session-cookie-domain) setting for CORS |
 | MPR_CSRF_COOKIE_DOMAIN           | domain name only      | No                 | Sets Django's [CSRF_COOKIE_DOMAIN](https://docs.djangoproject.com/en/1.11/ref/settings/#csrf-cookie-domain) setting for CORS       |
+
+### jobs-only Environment Variables
 
 The jobs container also uses the following environment variables:
 
@@ -73,7 +77,7 @@ Refer frequently to the OpenShift Container Platform [documentation](https://doc
 
 The jobs container uses a weekly cron job to back up the configured database and submission storage volume to S3.
 See [`dockerfiles/jobs.Dockerfile`](dockerfiles/jobs.Dockerfile) and [`scripts/backup_data.bash`](scripts/backup_data.bash) for
-implementation details.  See [above](#runtime-environment) for information about the related environment variables.
+implementation details.  See [above](#jobs-only-environment-variables) for information about the related environment variables.
 
 ### Accessing Private Github Repositories
 
