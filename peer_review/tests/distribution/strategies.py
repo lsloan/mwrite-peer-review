@@ -1,56 +1,48 @@
 import string
+from itertools import chain
+from datetime import timedelta
 
-from hypothesis.strategies import composite, sets, integers, text, just, lists
+from hypothesis.strategies import just, composite, text, lists, datetimes
 from hypothesis.extra.django.models import models
 
-from peer_review.models import CanvasStudent, CanvasSubmission, Criterion, CanvasCourse, CanvasAssignment, Rubric
-
-
-@composite
-def students(draw, min_size=1, average_size=10, max_size=25):
-    ids = draw(sets(elements=integers(), min_size=min_size, average_size=average_size, max_size=max_size))
-    return {CanvasStudent(id=i) for i in ids}
-
-
-@composite
-def students_and_submissions(draw, assignment_id=None):
-    _students = draw(students(min_size=50, average_size=1000, max_size=5000))
-    ids = (s.id for s in _students)
-    submissions = {
-        CanvasSubmission(id=i, author_id=i, assignment_id=assignment_id)
-        for i in ids
-    }
-    return _students, submissions
-
+from peer_review.models import CanvasStudent, CanvasSubmission, Criterion, CanvasCourse, CanvasAssignment, Rubric, \
+    CanvasSection
 
 alphabetic = text(alphabet=string.ascii_letters, min_size=3)
 course = models(CanvasCourse, name=alphabetic)
 
 
-def _prompt(course_model):
+def prompt(course_model, due_date_utc):
     return models(
         CanvasAssignment,
         is_peer_review_assignment=just(False),
         title=alphabetic,
-        course=just(course_model)
+        course=just(course_model),
+        due_date_utc=just(due_date_utc)
     )
 
 
-def _peer_review_assignment(course_model):
+def peer_review_assignment(course_model, due_date_utc):
     return models(
         CanvasAssignment,
-        is_peer_review_assignment=just(False),
+        is_peer_review_assignment=just(True),
         title=alphabetic,
-        course=just(course_model)
+        course=just(course_model),
+        due_date_utc=just(due_date_utc)
     )
 
 
-def _rubric(prompt_model, peer_review_assignment_model):
+def rubric(prompt_model, peer_review_assignment_model):
     return models(
         Rubric,
         description=alphabetic,
         reviewed_assignment=just(prompt_model),
-        passback_assignment=just(peer_review_assignment_model)
+        passback_assignment=just(peer_review_assignment_model),
+        revision_assignment=just(None),
+        revision_fetch_complete=just(False),
+        peer_review_open_date_is_prompt_due_date=just(True),
+        peer_review_open_date=just(prompt_model.due_date_utc),
+        distribute_peer_reviews_for_sections=just(False)
     )
 
 
@@ -63,8 +55,72 @@ def _criteria(rubric_model):
 def complete_rubric(draw):
     """A Hypothesis strategy to generate a course, prompt and peer review assignment, rubric and criteria."""
     course_model = draw(course)
-    prompt_model = draw(_prompt(course_model))
-    peer_review_assignment_model = draw(_peer_review_assignment(course_model))
-    rubric_model = draw(_rubric(prompt_model, peer_review_assignment_model))
+
+    prompt_due_date = draw(datetimes())
+    prompt_model = draw(prompt(course_model, prompt_due_date))
+
+    peer_review_due_date_minimum = prompt_due_date + timedelta(minutes=10)
+    peer_review_due_date = draw(datetimes(min_value=peer_review_due_date_minimum))
+    peer_review_assignment_model = draw(peer_review_assignment(course_model, peer_review_due_date))
+
+    rubric_model = draw(rubric(prompt_model, peer_review_assignment_model))
     criteria_models = draw(_criteria(rubric_model))
-    return just(rubric_model)
+
+    return rubric_model
+
+
+def _sections(course_model):
+    section = models(CanvasSection, name=alphabetic, course=just(course_model))
+    return lists(section, min_size=1)
+
+
+@composite
+def student(draw, section_model):
+    student_model = draw(models(
+        CanvasStudent,
+        full_name=alphabetic,       # TODO should be more realistic-ish
+        sortable_name=alphabetic,   # TODO should be more realistic-ish
+        username=alphabetic,
+    ))
+    student_model.courses.add(section_model.course)
+    student_model.sections.add(section_model)
+    return student_model
+
+
+@composite
+def students_for_sections(draw, section_models):
+    all_students = []
+    for section_model in section_models:
+        all_students.append(draw(lists(
+            student(section_model),
+            min_size=4,
+            max_size=50
+        )))
+    return list(chain(*all_students))
+
+
+def submission(prompt_model, student_model):
+    return models(
+        CanvasSubmission,
+        filename=alphabetic,      # TODO should a corresponding stub file be created?
+        assignment=just(prompt_model),
+        author=just(student_model)
+    )
+
+
+@composite
+def _student_submissions_for_prompt(draw, prompt_model, student_models):
+    all_submissions = []
+    for student_model in student_models:
+        _submission = draw(submission(prompt_model, student_model))
+        all_submissions.append(_submission)
+    return all_submissions
+
+
+@composite
+def rubric_ready_for_distribution(draw):
+    _rubric = draw(complete_rubric())
+    sections = draw(_sections(_rubric.reviewed_assignment.course))
+    students = draw(students_for_sections(sections))
+    submissions = draw(_student_submissions_for_prompt(_rubric.reviewed_assignment, students))
+    return _rubric
