@@ -1,6 +1,9 @@
-from hypothesis.strategies import composite, sets, integers
+import string
 
-from peer_review.models import CanvasStudent, CanvasSubmission
+from hypothesis.strategies import composite, sets, integers, text, just, lists
+from hypothesis.extra.django.models import models
+
+from peer_review.models import CanvasStudent, CanvasSubmission, Criterion, CanvasCourse, CanvasAssignment, Rubric
 
 
 @composite
@@ -18,3 +21,50 @@ def students_and_submissions(draw, assignment_id=None):
         for i in ids
     }
     return _students, submissions
+
+
+alphabetic = text(alphabet=string.ascii_letters, min_size=3)
+course = models(CanvasCourse, name=alphabetic)
+
+
+def _prompt(course_model):
+    return models(
+        CanvasAssignment,
+        is_peer_review_assignment=just(False),
+        title=alphabetic,
+        course=just(course_model)
+    )
+
+
+def _peer_review_assignment(course_model):
+    return models(
+        CanvasAssignment,
+        is_peer_review_assignment=just(False),
+        title=alphabetic,
+        course=just(course_model)
+    )
+
+
+def _rubric(prompt_model, peer_review_assignment_model):
+    return models(
+        Rubric,
+        description=alphabetic,
+        reviewed_assignment=just(prompt_model),
+        passback_assignment=just(peer_review_assignment_model)
+    )
+
+
+def _criteria(rubric_model):
+    criterion = models(Criterion, description=alphabetic, rubric=just(rubric_model))
+    return lists(criterion, min_size=1, average_size=3, max_size=10)
+
+
+@composite
+def complete_rubric(draw):
+    """A Hypothesis strategy to generate a course, prompt and peer review assignment, rubric and criteria."""
+    course_model = draw(course)
+    prompt_model = draw(_prompt(course_model))
+    peer_review_assignment_model = draw(_peer_review_assignment(course_model))
+    rubric_model = draw(_rubric(prompt_model, peer_review_assignment_model))
+    criteria_models = draw(_criteria(rubric_model))
+    return just(rubric_model)
