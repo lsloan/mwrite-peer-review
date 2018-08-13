@@ -26,8 +26,6 @@ pass these as environment variables in OpenShift.
 
 ## Runtime Environment
 
-_**TODO** -- need to separate these by container type (job / API)_
-
 The API and jobs containers derive their runtime configuration from the following environment variables:
 
 | Variable                         | Type                  | Optional (Default) | Description                                                                                                                        |
@@ -74,7 +72,7 @@ Refer frequently to the OpenShift Container Platform [documentation](https://doc
 ### Automatic Backups to S3
 
 The jobs container uses a weekly cron job to back up the configured database and submission storage volume to S3.
-See `[dockerfiles/jobs.Dockerfile](dockerfiles/jobs.Dockerfile)` and `[scripts/backup_data.bash](backup_data.bash)` for
+See [`dockerfiles/jobs.Dockerfile`](dockerfiles/jobs.Dockerfile) and [`scripts/backup_data.bash`](backup_data.bash) for
 implementation details.  See [above](#runtime-environment) for information about the related environment variables.
 
 ### Accessing Private Github Repositories
