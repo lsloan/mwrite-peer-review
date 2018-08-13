@@ -56,7 +56,7 @@ The jobs container also uses the following environment variables:
 | MPR_EMAIL_PORT        | int                 | No                 | Sets Django's [EMAIL_PORT](https://docs.djangoproject.com/en/1.11/ref/settings/#std:setting-EMAIL_PORT) setting     |
 | MPR_SERVER_FROM_EMAIL | email               | No                 | Sets Django's [SERVER_EMAIL](https://docs.djangoproject.com/en/1.11/ref/settings/#std:setting-SERVER_EMAIL) setting |
 | MPR_SERVER_TO_EMAILS  | email[, email, ...] | No                 | Used to derive Django's [ADMINS](https://docs.djangoproject.com/en/1.11/ref/settings/#std:setting-ADMINS) setting   |
-| MPR_BACKUP_S3_BACKUP  | string              | Yes                | AWS S3 bucket for storing SQL dumps and submission archives; leave unset to disable backups                         |
+| MPR_BACKUP_S3_BUCKET  | string              | Yes                | AWS S3 bucket for storing SQL dumps and submission archives; leave unset to disable backups                         |
 
 See the [API's OpenShift deployment](config/server/example/openshift/dc/api-dc.yaml) config for examples.
   
@@ -66,6 +66,11 @@ As mentioned previously, M-Write Peer Review supports being run using Docker; ho
 the OpenShift Container Platform (version 3.6) is used in production.  The instructions below demonstrate how to
 set up an environment given an empty project (referred to hereafter as the `mwrite-peer-review-dev` namespace).
 Refer frequently to the OpenShift Container Platform [documentation](https://docs.openshift.com/container-platform/3.6/dev_guide/index.html).
+
+### Automatic Backups to S3
+
+The jobs container has a daily cron job to back up the configured database and submission storage volume to S3.  See the
+`MPR_BACKUP_S3_BUCKET` environment variable above.  If this variable is not set, backups will be disabled.
 
 ### Accessing Private Github Repositories
 
