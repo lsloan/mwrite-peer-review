@@ -229,7 +229,7 @@
             <div class="mdl-grid">
                 <div class="mdl-cell mdl-cell--1-col mdl-cell--1-col-tablet mdl-cell-1-col-phone"></div>
                 <div class="mdl-cell mdl-cell--10-col mdl-cell--6-col-tablet mdl-cell-2-col-phone">
-                    <mdl-snackbar display-on="notification"></mdl-snackbar>
+                    <snackbar display-on="notification"/>
                 </div>
                 <div class="mdl-cell mdl-cell--1-col mdl-cell--1-col-tablet mdl-cell-1-col-phone"></div>
             </div>
@@ -241,8 +241,9 @@
 import * as R from 'ramda';
 import moment from 'moment';
 import Datepicker from 'vuejs-datepicker';
-import {MdlCard, MdlSwitch, MdlSelect, MdlSnackbar} from 'vue-mdl';
+import {MdlCard, MdlSwitch, MdlSelect} from 'vue-mdl';
 
+import {default as Snackbar, notificationTime} from '@/components/Snackbar';
 import Dropdown from '@/components/Dropdown';
 import AutosizeTextarea from '@/components/AutosizeTextarea';
 
@@ -267,8 +268,13 @@ const makeAssignmentOptions = (assignmentNamesById, ...excludedAssignmentIds) =>
 const NO_REVISION_OPTION = {value: null, name: 'No revision'};
 const DISPLAY_DATE_FORMAT = 'MMM D YYYY h:mm A';
 
+const RUBRIC_UPDATE_SUCCESS_MESSAGE = 'The rubric was successfully created.  You will be returned to the dashboard.';
+const RUBRIC_UPDATE_FAILURE_MESSAGE = 'An error occurred.  Please try again later.';
+
+const REDIRECT_TIME = notificationTime(RUBRIC_UPDATE_SUCCESS_MESSAGE);
+
 export default {
-  components: {Dropdown, Datepicker, AutosizeTextarea, MdlCard, MdlSwitch, MdlSelect, MdlSnackbar},
+  components: {Dropdown, Datepicker, AutosizeTextarea, Snackbar, MdlCard, MdlSwitch, MdlSelect},
   props: ['peer-review-assignment-id'],
   data() {
     return {
@@ -463,15 +469,11 @@ export default {
       this.models.criteria = R.reject(c => c.id === id, this.models.criteria);
     },
     rubricUpdateSuccess() {
-      this.$root.$emit('notification', {
-        message: 'The rubric was successfully created.  You will be returned to the dashboard.'
-      });
-      setTimeout(() => this.$router.push({name: 'InstructorDashboard'}), 5000);
+      this.$root.$emit('notification', RUBRIC_UPDATE_SUCCESS_MESSAGE);
+      setTimeout(() => this.$router.push({name: 'InstructorDashboard'}), REDIRECT_TIME);
     },
     rubricUpdateFailure() {
-      this.$root.$emit('notification', {
-        message: 'An error occurred.  Please try again later.'
-      });
+      this.$root.$emit('notification', RUBRIC_UPDATE_FAILURE_MESSAGE);
     },
     submitRubricForm() {
       if(this.rubricIsValid) {
