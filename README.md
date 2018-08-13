@@ -50,14 +50,17 @@ The API and jobs containers derive their runtime configuration from the followin
 
 The jobs container also uses the following environment variables:
 
-| Variable              | Type                | Optional (default) | Description                                                                                                         |
-| --------------------- | ------------------- | ------------------ | ------------------------------------------------------------------------------------------------------------------- |
-| MPR_EMAIL_HOST        | email               | No                 | Sets Django's [EMAIL_HOST](https://docs.djangoproject.com/en/1.11/ref/settings/#std:setting-EMAIL_HOST) setting     |
-| MPR_EMAIL_PORT        | int                 | No                 | Sets Django's [EMAIL_PORT](https://docs.djangoproject.com/en/1.11/ref/settings/#std:setting-EMAIL_PORT) setting     |
-| MPR_SERVER_FROM_EMAIL | email               | No                 | Sets Django's [SERVER_EMAIL](https://docs.djangoproject.com/en/1.11/ref/settings/#std:setting-SERVER_EMAIL) setting |
-| MPR_SERVER_TO_EMAILS  | email[, email, ...] | No                 | Used to derive Django's [ADMINS](https://docs.djangoproject.com/en/1.11/ref/settings/#std:setting-ADMINS) setting   |
-| MPR_BACKUP_S3_BUCKET  | string              | Yes                | AWS S3 bucket for storing SQL dumps and submission archives; leave unset to disable backups                         |
-
+| Variable                    | Type                | Optional              | Description                                                                                                         |
+| ---------------------       | ------------------- | ------------------    | ------------------------------------------------------------------------------------------------------------------- |
+| MPR_EMAIL_HOST              | email               | No                    | Sets Django's [EMAIL_HOST](https://docs.djangoproject.com/en/1.11/ref/settings/#std:setting-EMAIL_HOST) setting     |
+| MPR_EMAIL_PORT              | int                 | No                    | Sets Django's [EMAIL_PORT](https://docs.djangoproject.com/en/1.11/ref/settings/#std:setting-EMAIL_PORT) setting     |
+| MPR_SERVER_FROM_EMAIL       | email               | No                    | Sets Django's [SERVER_EMAIL](https://docs.djangoproject.com/en/1.11/ref/settings/#std:setting-SERVER_EMAIL) setting |
+| MPR_SERVER_TO_EMAILS        | email[, email, ...] | No                    | Used to derive Django's [ADMINS](https://docs.djangoproject.com/en/1.11/ref/settings/#std:setting-ADMINS) setting   |
+| MPR_BACKUP_S3_BUCKET        | string              | Yes (see description) | AWS S3 bucket for storing SQL dumps and submission archives; leave unset to disable backups                         |
+| MPR_BACKUP_PREFIX           | path                | Yes                   | Path to store temporary backup files; defaults to /srv/mwrite-peer-review-backups                                   |
+| MPR_BACKUP_DB_CONFIG_FILE   | path                | Yes                   | Path to M-Write Peer Review's database config JSON file; defaults to /etc/mwrite-peer-review/database.json          |
+| MPR_BACKUP_SUBMISSIONS_PATH | path                | Yes                   | Path to M-Write Peer Review's submission storage path; defaults to /srv/mwrite-peer-review/submissions              |
+| MYSQLDUMP_OPTIONS           | string              | Yes                   | Command line options for mysqldump; required because MySQL 8 has different default behavior than 5.7                |
 See the [API's OpenShift deployment](config/server/example/openshift/dc/api-dc.yaml) config for examples.
   
 ## OpenShift Setup
@@ -69,8 +72,9 @@ Refer frequently to the OpenShift Container Platform [documentation](https://doc
 
 ### Automatic Backups to S3
 
-The jobs container has a daily cron job to back up the configured database and submission storage volume to S3.  See the
-`MPR_BACKUP_S3_BUCKET` environment variable above.  If this variable is not set, backups will be disabled.
+The jobs container uses a weekly cron job to back up the configured database and submission storage volume to S3.
+See `[dockerfiles/jobs.Dockerfile](dockerfiles/jobs.Dockerfile)` and `[scripts/backup_data.bash](backup_data.bash)` for
+implementation details.  See [#runtime-environment](above) for information about the related environment variables.
 
 ### Accessing Private Github Repositories
 
