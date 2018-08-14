@@ -2,6 +2,7 @@ import string
 from itertools import chain
 from datetime import timedelta
 
+import pytz
 from hypothesis.strategies import just, composite, text, lists, datetimes
 from hypothesis.extra.django.models import models
 
@@ -56,11 +57,11 @@ def complete_rubric(draw):
     """A Hypothesis strategy to generate a course, prompt and peer review assignment, rubric and criteria."""
     course_model = draw(course)
 
-    prompt_due_date = draw(datetimes())
+    prompt_due_date = draw(datetimes(timezones=just(pytz.UTC)))
     prompt_model = draw(prompt(course_model, prompt_due_date))
 
-    peer_review_due_date_minimum = prompt_due_date + timedelta(minutes=10)
-    peer_review_due_date = draw(datetimes(min_value=peer_review_due_date_minimum))
+    peer_review_due_date_minimum = (prompt_due_date + timedelta(minutes=10)).replace(tzinfo=None)
+    peer_review_due_date = draw(datetimes(min_value=peer_review_due_date_minimum, timezones=just(pytz.UTC)))
     peer_review_assignment_model = draw(peer_review_assignment(course_model, peer_review_due_date))
 
     rubric_model = draw(rubric(prompt_model, peer_review_assignment_model))
