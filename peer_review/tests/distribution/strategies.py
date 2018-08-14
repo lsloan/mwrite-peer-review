@@ -49,7 +49,7 @@ def rubric(prompt_model, peer_review_assignment_model):
 
 def _criteria(rubric_model):
     criterion = models(Criterion, description=alphabetic, rubric=just(rubric_model))
-    return lists(criterion, min_size=1, average_size=3, max_size=10)
+    return lists(criterion, min_size=1, average_size=3, max_size=10, unique_by=lambda c: c.id)
 
 
 @composite
