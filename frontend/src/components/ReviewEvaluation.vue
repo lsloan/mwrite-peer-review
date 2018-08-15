@@ -1,11 +1,11 @@
 <template>
     <div class="evaluation-container">
-        <div v-if="evaluationSubmitted" class="evaluation-complete">
+        <div v-if="evaluationIsComplete" class="evaluation-complete">
             <i class="material-icons evaluation-complete-icon">done</i>
             <span>Submitted</span>
         </div>
         <div v-else>
-            <div v-if="!showEvaluation">
+            <div v-if="!alwaysShow && !showEvaluation">
                 <button class="evaluation-button" @click="showEvaluation = true">Rate This Evaluation</button>
             </div>
             <form v-else class="evaluation-card" v-on:submit.prevent>
@@ -41,7 +41,7 @@
                         <span class="form-label">Please provide any additional feedback on this review</span>
                         <mdl-textfield
                             class="feedback-input"
-                            v-model="evaluationComment"/>
+                            v-model="comment"/>
                     </label>
                 </div>
                 <div class="form-section">
@@ -49,10 +49,11 @@
                         colored
                         raised
                         :disabled="!usefulness"
-                        @click.native="submitEvaluation(entry)">
+                        @click.native="submitEvaluation()">
                         Submit
                     </mdl-button>
                     <mdl-button
+                        v-if="!alwaysShow"
                         colored
                         @click.native="showEvaluation = false">
                         Cancel
@@ -68,35 +69,41 @@ import { MdlButton } from 'vue-mdl';
 
 export default {
   name: 'ReviewEvaluation',
-  props: ['entry'],
+  props: ['evaluation', 'always-show'],
   components: {
     MdlButton
   },
   data() {
     return {
-      showEvaluation: false,
+      showEvaluation: this.alwaysShow,
       usefulness: null,
-      evaluationComment: null,
-      userSubmittedEvaluation: false
+      comment: null
     };
   },
   computed: {
-    evaluationSubmitted() {
-      return this.userSubmittedEvaluation || this.entry.evaluationSubmitted;
+    evaluationIsComplete() {
+      const {evaluation: {evaluationIsComplete = false} = {}} = this;
+      return evaluationIsComplete;
     }
   },
   methods: {
-    submitEvaluation(entry) {
+    markAsComplete() {
+      const {peerReviewId} = this.evaluation;
+      this.$store.commit('markEvaluationCompleteForReview', peerReviewId);
+    },
+    submitEvaluation() {
       const {courseId, userId} = this.$store.state.userDetails;
-      const data = {
-        usefulness: this.usefulness,
-        comment: this.evaluationComment
+      const {usefulness, comment, evaluation: {peerReviewId}} = this;
+      const data = {usefulness, comment};
+      const payload = {
+        api: this.$api,
+        courseId,
+        userId,
+        peerReviewId,
+        data
       };
-      this.$api.post('/course/{}/reviews/student/{}/evaluation/{}', data, courseId, userId, entry.peerReviewId)
-        .then(() => {
-          this.userSubmittedEvaluation = true;
-          this.showEvaluation = false;
-        });
+      this.$store.dispatch('submitEvaluation', payload)
+        .then(this.markAsComplete);
     }
   }
 };
@@ -112,7 +119,7 @@ export default {
         flex-direction: row;
         align-items: center;
         text-transform: uppercase;
-        color: #52A763;
+        color: #2F8540;
     }
 
     .evaluation-complete-icon {

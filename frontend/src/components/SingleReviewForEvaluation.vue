@@ -1,26 +1,28 @@
 <template>
-    <reviews-by-criterion class="reviews" :data="review"/>
+    <review-by-reviewer class="review" :review="review" :allow-evaluation="true" :always-show-evaluation="true"/>
 </template>
 
 <script>
 import {conversions} from '@/services/reviews';
-import ReviewsByCriterion from '@/components/ReviewsByCriterion';
+import ReviewByReviewer from '@/components/ReviewByReviewer';
+
+// TODO consider combining this with SingleReview component
 
 export default {
-  name: 'SingleReview',
-  props: ['review-id'],
-  components: {ReviewsByCriterion},
+  name: 'SingleReviewForEvaluation',
+  props: ['student-id', 'peer-review-id'],
+  components: {ReviewByReviewer},
   computed: {
     courseId() {
       return this.$store.state.userDetails.courseId;
     },
     comments() {
-      const reviewId = parseInt(this.reviewId);
+      const reviewId = parseInt(this.peerReviewId);
       return this.$store.getters.commentsBy.peerReview[reviewId];
     },
     review() {
       return this.comments
-        ? [this.comments].map(conversions.criterion)
+        ? [this.comments].map(conversions.reviewer)[0]
         : [];
     },
     promptTitle() {
@@ -31,10 +33,12 @@ export default {
   },
   methods: {
     fetchReview() {
+      const {courseId, studentId, peerReviewId} = this;
       return this.$store.dispatch('fetchCommentsForReview', {
-        courseId: this.courseId,
-        peerReviewId: this.reviewId,
-        api: this.$api
+        api: this.$api,
+        courseId,
+        studentId,
+        peerReviewId
       });
     },
     emitTitle() {
@@ -49,7 +53,7 @@ export default {
 </script>
 
 <style scoped>
-    .reviews {
-        margin: 15px;
+    .review {
+        margin: 15px 20px;
     }
 </style>
