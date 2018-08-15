@@ -1,16 +1,29 @@
 import string
-from itertools import chain
 from datetime import timedelta
 
 import pytz
-from hypothesis.strategies import just, composite, text, lists, datetimes
+from hypothesis import assume
+from hypothesis.strategies import just, composite, text, lists, datetimes, integers
 from hypothesis.extra.django.models import models
 
 from peer_review.models import CanvasStudent, CanvasSubmission, Criterion, CanvasCourse, CanvasAssignment, Rubric, \
     CanvasSection
 
 alphabetic = text(alphabet=string.ascii_letters, min_size=3)
+pk = integers(min_value=-2147483648, max_value=2147483647)
 course = models(CanvasCourse, name=alphabetic)
+
+
+def _model_id(m):
+    return m.id
+
+
+@composite
+def unique_field(draw, model, field, field_strategy):
+    value = draw(field_strategy)
+    params = {field: value}
+    assume(not model.objects.filter(**params).exists())
+    return value
 
 
 def prompt(course_model, due_date_utc):
@@ -49,7 +62,7 @@ def rubric(prompt_model, peer_review_assignment_model):
 
 def _criteria(rubric_model):
     criterion = models(Criterion, description=alphabetic, rubric=just(rubric_model))
-    return lists(criterion, min_size=1, average_size=3, max_size=10, unique_by=lambda c: c.id)
+    return lists(criterion, min_size=1, average_size=3, max_size=10, unique_by=_model_id)
 
 
 @composite
@@ -70,34 +83,34 @@ def complete_rubric(draw):
     return rubric_model
 
 
-def _sections(course_model):
-    section = models(CanvasSection, name=alphabetic, course=just(course_model))
-    return lists(section, min_size=1)
+student = models(
+    CanvasStudent,
+    full_name=alphabetic,       # TODO should be more realistic-ish
+    sortable_name=alphabetic,   # TODO should be more realistic-ish
+    username=alphabetic
+)
+students = lists(student, min_size=4, max_size=50, unique_by=_model_id)
 
 
 @composite
-def student(draw, section_model):
-    student_model = draw(models(
-        CanvasStudent,
-        full_name=alphabetic,       # TODO should be more realistic-ish
-        sortable_name=alphabetic,   # TODO should be more realistic-ish
-        username=alphabetic,
-    ))
+def section(draw, course_model):
+    _section_model = draw(models(CanvasSection, name=alphabetic, course=just(course_model)))
+
+    def _add_students_to_section(student_models):
+        for s in student_models:
+            s.courses.add(course_model)
+            s.sections.add(_section_model)
+        return just(student_models)
+
+    draw(students.flatmap(_add_students_to_section))
+
+    return _section_model
+
+
+def student_with_relationships(section_model, student_model):
     student_model.courses.add(section_model.course)
     student_model.sections.add(section_model)
     return student_model
-
-
-@composite
-def students_for_sections(draw, section_models):
-    all_students = []
-    for section_model in section_models:
-        all_students.append(draw(lists(
-            student(section_model),
-            min_size=4,
-            max_size=50
-        )))
-    return list(chain(*all_students))
 
 
 def submission(prompt_model, student_model):
@@ -121,7 +134,24 @@ def _student_submissions_for_prompt(draw, prompt_model, student_models):
 @composite
 def rubric_ready_for_distribution(draw):
     _rubric = draw(complete_rubric())
-    sections = draw(_sections(_rubric.reviewed_assignment.course))
-    students = draw(students_for_sections(sections))
-    submissions = draw(_student_submissions_for_prompt(_rubric.reviewed_assignment, students))
+    _prompt = _rubric.reviewed_assignment
+    _course = _prompt.course
+
+    _sections = draw(lists(section(_course), min_size=1, unique_by=_model_id))
+
+    _all_students = []
+    for s in _sections:
+        _all_students.extend(s.students.all())
+
+    # TODO need a more reliable way to generate 1:1 student:submissions w/o drawing duplicates.
+    # TODO the `assume` calls below are hacks; they work, but they significantly slow down
+    # TODO example generation and virtually ensure that that the number of students in the test
+    # TODO will be low.
+    all_submissions = set()
+    for s in _all_students:
+        _submission = draw(submission(_prompt, s))
+        all_submissions.add(_submission.id)
+    assume(len(all_submissions) == len(set(s.id for s in _all_students)))
+    assume(len(all_submissions) >= 4)
+
     return _rubric
