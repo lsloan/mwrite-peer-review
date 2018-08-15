@@ -1,16 +1,16 @@
 import pytest
 from datetime import datetime
 
-from hypothesis import given, settings, HealthCheck, unlimited
+from hypothesis import given, settings, HealthCheck, unlimited, Verbosity
+from hypothesis.strategies import data
 
-
-from .strategies import rubric_ready_for_distribution
-from peer_review.models import CanvasStudent, CanvasSubmission, PeerReview
+from .strategies import rubric_ready_for_distribution, students_not_for_peer_review
+from peer_review.models import CanvasStudent, CanvasSubmission, PeerReview, PeerReviewDistribution
 from peer_review.tests.distribution.fixtures import test_models, rubric_tree_with_mocked_requests
 from peer_review.distribution import make_distribution, review_distribution_task, add_to_distribution, DEFAULT_NUMBER_OF_REVIEWS_PER_STUDENT
 
 
-@pytest.mark.django_db(True)
+@pytest.mark.django_db(transaction=True)
 @settings(max_examples=5, suppress_health_check=[HealthCheck.too_slow], timeout=unlimited)
 @given(rubric=rubric_ready_for_distribution())
 def test_distribution(rubric):
@@ -34,7 +34,7 @@ def test_distribution(rubric):
 
 
 # noinspection PyShadowingNames
-@pytest.mark.django_db(True)
+@pytest.mark.django_db(transaction=True)
 def test_distribution_task_for_all_sections(rubric_tree_with_mocked_requests):
     rubric = rubric_tree_with_mocked_requests
 
@@ -96,28 +96,26 @@ def test_distribution_task_within_sections(rubric_tree_with_mocked_requests):
 
 
 # noinspection PyShadowingNames
-# @pytest.mark.django_db(True)
-# def test_adding_students_to_existing_distribution(rubric_tree_with_mocked_requests, sns):
-#     rubric = rubric_tree_with_mocked_requests
-#     review_distribution_task(datetime.utcnow(), True)
-#     existing_reviews = PeerReview.objects.filter(
-#         submission__assignment=rubric.reviewed_assignment
-#     )
-#     # existing_submissions = CanvasSubmission.objects.filter(
-#     #     id__in=existing_reviews.values_list('submission_id', flat=True)
-#     # )
-#
-#     add_to_distribution(rubric, students)
-#
-#     new_reviews = PeerReview.objects.filter(student__in=students)
-#     assert new_reviews.exists()
-#
-#     existing_submission_ids = set(existing_reviews.values_list('submission_id', flat=True))
-#     new_review_submissions_ids = set(new_reviews.values_list('submission_id', flat=True))
-#     assert existing_submission_ids.issubset(new_review_submissions_ids)
+@pytest.mark.django_db(transaction=True)
+@given(data=data())
+@settings(max_examples=1, suppress_health_check=[HealthCheck.too_slow, HealthCheck.filter_too_much], timeout=unlimited)
+def test_adding_students_to_existing_distribution(rubric_tree_with_mocked_requests, data):
+    rubric = rubric_tree_with_mocked_requests
+    review_distribution_task(datetime.utcnow(), True)
+    existing_reviews = PeerReview.objects.filter(
+        submission__assignment=rubric.reviewed_assignment
+    )
 
-    # TODO need some submissions for these students
-    # TODO assert that the new students' submissions are receiving no reviews
+    new_students = data.draw(students_not_for_peer_review(rubric.reviewed_assignment))
+    add_to_distribution(rubric, new_students)
 
+    new_reviews = PeerReview.objects.filter(student__in=new_students)
+    assert new_reviews.exists()
 
+    existing_submission_ids = set(existing_reviews.values_list('submission_id', flat=True))
+    new_review_submissions_ids = set(new_reviews.values_list('submission_id', flat=True))
+    assert existing_submission_ids.issubset(new_review_submissions_ids)
 
+    # @pytest.mark.django_db(transaction=True) seems to have no effect, so doing cleanup here
+    PeerReviewDistribution.objects.filter(rubric=rubric).delete()
+    PeerReview.objects.filter(submission__assignment=rubric.reviewed_assignment).delete()

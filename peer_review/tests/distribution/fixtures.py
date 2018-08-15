@@ -16,7 +16,9 @@ from peer_review.models import Criterion, Rubric, CanvasSection, CanvasCourse, C
 def next_id(model, id_field='id'):
     """Helper function for getting next IDs of non-autoincrement models.  Should only be used for tests."""
     max_key = id_field + '__max'
-    max_id = model.objects.all().aggregate(Max(id_field))[max_key] or -1
+    max_id = model.objects.all().aggregate(Max(id_field))[max_key]
+    if max_id is None:
+        max_id = -1
     return max_id + 1
 
 

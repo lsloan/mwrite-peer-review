@@ -7,7 +7,7 @@ from hypothesis.strategies import just, composite, text, lists, datetimes, integ
 from hypothesis.extra.django.models import models
 
 from peer_review.models import CanvasStudent, CanvasSubmission, Criterion, CanvasCourse, CanvasAssignment, Rubric, \
-    CanvasSection
+    CanvasSection, PeerReview
 
 alphabetic = text(alphabet=string.ascii_letters, min_size=3)
 pk = integers(min_value=-2147483648, max_value=2147483647)
@@ -90,6 +90,18 @@ student = models(
     username=alphabetic
 )
 students = lists(student, min_size=4, max_size=50, unique_by=_model_id)
+
+
+@composite
+def students_not_for_peer_review(draw, prompt_model):
+    _students = draw(students)
+
+    def student_not_assigned_for_review(_student_model):
+        reviews = PeerReview.objects.filter(submission__assignment=prompt_model, student=_student_model)
+        return not reviews.exists()
+
+    assume(all(map(student_not_assigned_for_review, _students)))
+    return _students
 
 
 @composite
