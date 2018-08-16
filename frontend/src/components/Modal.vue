@@ -2,11 +2,11 @@
     <transition name="modal">
         <div class="modal-mask">
             <div class="modal-wrapper">
-                <div class="modal-container">
+                <div class="modal-container" role="dialog" aria-labelledby="modal-title">
 
                     <div class="modal-header">
                         <div class="modal-titles-container">
-                            <span class="modal-title">{{ title }}</span>
+                            <span id="modal-title" ref="title" class="modal-title" tabindex="-1">{{ title }}</span>
                             <span class="modal-subtitle" v-if="subtitle">{{ subtitle }}</span>
                         </div>
                         <mdl-button @click.native="closeModal" class="modal-close-button mdl-button--icon">
@@ -49,7 +49,15 @@ export default {
     },
     setSubtitle(subtitle) {
       this.subtitle = subtitle;
+    },
+    focusModalTitle() {
+      this.$refs.title.focus();
     }
+  },
+  mounted() {
+    this.$nextTick(() => {
+      this.focusModalTitle();
+    });
   }
 };
 </script>
