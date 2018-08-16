@@ -3,7 +3,7 @@
         <div class="mdl-grid">
             <div class="mdl-cell mdl-cell--2-col mdl-cell--1-col-tablet mdl-cell--hide-phone"></div>
             <div class="mdl-cell mdl-cell--8-col mdl-cell--6-col-tablet mdl-cell--4-col-phone">
-                <h1>Assigned to me</h1>
+                <h2>Assigned to me</h2>
             </div>
             <div class="mdl-cell mdl-cell--2-col mdl-cell--1-col-tablet mdl-cell--hide-phone"></div>
         </div>
@@ -117,9 +117,11 @@ export default {
 </script>
 
 <style scoped>
-    h1 {
+    h2 {
         font-size: 24px;
         margin: 4px 0;
         font-weight: bolder;
+        line-height: 1.35;
+        letter-spacing: -0.02em;
     }
 </style>
