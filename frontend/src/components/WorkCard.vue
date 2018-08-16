@@ -1,7 +1,7 @@
 <template>
     <div class="work-card mdl-card mdl-shadow--2dp">
         <div :class="headerClasses">
-            <span>{{ title }}</span>
+            <h3 class="work-card__title">{{ title }}</h3>
             <div class="due-date-container">
                 <i class="material-icons">query_builder</i>
                 <span>Due</span>
@@ -67,6 +67,12 @@ export default {
         padding: 0 20px;
         color: white;
         flex: 0 0 64px;
+    }
+
+    .work-card__title {
+        font-size: 16px;
+        font-weight: 400;
+        line-height: 20px;
     }
 
     .work-card__header--review {
