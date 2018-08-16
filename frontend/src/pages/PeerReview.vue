@@ -6,7 +6,7 @@
             </mdl-anchor-button>
         </peer-review-section>
         <peer-review-section section-number="2">
-            <h1>Submit Your Review</h1>
+            <h2>Submit Your Review</h2>
         </peer-review-section>
         <peer-review-section>
             <p class="preserve-whitespace">{{ rubricDescription }}</p>
@@ -113,14 +113,15 @@ export default {
 </script>
 
 <style scoped>
-    h1, p {
+    h2, p {
         font-family: "Roboto","Helvetica","Arial",sans-serif;
     }
 
-    h1 {
+    h2 {
         font-size: 24px;
         line-height: 24px;
         margin: 8px 0;
+        letter-spacing: -0.02em;
     }
 
     p {
