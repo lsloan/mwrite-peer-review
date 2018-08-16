@@ -1,7 +1,7 @@
 <template>
     <div>
         <div class="mdl-grid">
-            <h1>{{ studentName }}</h1>
+            <h2>{{ studentName }}</h2>
             <div class="mdl-layout-spacer"></div>
             <mdl-anchor-button class="data-download-button" raised :href="dataDownloadUrl">
                 Download
@@ -118,11 +118,12 @@ export default {
 </script>
 
 <style scoped>
-    h1 {
+    h2 {
         font-family: "Roboto","Helvetica","Arial",sans-serif;
         font-size: 28px;
         line-height: 28px;
         margin: 8px 0;
+        letter-spacing: -0.56px;
     }
 
     .data-download-button {
