@@ -2,7 +2,6 @@
     <div class="peer-review-assignment-card mdl-card mdl-cell mdl-cell--3-col mdl-shadow--2dp">
 
         <div class="mdl-card__title mdl-card--expand">
-            <!-- TODO should be an h1? -->
             <h2 class="mdl-card__title-text">{{ peerReviewTitle }}</h2>
         </div>
 
