@@ -20,7 +20,7 @@
                     v-model="responses[criterion.id]"/>
             </peer-review-section>
             <peer-review-section>
-                <mdl-button raised colored @click.native="submitReview" :disabled="!reviewIsComplete">
+                <mdl-button raised colored @click.native="submitReview" :disabled="!reviewIsComplete || submissionInProgress">
                     Submit
                 </mdl-button>
                 <mdl-button @click.native="cancelReview">
@@ -54,7 +54,8 @@ export default {
   data() {
     return {
       data: {},
-      responses: {}
+      responses: {},
+      submissionInProgress: false
     };
   },
   computed: {
@@ -87,6 +88,7 @@ export default {
     submitReview() {
       if(this.reviewIsComplete) {
         const data = {comments: this.comments};
+        this.submissionInProgress = true;
         api.post('/course/{}/reviews/{}/', data, this.courseId, this.reviewId)
           .then(() => {
             this.$root.$emit('notification', SUBMIT_REVIEW_SUCCESS_MESSAGE);
@@ -94,6 +96,7 @@ export default {
           })
           .catch(() => {
             this.$root.$emit('notification', SUBMIT_REVIEW_ERROR_MESSAGE);
+            this.submissionInProgress = false;
           });
       }
       else {
