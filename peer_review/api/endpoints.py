@@ -238,8 +238,9 @@ def create_or_update_rubric(request, params, course_id):
             rubric_description = objects['rubric_description']
             criteria = objects['criteria']
             peer_review_open_date = objects['peer_review_open_date']
+            peer_review_evaluation_due_date = objects['peer_review_evaluation_due_date']
             pr_open_date_is_prompt_due_date = objects['peer_review_open_date_is_prompt_due_date']
-
+            peer_review_evaluation_is_mandatory = objects['peer_review_evaluation_is_mandatory']
             rubric, created = Rubric.objects.update_or_create(
                 reviewed_assignment=prompt_assignment,
                 defaults={
@@ -248,7 +249,9 @@ def create_or_update_rubric(request, params, course_id):
                     'passback_assignment': passback_assignment,
                     'revision_assignment': revision_assignment,
                     'peer_review_open_date': peer_review_open_date,
+                    'peer_review_evaluation_due_date': peer_review_evaluation_due_date,
                     'peer_review_open_date_is_prompt_due_date': pr_open_date_is_prompt_due_date,
+                    'peer_review_evaluation_is_mandatory': peer_review_evaluation_is_mandatory,
                     'distribute_peer_reviews_for_sections': False
                 }
             )

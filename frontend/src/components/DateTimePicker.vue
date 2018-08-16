@@ -6,7 +6,7 @@
                     format='MMM d yyyy'
                     placeholder='Day'
                     :disabled-dates='disabledDates'
-                    :disabled='disabled'
+                    :disabled='dateTimeDisabled'
                     v-model='models.selectedDate'>
             </datepicker>
         </div>
@@ -15,6 +15,7 @@
                     :id="'hour-select-' + idSuffix"
                     label='Hour'
                     v-model='models.selectedHour'
+                    :disabled='dateTimeDisabled'
                     :options='HOUR_CHOICES'>
             </mdl-select>
         </div>
@@ -23,6 +24,7 @@
                     :id="'minute-select-' + idSuffix"
                     label='Minute'
                     v-model='models.selectedMinute'
+                    :disabled='dateTimeDisabled'
                     :options='MINUTE_CHOICES'>
             </mdl-select>
         </div>
@@ -31,6 +33,7 @@
                     :id="'ampm-select-' + idSuffix"
                     label='AM / PM'
                     v-model='models.selectedMeridian'
+                    :disabled='dateTimeDisabled'
                     :options='MERIDIAN_CHOICES'>
             </mdl-select>
         </div>
@@ -61,9 +64,9 @@ export default {
 
       models: {
         selectedDate: null,
-        selectedHour: null,
-        selectedMinute: null,
-        selectedMeridian: null
+        selectedHour: '11',
+        selectedMinute: '45',
+        selectedMeridian: 'PM'
       },
 
       HOUR_CHOICES: R.range(1, 13).map(i => i.toString()),
@@ -72,13 +75,28 @@ export default {
     };
   },
   computed: {
+    dateTimeDisabled() {
+      return this.disabled || !this.startEndDateIsValid;
+    },
+    startEndDateIsValid() {
+      if (this.availableStartDate && this.availableEndDate) {
+        return this.availableStartDate.isBefore(this.availableEndDate);
+      } else {
+        return true;
+      }
+    },
     disabledDates() {
-      return this.availableStartDate && this.availableEndDate
-        ? {
-            to: this.availableStartDate.local().toDate(),
-            from: this.availableEndDate.local().toDate()
-          }
-        : {};
+      if (! this.availableStartDate && ! this.availableEndDate) return {};
+
+      let interval = {};      
+      if (this.availableStartDate) {
+        interval['to'] = this.availableStartDate.local().toDate();
+      }
+      if (this.availableEndDate) {
+        interval['from'] = this.availableEndDate.local().toDate();
+      }
+
+      return interval;
     },
     dateTimeValue() {
       const {
@@ -87,6 +105,7 @@ export default {
         selectedMinute: minute,
         selectedMeridian: meridian
       } = this.models;
+
       if (date && hour && minute && meridian) {
         const hours12 = parseInt(hour);
         const hours24 =

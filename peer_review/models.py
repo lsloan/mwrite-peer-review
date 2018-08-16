@@ -108,8 +108,8 @@ class Rubric(models.Model):
     revision_fetch_complete = models.BooleanField(default=False)
     peer_review_open_date_is_prompt_due_date = models.BooleanField(default=True)
     peer_review_open_date = models.DateTimeField(blank=True, null=True)
-    # peer_review_evaluation_is_mandatory = models.BooleanField(default=True)
-    # peer_review_evaluation_due_date = models.DateTimeField(default=True)
+    peer_review_evaluation_is_mandatory = models.BooleanField(default=True)
+    peer_review_evaluation_due_date = models.DateTimeField(blank=True, default=True)
     distribute_peer_reviews_for_sections = models.BooleanField(default=False)
     sections = models.ManyToManyField(CanvasSection, blank=True)
 

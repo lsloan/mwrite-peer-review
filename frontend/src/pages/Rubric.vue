@@ -58,7 +58,7 @@
             <div class="mdl-cell mdl-cell--1-col mdl-cell--1-col-tablet mdl-cell-1-col-phone"></div>
             <mdl-card
                     class="mdl-card mdl-shadow--2dp mdl-cell mdl-cell--10-col mdl-cell--6-col-tablet mdl-cell-2-col-phone"
-                    title="Peer Review"
+                    title="Peer Review Open Date"
                     supporting-text="slot">
                 <div slot="supporting-text">
                     <div class="mdl-card__supporting-text">
@@ -92,7 +92,7 @@
             <div class="mdl-cell mdl-cell--1-col mdl-cell--1-col-tablet mdl-cell-1-col-phone"></div>
             <mdl-card
                     class="mdl-card mdl-shadow--2dp mdl-cell mdl-cell--10-col mdl-cell--6-col-tablet mdl-cell-2-col-phone"
-                    title="Peer Review Evaluation"
+                    title="Peer Review Evaluation Due Date"
                     supporting-text="slot">
                 <div slot="supporting-text">
                     <div class="mdl-card__supporting-text">
@@ -103,8 +103,7 @@
                     <date-time-picker v-if="models.peerReviewEvaluationIsMandatory"
                         id-suffix="peer-review-evaluation-due-date-time"
                         :disabled="reviewIsInProgress"
-                        :available-start-date="promptDueDate"
-                        :available-end-date="peerReviewDueDate"
+                        :available-start-date="peerReviewDueDate"
                         v-model="models.peerReviewEvaluationDueDateTime" />
                 </div>
             </mdl-card>
@@ -487,7 +486,9 @@ export default {
           description: R.trim(this.models.description),
           criteria: R.map(c => R.trim(c.description), this.models.criteria),
           peerReviewOpenDateIsPromptDueDate: this.models.peerReviewOpenDateIsPromptDueDate,
-          peerReviewOpenDate: this.peerReviewOpenDate.toISOString()
+          peerReviewOpenDate: this.peerReviewOpenDate.toISOString(),
+          peerReviewEvaluationIsMandatory: this.models.peerReviewEvaluationIsMandatory,
+          peerReviewEvaluationDueDate: this.models.peerReviewEvaluationDueDateTime.toISOString()
         };
 
         this.submissionInProgress = true;
