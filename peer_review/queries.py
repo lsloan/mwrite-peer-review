@@ -603,6 +603,17 @@ class Evaluations:
 
         return Evaluations._collect_evaluation_data(reviews)
 
+    @staticmethod
+    def evaluation_for_review(course_id, review_id):
+        reviews = PeerReview.objects.filter(
+            submission__assignment__course_id=course_id,
+            submission__assignment__rubric_for_prompt__id__isnull=False,
+            id=review_id,
+        )\
+            .order_by('id')
+
+        return PeerReviewEvaluation.objects.get(peer_review=reviews[0].id)
+
 
 class Reviews:
 

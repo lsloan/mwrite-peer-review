@@ -151,6 +151,11 @@ def peer_review_evaluations(request, course_id, student_id):
     return Evaluations.pending_evaluations(course_id, student_id)
 
 
+@authorized_json_endpoint(roles=['instructor'])
+def evaluation_for_review(request, course_id, review_id):
+    return Evaluations.evaluation_for_review(course_id, review_id)
+
+
 @require_POST
 @json_body
 @authorized_json_endpoint(roles=['student'])
