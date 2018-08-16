@@ -3,7 +3,7 @@
         <div class="mdl-grid">
             <div class="mdl-cell mdl-cell--2-col mdl-cell--1-col-tablet mdl-cell--hide-phone"></div>
             <div class="mdl-cell mdl-cell--8-col mdl-cell--6-col-tablet mdl-cell--4-col-phone">
-                <h1>Completed work</h1>
+                <h2>Completed work</h2>
             </div>
             <div class="mdl-cell mdl-cell--2-col mdl-cell--1-col-tablet mdl-cell--hide-phone"></div>
         </div>
@@ -17,7 +17,7 @@
                     <div v-for="review in sortedReviews" :key="review.rubricId"
                          class="mdl-card mdl-shadow--2dp mdl-cell mdl-cell--6-col mdl-cell--8-col-tablet mdl-cell--4-col-phone">
                         <div class="mdl-card__title">
-                            <h2 class="">{{ review.promptName }}</h2>
+                            <h3 class="">{{ review.promptName }}</h3>
                             <div class="due-date-container">
                                 <i class="material-icons">query_builder</i>
                                 <span>Due</span>
@@ -95,10 +95,12 @@ export default {
 </script>
 
 <style scoped>
-    h1 {
+    h2 {
         font-size: 24px;
         margin: 4px 0;
         font-weight: bolder;
+        line-height: 1.35;
+        letter-spacing: -0.02em;
     }
 
     .mdl-grid {
@@ -116,17 +118,17 @@ export default {
         display: block;
     }
 
-    .mdl-card__title > h2 {
+    .mdl-card__title > h3 {
         padding: 0;
     }
 
-    .mdl-card__title, .mdl-card__title > h2 {
+    .mdl-card__title, .mdl-card__title > h3 {
         font-size: 16px;
         line-height: 16px;
         margin: 0;
     }
 
-    .mdl-card__title > h2 {
+    .mdl-card__title > h3 {
         font-weight: bold;
         margin-bottom: 7px;
     }
