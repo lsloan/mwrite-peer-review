@@ -391,12 +391,10 @@ export default {
       return peerReviewDueAfterPrompt && peerReviewDueAfterOpening;
     },
     peerReviewEvaluationDueDateIsValid(){
-        if (this.models.peerReviewEvaluationIsMandatory && !this.models.peerReviewEvaluationDueDateTime) {
-            return false;
-        }
-        else {
-            return true;
-        }
+        return (
+            !this.models.peerReviewEvaluationIsMandatory ||
+            this.models.peerReviewEvaluationIsMandatory && this.models.peerReviewEvaluationDueDateTime
+        );
     }
   },
   methods: {
