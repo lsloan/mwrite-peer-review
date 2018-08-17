@@ -490,21 +490,21 @@ class RubricForm:
             assignments.insert(0, existing_prompt)
         if existing_revision:
             assignments.insert(0, existing_revision)
-
+        
         if existing_rubric:
             rubric_data = {
                 'description': existing_rubric.description,
                 'prompt_id': existing_prompt.id,
                 'revision_id': existing_revision.id if existing_revision else None,
-                'peer_review_open_date': existing_rubric.peer_review_open_date.strftime(API_DATE_FORMAT),
+                'peer_review_open_date_time': existing_rubric.peer_review_open_date.strftime(API_DATE_FORMAT),
                 'peer_review_open_date_is_prompt_due_date': existing_rubric.peer_review_open_date_is_prompt_due_date,
                 'criteria': [
                     {'id': c.id, 'description': c.description}
                     for c in existing_rubric.criteria.all()
                 ],
                 'review_in_progress': review_is_in_progress,
-                'peer_review_evaluation_is_mandatory': False,
-                'peer_review_evaluation_due_date': None,
+                'peer_review_evaluation_is_mandatory': existing_rubric.peer_review_evaluation_is_mandatory,
+                'peer_review_evaluation_due_date_time': existing_rubric.peer_review_evaluation_due_date.strftime(API_DATE_FORMAT) if existing_rubric.peer_review_evaluation_due_date else None,
             }
         else:
             rubric_data = None

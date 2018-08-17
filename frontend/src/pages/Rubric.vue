@@ -362,7 +362,7 @@ export default {
       const allIssues = R.concat(this.promptIssues, this.revisionIssues);
       const noFatalIssuesFound = R.all(i => !i.fatal, allIssues);
 
-      return this.models.selectedPrompt && this.models.description && criteriaAreValid && noFatalIssuesFound && this.peerReviewOpenDateIsValid;
+      return this.models.selectedPrompt && this.models.description && criteriaAreValid && noFatalIssuesFound && this.peerReviewOpenDateIsValid && this.peerReviewEvaluationDueDateIsValid;
     },
     peerReviewOpenDisabledDates() {
       return this.promptDueDate && this.peerReviewDueDate
@@ -389,6 +389,14 @@ export default {
       const peerReviewDueAfterPrompt = this.peerReviewOpenDate.isSameOrAfter(this.promptDueDate);
       const peerReviewDueAfterOpening = this.peerReviewOpenDate.isSameOrBefore(this.peerReviewDueDate);
       return peerReviewDueAfterPrompt && peerReviewDueAfterOpening;
+    },
+    peerReviewEvaluationDueDateIsValid(){
+        if (this.models.peerReviewEvaluationIsMandatory && !this.models.peerReviewEvaluationDueDateTime) {
+            return false;
+        }
+        else {
+            return true;
+        }
     }
   },
   methods: {
@@ -404,7 +412,7 @@ export default {
     },
     initializeModels() {
       if(this.existingRubric) {
-        const {promptId, revisionId} = this.existingRubric;
+        const {promptId, revisionId, peerReviewOpenDateTime, peerReviewEvaluationDueDateTime} = this.existingRubric;
         const promptOption = {
           value: promptId,
           name: this.assignmentNamesById[promptId]
@@ -417,7 +425,9 @@ export default {
           R.dissoc('promptId'),
           R.dissoc('revisionId'),
           R.assoc('selectedPrompt', promptOption),
-          R.assoc('selectedRevision', revisionOption)
+          R.assoc('selectedRevision', revisionOption),
+          R.assoc('peerReviewOpenDateTime', moment.utc(peerReviewOpenDateTime)),
+          R.assoc('peerReviewEvaluationDueDateTime', moment.utc(peerReviewEvaluationDueDateTime))
         );
 
         this.models = modelConverter(this.existingRubric);
@@ -488,7 +498,7 @@ export default {
           peerReviewOpenDateIsPromptDueDate: this.models.peerReviewOpenDateIsPromptDueDate,
           peerReviewOpenDate: this.peerReviewOpenDate.toISOString(),
           peerReviewEvaluationIsMandatory: this.models.peerReviewEvaluationIsMandatory,
-          peerReviewEvaluationDueDate: this.models.peerReviewEvaluationDueDateTime.toISOString()
+          peerReviewEvaluationDueDate: (this.models.peerReviewEvaluationDueDateTime) ? this.models.peerReviewEvaluationDueDateTime.toISOString() : null
         };
 
         this.submissionInProgress = true;

@@ -113,10 +113,13 @@ def get_boolean_param_or_400(key_name, params):
     return params[key_name]
 
 def get_date_param_or_400(key_name, params):
-    if key_name not in params or not params[key_name].strip():
+    if key_name not in params:
         raise APIException(data={'error': 'Missing {}.'.format(key_name)}, status_code=400)
     try:
-        return dateutil.parser.parse(params[key_name])
+        if params[key_name] is None:
+            return None
+        else:
+            return dateutil.parser.parse(params[key_name].strip())
     except ValueError:
         error = '{} should be a valid ISO 8601 date.'.format(key_name)
         raise APIException(data={'error': error}, status_code=400)

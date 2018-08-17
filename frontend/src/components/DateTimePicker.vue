@@ -63,10 +63,10 @@ export default {
       descriptionText: this.text || 'Enter a custom date:',
 
       models: {
-        selectedDate: null,
-        selectedHour: '11',
-        selectedMinute: '45',
-        selectedMeridian: 'PM'
+        selectedDate: (this.value) ? this.value.local().toDate() : null,
+        selectedHour: (this.value) ? this.value.local().format('h') : '11',
+        selectedMinute: (this.value) ? this.value.local().format('mm') : '45',
+        selectedMeridian: (this.value) ? this.value.local().format('a').toUpperCase() : 'PM'
       },
 
       HOUR_CHOICES: R.range(1, 13).map(i => i.toString()),
@@ -80,7 +80,7 @@ export default {
     },
     startEndDateIsValid() {
       if (this.availableStartDate && this.availableEndDate) {
-        return this.availableStartDate.isBefore(this.availableEndDate);
+        return this.availableStartDate.isSameOrBefore(this.availableEndDate);
       } else {
         return true;
       }
