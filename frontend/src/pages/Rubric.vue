@@ -411,7 +411,7 @@ export default {
   },
   methods: {
     fetchData() {
-      return this.$api.get('/course/{}/rubric/peer_review_assignment/{}', this.courseId, this.peerReviewAssignmentId)
+      return this.$api.get('/course/{}/rubric/peer_review_assignment/{}/', this.courseId, this.peerReviewAssignmentId)
         .then(r => {
           const {assignments, validationInfo, existingRubric, peerReviewDueDate} = r.data;
           this.assignmentNamesById = assignments;
