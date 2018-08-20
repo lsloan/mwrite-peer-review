@@ -68,6 +68,7 @@
                     </div>
                     <date-time-picker v-if="!models.peerReviewOpenDateIsPromptDueDate"
                         id-suffix="peer-review-open-date-time"
+                        text="Please select the peer review open date:"
                         :disabled="reviewIsInProgress"
                         :available-start-date="promptDueDate"
                         :available-end-date="peerReviewDueDate"
@@ -102,6 +103,7 @@
                     </div>
                     <date-time-picker v-if="models.peerReviewEvaluationIsMandatory"
                         id-suffix="peer-review-evaluation-due-date-time"
+                        text="Please select the peer review evaluation due date:"
                         :disabled="reviewIsInProgress"
                         :available-start-date="peerReviewDueDate"
                         v-model="models.peerReviewEvaluationDueDateTime" />
