@@ -65,7 +65,7 @@
                         <mdl-switch v-model="models.peerReviewOpenDateIsPromptDueDate" :disabled="reviewIsInProgress">
                             Use the writing prompt's due date as the peer review open date
                         </mdl-switch>
-                    </div>                    
+                    </div>
                     <date-time-picker v-if="!models.peerReviewOpenDateIsPromptDueDate"
                         id-suffix="peer-review-open-date-time"
                         :disabled="reviewIsInProgress"
@@ -218,7 +218,7 @@
             <div class="mdl-grid">
                 <div class="mdl-cell mdl-cell--1-col mdl-cell--1-col-tablet mdl-cell-1-col-phone"></div>
                 <div class="mdl-cell mdl-cell--10-col mdl-cell--6-col-tablet mdl-cell-2-col-phone">
-                    <mdl-snackbar display-on="notification"></mdl-snackbar>
+                    <snackbar display-on="notification"/>
                 </div>
                 <div class="mdl-cell mdl-cell--1-col mdl-cell--1-col-tablet mdl-cell-1-col-phone"></div>
             </div>
@@ -229,9 +229,9 @@
 <script>
 import * as R from 'ramda';
 import moment from 'moment';
-import Datepicker from 'vuejs-datepicker';
-import {MdlCard, MdlSwitch, MdlSelect, MdlSnackbar} from 'vue-mdl';
+import {MdlCard, MdlSwitch, MdlSelect} from 'vue-mdl';
 
+import {default as Snackbar, notificationTime} from '@/components/Snackbar';
 import Dropdown from '@/components/Dropdown';
 import DateTimePicker from '@/components/DateTimePicker';
 import AutosizeTextarea from '@/components/AutosizeTextarea';
@@ -257,8 +257,13 @@ const makeAssignmentOptions = (assignmentNamesById, ...excludedAssignmentIds) =>
 const NO_REVISION_OPTION = {value: null, name: 'No revision'};
 const DISPLAY_DATE_FORMAT = 'MMM D YYYY h:mm A';
 
+const RUBRIC_UPDATE_SUCCESS_MESSAGE = 'The rubric was successfully created.  You will be returned to the dashboard.';
+const RUBRIC_UPDATE_FAILURE_MESSAGE = 'An error occurred.  Please try again later.';
+
+const REDIRECT_TIME = notificationTime(RUBRIC_UPDATE_SUCCESS_MESSAGE);
+
 export default {
-  components: {Dropdown, Datepicker, DateTimePicker, AutosizeTextarea, MdlCard, MdlSwitch, MdlSelect, MdlSnackbar},
+  components: {Dropdown, DateTimePicker, AutosizeTextarea, MdlCard, MdlSwitch, MdlSelect, Snackbar},
   props: ['peer-review-assignment-id'],
   data() {
     return {
@@ -275,7 +280,7 @@ export default {
         peerReviewEvaluationDueDateTime: null,
         peerReviewEvaluationIsMandatory: false,
         selectedPrompt: null,
-        selectedRevision: NO_REVISION_OPTION,
+        selectedRevision: NO_REVISION_OPTION
       },
       submissionInProgress: false
     };
@@ -390,18 +395,18 @@ export default {
       const peerReviewDueAfterOpening = this.peerReviewOpenDate.isSameOrBefore(this.peerReviewDueDate);
       return peerReviewDueAfterPrompt && peerReviewDueAfterOpening;
     },
-    peerReviewEvaluationDueDateIsValid(){
-        if (!this.models.peerReviewEvaluationIsMandatory) {
-            return true;
+    peerReviewEvaluationDueDateIsValid() {
+      if(!this.models.peerReviewEvaluationIsMandatory) {
+        return true;
+      }
+      else {
+        if(this.models.peerReviewEvaluationDueDateTime) {
+          return this.models.peerReviewEvaluationDueDateTime.isSameOrAfter(this.peerReviewDueDate);
         }
         else {
-            if (this.models.peerReviewEvaluationDueDateTime) {
-                return this.models.peerReviewEvaluationDueDateTime.isSameOrAfter(this.peerReviewDueDate);
-            }
-            else {
-                return false;
-            }
+          return false;
         }
+      }
     }
   },
   methods: {
@@ -438,43 +443,15 @@ export default {
         this.models = modelConverter(this.existingRubric);
       }
     },
-    // updatePeerReviewOpenDate(newPromptDueDateLocal) {
-    //   if(newPromptDueDateLocal) {
-    //     const date = moment(newPromptDueDateLocal, DISPLAY_DATE_FORMAT);
-    //     const minute = date.minute();
-
-    //     // TODO the following could be replaced with _.flow(), but only if we use lodash.fp which will be much easier w/ ES6
-    //     let closestMinuteChoice = R.pipe(
-    //       R.filter(c => parseInt(c) >= minute),
-    //       R.minBy(c => Math.abs(minute - parseInt(c)))
-    //     )(this.peerReviewOpenMinuteChoices);
-
-    //     if(!closestMinuteChoice) {
-    //       const minutesToHour = 60 - minute;
-    //       date.add(minutesToHour, 'minutes');
-    //       closestMinuteChoice = '00';
-    //     }
-
-    //     let meridian = 'AM';
-    //     let hour = date.hour();
-    //     if(hour === 0) {
-    //       hour = 12;
-    //     }
-    //     else {
-    //       if(hour >= 12) {
-    //         meridian = 'PM';
-    //         if(hour > 12) {
-    //           hour -= 12;
-    //         }
-    //       }
-    //     }
-
-    //     this.peerReviewOpenHour = hour.toString();
-    //     this.peerReviewOpenMinute = closestMinuteChoice;
-    //     this.peerReviewOpenAMPM = meridian;
-    //     this.selectedPeerReviewOpenDate = date.toDate();
-    //   }
-    // },
+    initializeBreadcrumb() {
+      const prompt = this.models.selectedPrompt
+        ? this.models.selectedPrompt.name
+        : 'Create New';
+      this.$store.commit('updateBreadcrumbInfo', {
+        title: `${prompt} Rubric`,
+        peerReviewAssignmentId: this.peerReviewAssignmentId
+      });
+    },
     addCriterion() {
       this.models.criteria.push(makeCriterion());
     },
@@ -482,15 +459,11 @@ export default {
       this.models.criteria = R.reject(c => c.id === id, this.models.criteria);
     },
     rubricUpdateSuccess() {
-      this.$root.$emit('notification', {
-        message: 'The rubric was successfully created.  You will be returned to the dashboard.'
-      });
-      setTimeout(() => this.$router.push({name: 'InstructorDashboard'}), 5000);
+      this.$root.$emit('notification', RUBRIC_UPDATE_SUCCESS_MESSAGE);
+      setTimeout(() => this.$router.push({name: 'InstructorDashboard'}), REDIRECT_TIME);
     },
     rubricUpdateFailure() {
-      this.$root.$emit('notification', {
-        message: 'An error occurred.  Please try again later.'
-      });
+      this.$root.$emit('notification', RUBRIC_UPDATE_FAILURE_MESSAGE);
     },
     submitRubricForm() {
       if(this.rubricIsValid) {
@@ -522,7 +495,9 @@ export default {
     }
   },
   mounted() {
-    this.fetchData().then(this.initializeModels);
+    this.fetchData()
+      .then(this.initializeModels)
+      .then(this.initializeBreadcrumb);
   }
 };
 </script>

@@ -9,11 +9,11 @@
             <h1>Submit Your Review</h1>
         </peer-review-section>
         <peer-review-section>
-            <p>{{ rubricDescription }}</p>
+            <p class="preserve-whitespace">{{ rubricDescription }}</p>
         </peer-review-section>
         <form @submit.prevent>
             <peer-review-section v-for="criterion in criteria" :key="criterion.id">
-                <p>{{ criterion.description }}</p>
+                <p class="preserve-whitespace" >{{ criterion.description }}</p>
                 <autosize-textarea
                     class="criterion-input"
                     label="Your comment goes here..."
@@ -28,7 +28,7 @@
                 </mdl-button>
             </peer-review-section>
         </form>
-        <mdl-snackbar display-on="notification"/>
+        <snackbar display-on="notification"/>
     </div>
 </template>
 
@@ -37,15 +37,20 @@ import * as R from 'ramda';
 import {MdlButton, MdlAnchorButton} from 'vue-mdl';
 
 import api from '@/services/api';
+import {default as Snackbar, notificationTime} from '@/components/Snackbar';
 import PeerReviewSection from '@/components/PeerReviewSection';
 import AutosizeTextarea from '@/components/AutosizeTextarea';
 
-const NOTIFICATION_TIMEOUT_MS = 5000;
+const SUBMIT_REVIEW_SUCCESS_MESSAGE = 'Thank you for submitting your peer review!  You will be returned to the dashboard.';
+const SUBMIT_REVIEW_ERROR_MESSAGE = 'An error occurred.  Please try again later.';
+const SUBMIT_REVIEW_INCOMPLETE_MESSAGE = 'Your review is not complete.  Double check that you have entered a response for all criteria.';
+
+const REDIRECT_TIME = notificationTime(SUBMIT_REVIEW_SUCCESS_MESSAGE);
 
 export default {
   name: 'PeerReview',
   props: ['review-id'],
-  components: {PeerReviewSection, AutosizeTextarea, MdlButton, MdlAnchorButton},
+  components: {PeerReviewSection, AutosizeTextarea, Snackbar, MdlButton, MdlAnchorButton},
   data() {
     return {
       data: {},
@@ -84,24 +89,15 @@ export default {
         const data = {comments: this.comments};
         api.post('/course/{}/reviews/{}/', data, this.courseId, this.reviewId)
           .then(() => {
-            this.$root.$emit('notification', {
-              message: 'Thank you for submitting your peer review!  You will be returned to the dashboard.',
-              timeout: NOTIFICATION_TIMEOUT_MS - 500
-            });
-            setTimeout(() => this.$router.push('/student/dashboard'), NOTIFICATION_TIMEOUT_MS);
+            this.$root.$emit('notification', SUBMIT_REVIEW_SUCCESS_MESSAGE);
+            setTimeout(() => this.$router.push('/student/dashboard'), REDIRECT_TIME);
           })
           .catch(() => {
-            this.$root.$emit('notification', {
-              message: 'An error occurred.  Please try again later.',
-              timeout: NOTIFICATION_TIMEOUT_MS
-            });
+            this.$root.$emit('notification', SUBMIT_REVIEW_ERROR_MESSAGE);
           });
       }
       else {
-        this.$root.$emit('notification', {
-          message: 'Your review is not complete.  Double check that you have entered a response for all criteria.',
-          timeout: NOTIFICATION_TIMEOUT_MS
-        });
+        this.$root.$emit('notification', SUBMIT_REVIEW_INCOMPLETE_MESSAGE);
       }
     },
     cancelReview() {
@@ -133,5 +129,9 @@ export default {
 
     .criterion-input {
         width: 100%;
+    }
+
+    .preserve-whitespace {
+        white-space: pre;
     }
 </style>

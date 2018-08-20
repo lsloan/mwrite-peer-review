@@ -79,20 +79,23 @@ export default {
       return this.disabled || !this.startEndDateIsValid;
     },
     startEndDateIsValid() {
-      if (this.availableStartDate && this.availableEndDate) {
+      if(this.availableStartDate && this.availableEndDate) {
         return this.availableStartDate.isSameOrBefore(this.availableEndDate);
-      } else {
+      }
+      else {
         return true;
       }
     },
     disabledDates() {
-      if (! this.availableStartDate && ! this.availableEndDate) return {};
+      if(!this.availableStartDate && !this.availableEndDate) {
+        return {};
+      }
 
-      let interval = {};      
-      if (this.availableStartDate) {
+      let interval = {};
+      if(this.availableStartDate) {
         interval['to'] = this.availableStartDate.local().toDate();
       }
-      if (this.availableEndDate) {
+      if(this.availableEndDate) {
         interval['from'] = this.availableEndDate.local().toDate();
       }
 
@@ -106,7 +109,7 @@ export default {
         selectedMeridian: meridian
       } = this.models;
 
-      if (date && hour && minute && meridian) {
+      if(date && hour && minute && meridian) {
         const hours12 = parseInt(hour);
         const hours24 =
           meridian === 'AM'
@@ -117,14 +120,15 @@ export default {
           .hours(hours24)
           .minutes(minutes)
           .utc();
-      } else {
+      }
+      else {
         return null;
       }
     }
   },
   watch: {
-    dateTimeValue: function(newValue, oldValue) {
-      if (newValue !== oldValue) {
+    dateTimeValue(newValue, oldValue) {
+      if(newValue !== oldValue) {
         this.$emit('input', newValue);
       }
     }
