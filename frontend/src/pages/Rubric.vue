@@ -403,7 +403,7 @@ export default {
       }
       else {
         if(this.models.peerReviewEvaluationDueDateTime) {
-          return this.models.peerReviewEvaluationDueDateTime.isSameOrAfter(this.peerReviewDueDate);
+          return this.models.peerReviewEvaluationDueDateTime.isAfter(this.peerReviewDueDate);
         }
         else {
           return false;
