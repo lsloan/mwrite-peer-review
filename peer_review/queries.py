@@ -2,6 +2,7 @@ import json
 import logging
 from itertools import chain
 
+from django.http import Http404
 from toolz.dicttoolz import valfilter
 from toolz.functoolz import thread_last
 from toolz.itertoolz import groupby, unique
@@ -612,7 +613,18 @@ class Evaluations:
         )\
             .order_by('id')
 
-        return PeerReviewEvaluation.objects.get(peer_review=reviews[0].id)
+        try:
+            evaluation = PeerReviewEvaluation.objects.get(peer_review=reviews)
+            return {
+                'id': evaluation.id,
+                'usefulness': evaluation.usefulness,
+                'usefulness_text': dict(PeerReviewEvaluation.USEFULNESS_CHOICES)[evaluation.usefulness],
+                'comment': evaluation.comment,
+                'peer_review': evaluation.peer_review_id,
+            }
+
+        except PeerReviewEvaluation.DoesNotExist:
+            raise Http404
 
 
 class Reviews:

@@ -8,10 +8,11 @@
                 <span>{{ comment.content }}</span>
             </p>
         </div>
-        <div class="evaluation-entry">
+        <!-- include instructor condition -->
+        <div v-if="evaluation" class="evaluation-entry">
             <p class="evaluation-name">Evaluation</p>
-            <p class="evaluation-rating">** Rating here **</p>
-            <p class="student-review">** Comment here **</p>
+            <p class="evaluation-rating">{{ evaluation.usefulnessText }}</p>
+            <p class="student-review">{{ evaluation.comment }}</p>
         </div>
     </div>
 </template>
@@ -19,7 +20,7 @@
 <script>
 export default {
   name: 'reviews-by-criterion',
-  props: ['data']
+  props: ['data', 'evaluation']
 };
 </script>
 
