@@ -60,6 +60,13 @@
             </div>
         </div>
 
+        <div class="mdl-card__supporting-text" v-if="reviewsInProgress">
+            <div class="icon-container">
+                <i class="material-icons icon-24px">alarm</i>
+                <span class="icon-caption">Evaluations due by ...</span>
+            </div>
+        </div>
+
         <div class="mdl-card__actions mdl-card--border">
             <router-link class="mdl-button mdl-button--colored mdl-js-button mdl-js-ripple-effect"
                          :to="{name: 'Rubric', params: {peerReviewAssignmentId: this.peerReviewAssignmentId}}">
