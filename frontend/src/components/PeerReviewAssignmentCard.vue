@@ -63,7 +63,7 @@
         <div class="mdl-card__supporting-text" v-if="reviewsInProgress">
             <div class="icon-container">
                 <i class="material-icons icon-24px">alarm</i>
-                <span class="icon-caption">Evaluations due by ...</span>
+                <span class="icon-caption">Evaluations due by {{ evaluationDueDate | utcToLocal(dateFormat) }}</span>
             </div>
         </div>
 
@@ -98,7 +98,8 @@ export default {
     'date-format',
     'validation-info',
     'number-of-assigned-reviews',
-    'number-of-completed-reviews'
+    'number-of-completed-reviews',
+    'evaluation-due-date'
   ],
   mixins: [DateFormat],
   computed: {

@@ -35,6 +35,7 @@ class InstructorDashboardStatus:
       peer_review_assignments.due_date_utc AS due_date,
       number_of_completed_reviews,
       number_of_assigned_reviews,
+      evaluation_due_date,
       CASE WHEN peer_review_distributions.is_distribution_complete IS TRUE
         THEN TRUE
       ELSE FALSE
@@ -45,6 +46,7 @@ class InstructorDashboardStatus:
       (SELECT
          rubrics.id                      AS rubric_id,
          rubrics.peer_review_open_date   AS open_date,
+         now()                           AS evaluation_due_date, -- FIXME: replace "now" with actual value
          rubrics.reviewed_assignment_id  AS prompt_id,
          rubrics.passback_assignment_id  AS peer_review_assignment_id,
          count(DISTINCT peer_reviews.id) AS number_of_assigned_reviews
@@ -93,6 +95,8 @@ class InstructorDashboardStatus:
     def _format_details(data):
         for row in data:
             row['due_date'] = row['due_date'].strftime(API_DATE_FORMAT)
+            if row.get('evaluation_due_date'):
+                row['evaluation_due_date'] = row['evaluation_due_date'].strftime(API_DATE_FORMAT)
             if row.get('open_date'):
                 row['open_date'] = row['open_date'].strftime(API_DATE_FORMAT)
             row['reviews_in_progress'] = row['reviews_in_progress'] == 1
