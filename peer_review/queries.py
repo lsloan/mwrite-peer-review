@@ -405,6 +405,11 @@ class ReviewStatus:
                                              .filter(received__gte=rubric.num_criteria) \
                                              .count()
 
+            reviews_with_evaluations = PeerReview.objects.filter(
+                submission__assignment=rubric.reviewed_assignment,
+                submission__author_id=submission.author, evaluation__isnull=False
+            )
+
             if rubric.sections.all():
                 rubric_sections_ids = rubric.sections.values_list('id', flat=True)
                 author_sections = submission.author.sections.filter(
@@ -433,6 +438,8 @@ class ReviewStatus:
                 'total_received':  total_received_num,
                 'received':        received_reviews_num,
                 'sections':        author_sections,
+                'evaluations_given': reviews_with_evaluations.count(),
+                'total_evaluations': received_reviews_num, # because they can't eval more than received
             }
             if not for_api:
                 review['json_sections'] = json.dumps(list(author_sections.values_list('id', flat=True)))
