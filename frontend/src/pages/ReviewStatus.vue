@@ -30,8 +30,8 @@ const makeReviewEntry = review => ({
     total: review.totalCompleted
   },
   evaluationsGiven: {
-    completed: 0,
-    total: review.received
+    completed: review.evaluationsGiven,
+    total: review.totalEvaluations
   }
 });
 
