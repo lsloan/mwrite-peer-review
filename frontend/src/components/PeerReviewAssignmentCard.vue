@@ -85,57 +85,57 @@
 </template>
 
 <script>
-    import {validationInfoAsIssues} from '@/services/validation';
-    import DateFormat from '@/mixins/date-format';
+import {validationInfoAsIssues} from '@/services/validation';
+import DateFormat from '@/mixins/date-format';
 
-    export default {
-        name: 'peer-review-assignment-card',
-        props: [
-            'rubric-id',
-            'reviews-in-progress',
-            'due-date',
-            'open-date',
-            'evaluation-due-date',
-            'peer-review-assignment-id',
-            'peer-review-title',
-            'date-format',
-            'validation-info',
-            'number-of-assigned-reviews',
-            'number-of-completed-reviews'
-        ],
-        mixins: [DateFormat],
-        computed: {
-            rubricActionText() {
-                return this.reviewsInProgress
-                    ? 'View'
-                    : (this.rubricId ? 'Edit' : 'Create');
-            },
-            courseId() {
-                return this.$store.state.userDetails.courseId;
-            },
-            issues() {
-                return validationInfoAsIssues(this.validationInfo);
-            },
-            rubricExists() {
-                return Boolean(this.rubricId);
-            },
-            rubricHasFatalIssues() {
-                return this.issues.length > 0 && this.issues.some(i => i.fatal);
-            },
-            rubricHasNonFatalIssues() {
-                return this.issues.length > 0 && this.issues.some(i => !i.fatal);
-            },
-            validationIconClasses() {
-                return {
-                    'material-icons': true,
-                    'icon-24px': true,
-                    'icon-color-ok': this.rubricExists && this.issues.length === 0,
-                    'icon-color-warning': this.rubricExists && this.rubricHasNonFatalIssues,
-                    'icon-color-error': this.rubricExists && this.rubricHasFatalIssues
-                };
-            }
-        }
-    };
+export default {
+  name: 'peer-review-assignment-card',
+  props: [
+    'rubric-id',
+    'reviews-in-progress',
+    'due-date',
+    'open-date',
+    'evaluation-due-date',
+    'peer-review-assignment-id',
+    'peer-review-title',
+    'date-format',
+    'validation-info',
+    'number-of-assigned-reviews',
+    'number-of-completed-reviews'
+  ],
+  mixins: [DateFormat],
+  computed: {
+    rubricActionText() {
+      return this.reviewsInProgress
+        ? 'View'
+        : (this.rubricId ? 'Edit' : 'Create');
+    },
+    courseId() {
+      return this.$store.state.userDetails.courseId;
+    },
+    issues() {
+      return validationInfoAsIssues(this.validationInfo);
+    },
+    rubricExists() {
+      return Boolean(this.rubricId);
+    },
+    rubricHasFatalIssues() {
+      return this.issues.length > 0 && this.issues.some(i => i.fatal);
+    },
+    rubricHasNonFatalIssues() {
+      return this.issues.length > 0 && this.issues.some(i => !i.fatal);
+    },
+    validationIconClasses() {
+      return {
+        'material-icons': true,
+        'icon-24px': true,
+        'icon-color-ok': this.rubricExists && this.issues.length === 0,
+        'icon-color-warning': this.rubricExists && this.rubricHasNonFatalIssues,
+        'icon-color-error': this.rubricExists && this.rubricHasFatalIssues
+      };
+    }
+  }
+};
 </script>
 
 <style scoped>
