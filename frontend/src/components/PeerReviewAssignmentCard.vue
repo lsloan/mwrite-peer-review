@@ -93,13 +93,13 @@ export default {
     'reviews-in-progress',
     'due-date',
     'open-date',
+    'evaluation-due-date',
     'peer-review-assignment-id',
     'peer-review-title',
     'date-format',
     'validation-info',
     'number-of-assigned-reviews',
-    'number-of-completed-reviews',
-    'evaluation-due-date'
+    'number-of-completed-reviews'
   ],
   mixins: [DateFormat],
   computed: {
