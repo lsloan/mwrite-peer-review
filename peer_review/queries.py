@@ -46,7 +46,7 @@ class InstructorDashboardStatus:
       (SELECT
          rubrics.id                      AS rubric_id,
          rubrics.peer_review_open_date   AS open_date,
-         now()                           AS evaluation_due_date, -- FIXME: replace "now" with actual value
+         now()                           AS evaluation_due_date, -- FIXME: replace "now" with `peer_review_evaluation_due_date`
          rubrics.reviewed_assignment_id  AS prompt_id,
          rubrics.passback_assignment_id  AS peer_review_assignment_id,
          count(DISTINCT peer_reviews.id) AS number_of_assigned_reviews
