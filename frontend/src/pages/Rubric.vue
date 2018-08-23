@@ -510,6 +510,10 @@ export default {
     },
     submitRubricForm() {
       if(this.rubricIsValid) {
+        const peerReviewEvaluationDueDate =
+          this.models.peerReviewEvaluationDueDateTime && this.models.peerReviewEvaluationIsMandatory
+            ? this.models.peerReviewEvaluationDueDateTime.toISOString()
+            : null;
         const data = {
           promptId: parseInt(this.models.selectedPrompt.value) || null,
           revisionId: this.models.selectedRevision.value ? parseInt(this.models.selectedRevision.value) : null,
@@ -519,7 +523,7 @@ export default {
           peerReviewOpenDateIsPromptDueDate: this.models.peerReviewOpenDateIsPromptDueDate,
           peerReviewOpenDate: this.peerReviewOpenDate.toISOString(),
           peerReviewEvaluationIsMandatory: this.models.peerReviewEvaluationIsMandatory,
-          peerReviewEvaluationDueDate: (this.models.peerReviewEvaluationDueDateTime) ? this.models.peerReviewEvaluationDueDateTime.toISOString() : null
+          peerReviewEvaluationDueDate
         };
 
         this.submissionInProgress = true;
