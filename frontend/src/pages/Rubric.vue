@@ -580,15 +580,8 @@ export default {
         margin-top: 25px;
     }
 
-    /* TODO still needed? */
     .read-only-rubric-card {
         min-height: 0;
-    }
-
-    /* TODO still needed? */
-    .read-only-rubric-card h4 {
-        margin-top: 16px;
-        margin-bottom: 16px;
     }
 
     #rubric-form textarea[disabled], #rubric-form button[disabled][type=button] {
