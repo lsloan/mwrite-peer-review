@@ -1,6 +1,6 @@
+import * as R from 'ramda';
 import Vue from 'vue';
 import Vuex from 'vuex';
-import * as R from 'ramda';
 
 import api from '@/services/api';
 
@@ -12,6 +12,7 @@ export default new Vuex.Store({
   state: {
     userDetails: {},
     breadcrumbInfo: {},
+    manualReviewDistribution: {},
     commentsById: {},
     pendingEvaluations: []
   },
@@ -28,6 +29,11 @@ export default new Vuex.Store({
         )(comments),
         peerReview: R.groupBy(c => c.peerReviewId, comments)
       };
+    },
+    studentsToBeAssignedReviews(state) {
+      const selectedStudents = R.filter(R.identity, state.manualReviewDistribution);
+      const selectedStudentIds = R.keys(selectedStudents);
+      return selectedStudentIds.map(id => parseInt(id));
     }
   },
   mutations: {
@@ -36,6 +42,12 @@ export default new Vuex.Store({
     },
     updateBreadcrumbInfo(state, breadcrumbInfo) {
       state.breadcrumbInfo = breadcrumbInfo;
+    },
+    resetManualReviewDistribution(state) {
+      state.manualReviewDistribution = {};
+    },
+    setStudentForReview(state, {studentId, checked}) {
+      Vue.set(state.manualReviewDistribution, studentId, checked);
     },
     mergeComments(state, newCommentsById) {
       state.commentsById = R.merge(state.commentsById, newCommentsById);

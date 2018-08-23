@@ -50,7 +50,6 @@ export default {
     .dropdown-button {
         border: none;
         border-bottom: 1px solid rgba(0,0,0,.12);
-        margin-left: 5px;
         cursor: pointer;
         background-color: white;
     }

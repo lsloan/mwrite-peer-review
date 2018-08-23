@@ -7,6 +7,7 @@ from itertools import chain
 from datetime import datetime
 
 from dateutil.tz import tzutc
+from toolz.itertoolz import join
 from django.db import transaction
 from django.conf import settings
 from django.http import Http404, HttpResponse, JsonResponse
@@ -16,16 +17,18 @@ from rolepermissions.roles import get_user_roles
 from rolepermissions.checkers import has_role
 
 import peer_review.etl as etl
-from peer_review.api.util import merge_validations, validate_rubric, raise_if_not_current_user, \
-    raise_if_peer_review_not_given_to_student
+import peer_review.canvas as canvas
 from peer_review.util import to_camel_case, keymap_all
+from peer_review.distribution import add_to_distribution
 from peer_review.exceptions import ReviewsInProgressException, APIException
 from peer_review.decorators import authorized_endpoint, authorized_json_endpoint, \
     authenticated_json_endpoint, json_body
-from peer_review.models import CanvasCourse, CanvasStudent, CanvasAssignment, CanvasSubmission, \
+from peer_review.api.util import merge_validations, validate_rubric, raise_if_not_current_user, \
+    raise_if_peer_review_not_given_to_student
+from peer_review.models import CanvasCourse, CanvasStudent, CanvasAssignment, \
     Rubric, Criterion, PeerReview, PeerReviewComment, PeerReviewEvaluation, PeerReviewDistribution
 from peer_review.queries import InstructorDashboardStatus, StudentDashboardStatus, ReviewStatus, \
-    RubricForm, Comments, Evaluations, Reviews
+    RubricForm, Comments, Evaluations, Reviews, Students
 
 
 LOGGER = logging.getLogger(__name__)
@@ -478,3 +481,67 @@ def dispatch_peer_review_request(*args, **kwargs):
         msg = 'Unsupported method %s' % request.method
         return JsonResponse({'error': msg}, status=405)
     return view(*args, **kwargs)
+
+
+@authorized_json_endpoint(roles=['instructor'])
+def non_reviewers_for_rubric(request, course_id, rubric_id):
+    try:
+        rubric = Rubric.objects.get(id=rubric_id)
+    except Rubric.DoesNotExist:
+        raise Http404
+
+    etl.persist_students(course_id)
+
+    non_reviewers = Students.non_reviewers_for_rubric(course_id, rubric)
+    submissions = canvas.retrieve('submissions', course_id, rubric.reviewed_assignment.id)
+
+    non_reviewers_and_submission_statuses = join(
+        lambda st: st.id, non_reviewers,
+        lambda su: su['user_id'], submissions
+    )
+
+    entries = []
+    for non_reviewer, submission_status in non_reviewers_and_submission_statuses:
+        submitted = submission_status['workflow_state'] != 'unsubmitted'
+        submitted_late = not submitted or submission_status['late'] is True
+        sections = non_reviewer.sections \
+            .filter(course_id=course_id) \
+            .values_list('name', flat=True)
+        sections_display = ', '.join(sections)
+        entries.append({
+            'student_id': non_reviewer.id,
+            'student_sortable_name': non_reviewer.sortable_name,
+            'student_sections': sections_display,
+            'submitted': submitted,
+            'submitted_late': submitted_late
+        })
+
+    return {
+        'peer_review_title': rubric.passback_assignment.title,
+        'students': entries
+    }
+
+
+@require_POST
+@json_body
+@authorized_json_endpoint(roles=['instructor'], default_status_code=201)
+def add_students_to_distribution(request, params, course_id, rubric_id):
+    try:
+        rubric = Rubric.objects.get(id=rubric_id)
+    except Rubric.DoesNotExist:
+        msg = 'The specified rubric does not exist.'
+        raise APIException(data={'error': msg}, status_code=404)
+
+    if rubric.reviewed_assignment.course_id != int(course_id):
+        msg = 'The specified rubric is not part of that course.'
+        raise APIException(data={'error': msg}, status_code=403)
+
+    student_ids = params['student_ids']
+    students = CanvasStudent.objects.filter(id__in=student_ids)
+    if students.count() != len(student_ids):
+        msg = 'One or more of the specified students do not exist.'
+        raise APIException(data={'error': msg}, status_code=404)
+
+    add_to_distribution(rubric, students)
+
+    return params
