@@ -93,7 +93,7 @@
             <div class="mdl-cell mdl-cell--1-col mdl-cell--1-col-tablet mdl-cell-1-col-phone"></div>
             <mdl-card
                     class="mdl-card mdl-shadow--2dp mdl-cell mdl-cell--10-col mdl-cell--6-col-tablet mdl-cell-2-col-phone"
-                    title="Peer Review Evaluation Due Date"
+                    title="Peer Review Evaluations"
                     supporting-text="slot">
                 <div slot="supporting-text">
                     <div class="mdl-card__supporting-text">
@@ -107,6 +107,37 @@
                         :disabled="reviewIsInProgress"
                         :available-start-date="peerReviewDueDate"
                         v-model="models.peerReviewEvaluationDueDateTime" />
+                    <div class="mdl-card__supporting-text">
+                        <p v-if="models.peerReviewEvaluationIsMandatory">
+                            <template v-if="peerReviewEvaluationDueDateIsValid">
+                                Peer review evaluations
+                                <template v-if="reviewIsInProgress">are</template>
+                                <template v-else>will be</template>
+                                due at {{ peerReviewEvaluationDueDateDisplay }}.
+                            </template>
+                            <template v-else>
+                                Please select a peer review evaluation due date after the peer review due date
+                                ({{ peerReviewDueDateDisplay }}).
+                            </template>
+                        </p>
+                        <p v-else>
+                            Peer review evaluations
+                            <template v-if="reviewIsInProgress">
+                                are
+                            </template>
+                            <template v-else>
+                                will be
+                            </template>
+                            optional and
+                            <template v-if="reviewIsInProgress">
+                                do
+                            </template>
+                            <template v-else>
+                                will
+                            </template>
+                            not have a due date.
+                        </p>
+                    </div>
                 </div>
             </mdl-card>
 
@@ -409,6 +440,16 @@ export default {
           return false;
         }
       }
+    },
+    peerReviewEvaluationDueDateDisplay() {
+      return this.models.peerReviewEvaluationDueDateTime
+        ? this.models.peerReviewEvaluationDueDateTime.local().format(DISPLAY_DATE_FORMAT)
+        : '';
+    },
+    peerReviewDueDateDisplay() {
+      return this.peerReviewDueDate
+        ? this.peerReviewDueDate.local().format(DISPLAY_DATE_FORMAT)
+        : '';
     }
   },
   methods: {

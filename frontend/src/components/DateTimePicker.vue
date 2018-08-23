@@ -76,15 +76,7 @@ export default {
   },
   computed: {
     dateTimeDisabled() {
-      return this.disabled || !this.startEndDateIsValid;
-    },
-    startEndDateIsValid() {
-      if(this.availableStartDate && this.availableEndDate) {
-        return this.availableStartDate.isSameOrBefore(this.availableEndDate);
-      }
-      else {
-        return true;
-      }
+      return this.disabled;
     },
     disabledDates() {
       if(!this.availableStartDate && !this.availableEndDate) {
