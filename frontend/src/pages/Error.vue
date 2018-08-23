@@ -3,7 +3,7 @@
         <div class="mdl-cell mdl-cell--3-col mdl-cell--1-col-tablet"></div>
         <div class="mdl-card mdl-shadow--2dp mdl-cell mdl-cell--6-col mdl-cell--6-col-tablet mdl-cell-4-col-phone">
             <div class="mdl-card__title">
-                <h1 class="mdl-card__title-text">We're Sorry</h1>
+                <h2 class="mdl-card__title-text">We're Sorry</h2>
             </div>
             <div class="mdl-card__supporting-text">
                 <p>{{ errorMessage }}</p>
@@ -34,4 +34,8 @@ export default {
 </script>
 
 <style scoped>
+    h2 {
+        letter-spacing: -0.48px;
+        padding: 0;
+    }
 </style>
