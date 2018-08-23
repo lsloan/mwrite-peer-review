@@ -2,7 +2,7 @@ import logging
 from datetime import datetime
 from collections import OrderedDict
 
-from toolz.itertoolz import unique
+from toolz.itertoolz import unique, frequencies, take
 
 from django.db import transaction
 
@@ -12,7 +12,30 @@ from peer_review.models import CanvasCourse, CanvasStudent, CanvasAssignment, Pe
 log = logging.getLogger('management_commands')
 
 
-def make_distribution(students, submissions, n=3):
+DEFAULT_NUMBER_OF_REVIEWS_PER_STUDENT = 3
+
+
+def add_to_distribution(rubric, students, n=DEFAULT_NUMBER_OF_REVIEWS_PER_STUDENT):
+    reviews = PeerReview.objects.filter(submission__assignment=rubric.reviewed_assignment)
+    submission_ids = reviews.values_list('submission', flat=True)
+    review_counts = frequencies(submission_ids)
+
+    new_reviews = []
+    for student in students:
+        sorted_review_counts = sorted(review_counts.items(), key=lambda p: p[1])
+        submission_ids_for_review = map(
+            lambda p: p[0],
+            take(n, sorted_review_counts)
+        )
+        for submission_id in submission_ids_for_review:
+            review = PeerReview(student=student, submission_id=submission_id)
+            new_reviews.append(review)
+            review_counts[submission_id] += 1
+
+    PeerReview.objects.bulk_create(new_reviews)
+
+
+def make_distribution(students, submissions, n=DEFAULT_NUMBER_OF_REVIEWS_PER_STUDENT):
     submissions_by_id = {submission.id: submission for submission in submissions}
 
     submissions_to_review_by_student = {student.id: set() for student in students}

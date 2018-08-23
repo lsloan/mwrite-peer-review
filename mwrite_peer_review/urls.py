@@ -47,7 +47,11 @@ urlpatterns = [
                 url(r'^submission/', api.submission_for_review),
                 url(r'^rubric/', api.rubric_for_review),
             ])),
-            url(r'^rubric/(?P<rubric_id>[0-9]+)/', api.review_status),
+            url(r'^rubric/(?P<rubric_id>[0-9]+)/', include([
+                url(r'^$', api.review_status),
+                url(r'unassigned/', api.non_reviewers_for_rubric),
+                url(r'assign/', api.add_students_to_distribution)
+            ])),
             url(r'^student/(?P<student_id>[0-9]+)/', include([
                 url(r'^assigned', api.assigned_work),
                 url(r'^completed', api.completed_work),
