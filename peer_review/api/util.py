@@ -74,7 +74,7 @@ def validate_rubric(course_id, params):
                 raise APIException(data={'error': error}, status_code=403)
         except CanvasAssignment.DoesNotExist:
             error = 'The requested revision does not exist.'
-            raise APIException(data={'error': error}, status_code=400)   
+            raise APIException(data={'error': error}, status_code=400)
     else:
         revision_assignment = None
 
@@ -88,11 +88,11 @@ def validate_rubric(course_id, params):
         raise APIException(data={'error': 'One or more blank criteria submitted.'}, status_code=400)
     criteria = [Criterion(description=criterion) for criterion in params['criteria']]
 
-    peer_review_open_date = get_date_param_or_400('peer_review_open_date', params)
-    peer_review_evaluation_due_date = get_date_param_or_400('peer_review_evaluation_due_date', params)
+    peer_review_open_date = get_date_parameter_or_400('peer_review_open_date', params)
+    peer_review_evaluation_due_date = get_date_parameter_or_400('peer_review_evaluation_due_date', params)
 
-    pr_open_date_is_prompt_due_date = get_boolean_param_or_400('peer_review_open_date_is_prompt_due_date', params)
-    peer_review_evaluation_is_mandatory = get_boolean_param_or_400('peer_review_evaluation_is_mandatory', params)
+    pr_open_date_is_prompt_due_date = get_required_parameter_or_400('peer_review_open_date_is_prompt_due_date', params)
+    peer_review_evaluation_is_mandatory = get_required_parameter_or_400('peer_review_evaluation_is_mandatory', params)
 
     return {
         'prompt_assignment': prompt_assignment,
@@ -106,20 +106,23 @@ def validate_rubric(course_id, params):
         'peer_review_evaluation_is_mandatory': peer_review_evaluation_is_mandatory
     }
 
-def get_boolean_param_or_400(key_name, params):
+
+def get_required_parameter_or_400(key_name, params):
     if key_name not in params:
-        error = 'Missing {} flag.'.format(key_name)
+        error = 'Missing required \'{}\' parameter.'.format(key_name)
         raise APIException(data={'error': error}, status_code=400)
     return params[key_name]
 
-def get_date_param_or_400(key_name, params):
+
+def get_date_parameter_or_400(key_name, params):
     if key_name not in params:
-        raise APIException(data={'error': 'Missing {}.'.format(key_name)}, status_code=400)
+        error = 'Missing required \'{}\' parameter.'.format(key_name)
+        raise APIException(data={'error': error}, status_code=400)
     try:
         if params[key_name] is None:
             return None
         else:
             return dateutil.parser.parse(params[key_name].strip())
     except ValueError:
-        error = '{} should be a valid ISO 8601 date.'.format(key_name)
+        error = '\'{}\' parameter should be a valid ISO 8601 date.'.format(key_name)
         raise APIException(data={'error': error}, status_code=400)
