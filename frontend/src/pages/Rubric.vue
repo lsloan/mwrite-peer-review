@@ -58,7 +58,7 @@
             <div class="mdl-cell mdl-cell--1-col mdl-cell--1-col-tablet mdl-cell-1-col-phone"></div>
             <mdl-card
                     class="mdl-card mdl-shadow--2dp mdl-cell mdl-cell--10-col mdl-cell--6-col-tablet mdl-cell-2-col-phone"
-                    title="Peer Review"
+                    title="Peer Review Open Date"
                     supporting-text="slot">
                 <div slot="supporting-text">
                     <div class="mdl-card__supporting-text">
@@ -66,46 +66,13 @@
                             Use the writing prompt's due date as the peer review open date
                         </mdl-switch>
                     </div>
-                    <div v-if="!models.peerReviewOpenDateIsPromptDueDate" class="mdl-card__supporting-text datetime-container">
-                        <p>Enter a custom date:</p>
-                        <div>
-                            <datepicker
-                                    format="MMM d yyyy"
-                                    placeholder="Day"
-                                    :disabled-dates="peerReviewOpenDisabledDates"
-                                    :disabled="reviewIsInProgress"
-                                    v-model="models.peerReviewOpenDay">
-                            </datepicker>
-                        </div>
-                        <div>
-                            <mdl-select
-                                    id="peer-review-open-hour-select"
-                                    label="Hour"
-                                    v-model="models.peerReviewOpenHour"
-                                    :disabled="reviewIsInProgress"
-                                    :options="peerReviewOpenHourChoices">
-                            </mdl-select>
-                        </div>
-                        <div>
-                            <mdl-select
-                                    id="peer-review-open-minute-select"
-                                    label="Minute"
-                                    v-model="models.peerReviewOpenMinute"
-                                    :disabled="reviewIsInProgress"
-                                    :options="peerReviewOpenMinuteChoices">
-                            </mdl-select>
-                        </div>
-                        <div>
-                            <mdl-select
-                                    id="peer-review-open-ampm-select"
-                                    label="AM / PM"
-                                    v-model="models.peerReviewOpenMeridian"
-                                    :disabled="reviewIsInProgress"
-                                    :options="peerReviewOpenAMPMChoices">
-                            </mdl-select>
-                        </div>
-
-                    </div>
+                    <date-time-picker v-if="!models.peerReviewOpenDateIsPromptDueDate"
+                        id-suffix="peer-review-open-date-time"
+                        text="Please select the peer review open date:"
+                        :disabled="reviewIsInProgress"
+                        :available-start-date="promptDueDate"
+                        :available-end-date="peerReviewDueDate"
+                        v-model="models.peerReviewOpenDateTime" />
                     <div class="mdl-card__supporting-text">
                         <p v-if="peerReviewOpenDateIsValid">
                             Peer reviews will be distributed at {{ peerReviewOpenDateDisplay }}.  Students who have
@@ -114,6 +81,61 @@
                         </p>
                         <p v-else-if="!models.peerReviewOpenDateIsPromptDueDate">
                             The peer review open date must be between the prompt assignments's due date and the peer review's due date.
+                        </p>
+                    </div>
+                </div>
+            </mdl-card>
+
+            <div class="mdl-cell mdl-cell--1-col mdl-cell--1-col-tablet mdl-cell-1-col-phone"></div>
+        </div>
+
+        <div class="mdl-grid">
+            <div class="mdl-cell mdl-cell--1-col mdl-cell--1-col-tablet mdl-cell-1-col-phone"></div>
+            <mdl-card
+                    class="mdl-card mdl-shadow--2dp mdl-cell mdl-cell--10-col mdl-cell--6-col-tablet mdl-cell-2-col-phone"
+                    title="Peer Review Evaluations"
+                    supporting-text="slot">
+                <div slot="supporting-text">
+                    <div class="mdl-card__supporting-text">
+                        <mdl-switch v-model="models.peerReviewEvaluationIsMandatory" :disabled="reviewIsInProgress">
+                            Mandatory
+                        </mdl-switch>
+                    </div>
+                    <date-time-picker v-if="models.peerReviewEvaluationIsMandatory"
+                        id-suffix="peer-review-evaluation-due-date-time"
+                        text="Please select the peer review evaluation due date:"
+                        :disabled="reviewIsInProgress"
+                        :available-start-date="peerReviewDueDate"
+                        v-model="models.peerReviewEvaluationDueDateTime" />
+                    <div class="mdl-card__supporting-text">
+                        <p v-if="models.peerReviewEvaluationIsMandatory">
+                            <template v-if="peerReviewEvaluationDueDateIsValid">
+                                Peer review evaluations
+                                <template v-if="reviewIsInProgress">are</template>
+                                <template v-else>will be</template>
+                                due at {{ peerReviewEvaluationDueDateDisplay }}.
+                            </template>
+                            <template v-else>
+                                Please select a peer review evaluation due date after the peer review due date
+                                ({{ peerReviewDueDateDisplay }}).
+                            </template>
+                        </p>
+                        <p v-else>
+                            Peer review evaluations
+                            <template v-if="reviewIsInProgress">
+                                are
+                            </template>
+                            <template v-else>
+                                will be
+                            </template>
+                            optional and
+                            <template v-if="reviewIsInProgress">
+                                do
+                            </template>
+                            <template v-else>
+                                will
+                            </template>
+                            not have a due date.
                         </p>
                     </div>
                 </div>
@@ -240,16 +262,18 @@
 <script>
 import * as R from 'ramda';
 import moment from 'moment';
-import Datepicker from 'vuejs-datepicker';
 import {MdlCard, MdlSwitch, MdlSelect} from 'vue-mdl';
 
 import {default as Snackbar, notificationTime} from '@/components/Snackbar';
 import Dropdown from '@/components/Dropdown';
+import DateTimePicker from '@/components/DateTimePicker';
 import AutosizeTextarea from '@/components/AutosizeTextarea';
 
 import api from '@/services/api';
 import {gensym} from '@/services/util';
 import {validationInfoAsIssues} from '@/services/validation';
+
+const utcMomentIfNotNil = R.unless(R.isNil, moment.utc);
 
 const makeCriterion = (prefix = 'criterion', description = '') => {
   return {
@@ -274,7 +298,7 @@ const RUBRIC_UPDATE_FAILURE_MESSAGE = 'An error occurred.  Please try again late
 const REDIRECT_TIME = notificationTime(RUBRIC_UPDATE_SUCCESS_MESSAGE);
 
 export default {
-  components: {Dropdown, Datepicker, AutosizeTextarea, Snackbar, MdlCard, MdlSwitch, MdlSelect},
+  components: {Dropdown, DateTimePicker, AutosizeTextarea, MdlCard, MdlSwitch, MdlSelect, Snackbar},
   props: ['peer-review-assignment-id'],
   data() {
     return {
@@ -282,21 +306,18 @@ export default {
       existingRubric: null,
       validations: {},
       peerReviewDueDate: null,
+
       models: {
         criteria: [makeCriterion()],
         description: '',
-        peerReviewOpenDay: null,
-        peerReviewOpenHour: null,
-        peerReviewOpenMinute: null,
-        peerReviewOpenMeridian: null,
+        peerReviewOpenDateTime: null,
         peerReviewOpenDateIsPromptDueDate: true,
+        peerReviewEvaluationDueDateTime: null,
+        peerReviewEvaluationIsMandatory: false,
         selectedPrompt: null,
         selectedRevision: NO_REVISION_OPTION
       },
-      submissionInProgress: false,
-      peerReviewOpenHourChoices: R.range(1, 13).map(i => i.toString()),
-      peerReviewOpenMinuteChoices: ['00', '15', '30', '45'],
-      peerReviewOpenAMPMChoices: ['AM', 'PM']
+      submissionInProgress: false
     };
   },
   computed: {
@@ -381,7 +402,7 @@ export default {
       const allIssues = R.concat(this.promptIssues, this.revisionIssues);
       const noFatalIssuesFound = R.all(i => !i.fatal, allIssues);
 
-      return this.models.selectedPrompt && this.models.description && criteriaAreValid && noFatalIssuesFound && this.peerReviewOpenDateIsValid;
+      return this.models.selectedPrompt && this.models.description && criteriaAreValid && noFatalIssuesFound && this.peerReviewOpenDateIsValid && this.peerReviewEvaluationDueDateIsValid;
     },
     peerReviewOpenDisabledDates() {
       return this.promptDueDate && this.peerReviewDueDate
@@ -393,18 +414,7 @@ export default {
         return this.promptDueDate;
       }
       else {
-        const {peerReviewOpenDay, peerReviewOpenHour, peerReviewOpenMinute, peerReviewOpenMeridian} = this.models;
-        if(peerReviewOpenDay && peerReviewOpenHour && peerReviewOpenMinute && peerReviewOpenMeridian) {
-          const hours12 = parseInt(peerReviewOpenHour);
-          const hours24 = peerReviewOpenMeridian === 'AM'
-            ? (hours12 === 12 ? 0 : hours12)
-            : (hours12 === 12 ? 12 : hours12 + 12);
-          const minutes = parseInt(peerReviewOpenMinute);
-          return moment(peerReviewOpenDay)
-            .hours(hours24)
-            .minutes(minutes)
-            .utc();
-        }
+        return this.models.peerReviewOpenDateTime;
       }
     },
     peerReviewOpenDateDisplay() {
@@ -419,11 +429,34 @@ export default {
       const peerReviewDueAfterPrompt = this.peerReviewOpenDate.isSameOrAfter(this.promptDueDate);
       const peerReviewDueAfterOpening = this.peerReviewOpenDate.isSameOrBefore(this.peerReviewDueDate);
       return peerReviewDueAfterPrompt && peerReviewDueAfterOpening;
+    },
+    peerReviewEvaluationDueDateIsValid() {
+      if(!this.models.peerReviewEvaluationIsMandatory) {
+        return true;
+      }
+      else {
+        if(this.models.peerReviewEvaluationDueDateTime) {
+          return this.models.peerReviewEvaluationDueDateTime.isAfter(this.peerReviewDueDate);
+        }
+        else {
+          return false;
+        }
+      }
+    },
+    peerReviewEvaluationDueDateDisplay() {
+      return this.models.peerReviewEvaluationDueDateTime
+        ? this.models.peerReviewEvaluationDueDateTime.local().format(DISPLAY_DATE_FORMAT)
+        : '';
+    },
+    peerReviewDueDateDisplay() {
+      return this.peerReviewDueDate
+        ? this.peerReviewDueDate.local().format(DISPLAY_DATE_FORMAT)
+        : '';
     }
   },
   methods: {
     fetchData() {
-      return this.$api.get('/course/{}/rubric/peer_review_assignment/{}', this.courseId, this.peerReviewAssignmentId)
+      return this.$api.get('/course/{}/rubric/peer_review_assignment/{}/', this.courseId, this.peerReviewAssignmentId)
         .then(r => {
           const {assignments, validationInfo, existingRubric, peerReviewDueDate} = r.data;
           this.assignmentNamesById = assignments;
@@ -434,7 +467,7 @@ export default {
     },
     initializeModels() {
       if(this.existingRubric) {
-        const {promptId, revisionId} = this.existingRubric;
+        const {promptId, revisionId, peerReviewOpenDateTime, peerReviewEvaluationDueDateTime} = this.existingRubric;
         const promptOption = {
           value: promptId,
           name: this.assignmentNamesById[promptId]
@@ -447,7 +480,9 @@ export default {
           R.dissoc('promptId'),
           R.dissoc('revisionId'),
           R.assoc('selectedPrompt', promptOption),
-          R.assoc('selectedRevision', revisionOption)
+          R.assoc('selectedRevision', revisionOption),
+          R.assoc('peerReviewOpenDateTime', moment.utc(peerReviewOpenDateTime)),
+          R.assoc('peerReviewEvaluationDueDateTime', utcMomentIfNotNil(peerReviewEvaluationDueDateTime))
         );
 
         this.models = modelConverter(this.existingRubric);
@@ -477,6 +512,10 @@ export default {
     },
     submitRubricForm() {
       if(this.rubricIsValid) {
+        const peerReviewEvaluationDueDate =
+          this.models.peerReviewEvaluationDueDateTime && this.models.peerReviewEvaluationIsMandatory
+            ? this.models.peerReviewEvaluationDueDateTime.toISOString()
+            : null;
         const data = {
           promptId: parseInt(this.models.selectedPrompt.value) || null,
           revisionId: this.models.selectedRevision.value ? parseInt(this.models.selectedRevision.value) : null,
@@ -484,7 +523,9 @@ export default {
           description: R.trim(this.models.description),
           criteria: R.map(c => R.trim(c.description), this.models.criteria),
           peerReviewOpenDateIsPromptDueDate: this.models.peerReviewOpenDateIsPromptDueDate,
-          peerReviewOpenDate: this.peerReviewOpenDate.toISOString()
+          peerReviewOpenDate: this.peerReviewOpenDate.toISOString(),
+          peerReviewEvaluationIsMandatory: this.models.peerReviewEvaluationIsMandatory,
+          peerReviewEvaluationDueDate
         };
 
         this.submissionInProgress = true;
