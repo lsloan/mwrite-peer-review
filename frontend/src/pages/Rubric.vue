@@ -273,6 +273,8 @@ import api from '@/services/api';
 import {gensym} from '@/services/util';
 import {validationInfoAsIssues} from '@/services/validation';
 
+const utcMomentIfNotNil = R.unless(R.isNil, moment.utc);
+
 const makeCriterion = (prefix = 'criterion', description = '') => {
   return {
     id: gensym(prefix),
@@ -480,7 +482,7 @@ export default {
           R.assoc('selectedPrompt', promptOption),
           R.assoc('selectedRevision', revisionOption),
           R.assoc('peerReviewOpenDateTime', moment.utc(peerReviewOpenDateTime)),
-          R.assoc('peerReviewEvaluationDueDateTime', moment.utc(peerReviewEvaluationDueDateTime))
+          R.assoc('peerReviewEvaluationDueDateTime', utcMomentIfNotNil(peerReviewEvaluationDueDateTime))
         );
 
         this.models = modelConverter(this.existingRubric);
