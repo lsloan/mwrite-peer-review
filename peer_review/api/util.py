@@ -88,11 +88,14 @@ def validate_rubric(course_id, params):
         raise APIException(data={'error': 'One or more blank criteria submitted.'}, status_code=400)
     criteria = [Criterion(description=criterion) for criterion in params['criteria']]
 
-    peer_review_open_date = get_date_parameter_or_400('peer_review_open_date', params)
-    peer_review_evaluation_due_date = get_date_parameter_or_400('peer_review_evaluation_due_date', params)
-
     pr_open_date_is_prompt_due_date = get_required_parameter_or_400('peer_review_open_date_is_prompt_due_date', params)
     peer_review_evaluation_is_mandatory = get_required_parameter_or_400('peer_review_evaluation_is_mandatory', params)
+
+    peer_review_open_date = get_date_parameter_or_400('peer_review_open_date', params)
+    if peer_review_evaluation_is_mandatory:
+        peer_review_evaluation_due_date = get_date_parameter_or_400('peer_review_evaluation_due_date', params)
+    else:
+        peer_review_evaluation_due_date = None
 
     return {
         'prompt_assignment': prompt_assignment,
