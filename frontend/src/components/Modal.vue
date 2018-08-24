@@ -2,7 +2,10 @@
     <transition name="modal">
         <div class="modal-mask">
             <div class="modal-wrapper">
-                <div class="modal-container" role="dialog" aria-labelledby="modal-title">
+                <div class="modal-container"
+                     role="dialog"
+                     aria-labelledby="modal-title"
+                     v-on:keyup.27="closeModal">
 
                     <div class="modal-header">
                         <div class="modal-titles-container">
