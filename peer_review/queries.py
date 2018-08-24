@@ -311,7 +311,10 @@ class ReviewStatus:
                 'peer_review_title': peer_review_assignment.title,
                 'reviews_were_assigned': reviews_were_assigned,
                 'peer_review_due_date': peer_review_due_date,
-                'evaluation_due_date': rubric.peer_review_evaluation_due_date.strftime(API_DATE_FORMAT),
+                'evaluation_due_date': (
+                    rubric.peer_review_evaluation_due_date.strftime(API_DATE_FORMAT)
+                    if rubric.peer_review_evaluation_due_date
+                    else None),
                 'evaluation_mandatory': rubric.peer_review_evaluation_is_mandatory
             },
             'prompt_submitted': True if submission else False
