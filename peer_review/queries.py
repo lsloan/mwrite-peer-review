@@ -498,7 +498,7 @@ class RubricForm:
             assignments.insert(0, existing_prompt)
         if existing_revision:
             assignments.insert(0, existing_revision)
-        
+
         if existing_rubric:
             rubric_data = {
                 'description': existing_rubric.description,
@@ -576,12 +576,14 @@ class Evaluations:
             rubric = prompt.rubric_for_prompt
             peer_review_title = rubric.passback_assignment.title
 
-            # TODO blocked on #278; remove everything but the first line once that's done
-            # due_date_utc = reviews_for_rubric[0].evaluation_due_date_utc
-            due_date_utc = '2018-10-08 23:41:54Z'
+            due_date_utc = reviews_for_rubric[0].evaluation_due_date
+            if due_date_utc:
+                due_date_utc_str = due_date_utc.strftime(API_DATE_FORMAT)
+            else:
+                due_date_utc_str = None
 
+            evaluations_for_rubric = []
             for review in reviews_for_rubric:
-                evaluations_for_rubric = []
 
                 student_id = student_numbers[review.id]
                 ready_for_evaluation = review.comments.exists()
@@ -596,15 +598,15 @@ class Evaluations:
                 evaluations_for_rubric.append({
                     'rubric_id': rubric_id,
                     'peer_review_title': peer_review_title,
-                    'due_date_utc': due_date_utc,
+                    'due_date_utc': due_date_utc_str,
                     'peer_review_id': review.id,
                     'student_id': student_id,
                     'ready_for_evaluation': ready_for_evaluation,
                     'evaluation_is_complete': evaluation_is_complete,
-                    'evaluation_is_mandatory': True  # review.evaluation_is_mandatory # TODO blocked on #278
+                    'evaluation_is_mandatory': review.evaluation_is_mandatory
                 })
 
-                # TODO only add evaluations if all are not completed
+            if some(lambda e: not e['evaluation_is_complete'], evaluations_for_rubric):
                 evaluations.extend(evaluations_for_rubric)
 
         return evaluations

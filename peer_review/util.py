@@ -79,5 +79,6 @@ def fetchall_dicts(cursor):
         for row in cursor.fetchall()
     ]
 
+
 def object_to_json(obj):
     return transform_data_structure(obj.__dict__, dict_transform=camel_case_keys)
