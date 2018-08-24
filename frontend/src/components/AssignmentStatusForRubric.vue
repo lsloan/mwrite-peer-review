@@ -3,12 +3,12 @@
         <div class="mdl-cell mdl-cell--6-col">
             <div class="mdl-grid">
                 <div class="mdl-cell mdl-cell--12-col">
-                    <h1>
+                    <h3>
                         {{ studentFirstName }}
                         completed
                         {{ numberOfCompletedReviews }}/{{ reviewsToBeCompleted.length }}
                         peer reviews
-                    </h1>
+                    </h3>
                 </div>
             </div>
             <div class="mdl-grid">
@@ -29,12 +29,12 @@
         <div class="mdl-cell mdl-cell--6-col">
             <div class="mdl-grid">
                 <div class="mdl-cell mdl-cell--12-col">
-                    <h1>
+                    <h3>
                         {{ studentFirstName }}
                         received
                         {{ numberOfReceivedReviews }}/{{ reviewsToBeReceived.length }}
                         peer reviews
-                    </h1>
+                    </h3>
                 </div>
             </div>
             <div class="mdl-grid">
@@ -147,11 +147,12 @@ export default {
 </script>
 
 <style scoped>
-    h1 {
+    h3 {
         font-family: "Roboto","Helvetica","Arial",sans-serif;
         font-size: 28px;
         line-height: 28px;
         margin: 8px 0;
+        letter-spacing: -0.56px;
     }
 
     .centered {

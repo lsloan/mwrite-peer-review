@@ -6,8 +6,8 @@ M-Write Peer Review is intended to be hosted using Docker containers, and comes 
 for the different parts of the application.  They are:
 
 - [dockerfiles/api.Dockerfile](dockerfiles/api.Dockerfile) -- The Django-based API (and legacy views, for now) hosted with [gunicorn](http://gunicorn.org/)
-- [dockerfiles/frontend.Dockerfile](dockerfiles/frontend.Dockerfile) -- A VueJS SPA frontend hosted with Apache httpd
-- [dockerfiles/api.Dockerfile](dockerfiles/api.Dockerfile) -- A backend container for scheduled jobs (currently just review distribution)
+- [dockerfiles/frontend.Dockerfile](dockerfiles/frontend.Dockerfile) -- A Vue.js SPA frontend hosted with Apache httpd
+- [dockerfiles/jobs.Dockerfile](dockerfiles/jobs.Dockerfile) -- A backend container for scheduled jobs (currently just review distribution)
 
 With the proper build arguments (see [here](#build-configuration)) and runtime environment variables (see [here](#runtime-environment)),
 this app should be able to be run just using Docker; however, documentation for running M-Write Peer Review
@@ -18,15 +18,15 @@ using the OpenShift Container Platform is also provided.
 The included Dockerfiles support ARGs that allow aspects of the build to be modified.  You can also
 pass these as environment variables in OpenShift.
 
-| Variable                         | Dockerfile  | Description                                                                                              |
-| -------------------------------- | ----------  | -------------------------------------------------------------------------------------------------------- |
-| MPR_WORKING_DIRECTORY            | api, jobs   | The source and working directory for the API and jobs containers; optional (defaults to `/usr/src/app`). |
-| MPR_API_URL                      | frontend    | The API URL for the frontend to use; **required**.                                                       |
-| MPR_GOOGLE_ANALYTICS_TRACKING_ID | tracking ID | Google analytics tracking ID                                                                             |
+| Variable                         | Dockerfile | Description                                                                                              |
+| -------------------------------- | ---------- | -------------------------------------------------------------------------------------------------------- |
+| MPR_WORKING_DIRECTORY            | api, jobs  | The source and working directory for the API and jobs containers; optional (defaults to `/usr/src/app`). |
+| MPR_API_URL                      | frontend   | The API URL for the frontend to use; **required**.                                                       |
+| MPR_GOOGLE_ANALYTICS_TRACKING_ID | frontend   | Google analytics tracking ID                                                                             |
 
 ## Runtime Environment
 
-_**TODO** -- need to separate these by container type (job / API)_
+### Backend Environment Variables
 
 The API and jobs containers derive their runtime configuration from the following environment variables:
 
@@ -47,18 +47,24 @@ The API and jobs containers derive their runtime configuration from the followin
 | MPR_TIMEZONE                     | Unix timezone         | No                 | Sets Django's [TIME_ZONE](https://docs.djangoproject.com/en/1.11/ref/settings/#time-zone) setting                                  | 
 | MPR_SESSION_COOKIE_DOMAIN        | domain name only      | No                 | Sets Django's [SESSION_COOKIE_DOMAIN](https://docs.djangoproject.com/en/1.11/ref/settings/#session-cookie-domain) setting for CORS |
 | MPR_CSRF_COOKIE_DOMAIN           | domain name only      | No                 | Sets Django's [CSRF_COOKIE_DOMAIN](https://docs.djangoproject.com/en/1.11/ref/settings/#csrf-cookie-domain) setting for CORS       |
-| MPR_GOOGLE_ANALYTICS_TRACKING_ID | tracking ID           | No                 | Google analytics tracking ID for legacy views; **deprecated**                                                                      |
+
+### jobs-only Environment Variables
 
 The jobs container also uses the following environment variables:
 
-| Variable              | Type                | Optional (default) | Description                                                                                                         |
-| --------------------- | ------------------- | ------------------ | ------------------------------------------------------------------------------------------------------------------- |
-| MPR_EMAIL_HOST        | email               | No                 | Sets Django's [EMAIL_HOST](https://docs.djangoproject.com/en/1.11/ref/settings/#std:setting-EMAIL_HOST) setting     |
-| MPR_EMAIL_PORT        | int                 | No                 | Sets Django's [EMAIL_PORT](https://docs.djangoproject.com/en/1.11/ref/settings/#std:setting-EMAIL_PORT) setting     |
-| MPR_SERVER_FROM_EMAIL | email               | No                 | Sets Django's [SERVER_EMAIL](https://docs.djangoproject.com/en/1.11/ref/settings/#std:setting-SERVER_EMAIL) setting |
-| MPR_SERVER_TO_EMAILS  | email[, email, ...] | No                 | Used to derive Django's [ADMINS](https://docs.djangoproject.com/en/1.11/ref/settings/#std:setting-ADMINS) setting   |
+| Variable                    | Type                | Optional              | Description                                                                                                         |
+| ---------------------       | ------------------- | ------------------    | ------------------------------------------------------------------------------------------------------------------- |
+| MPR_EMAIL_HOST              | email               | No                    | Sets Django's [EMAIL_HOST](https://docs.djangoproject.com/en/1.11/ref/settings/#std:setting-EMAIL_HOST) setting     |
+| MPR_EMAIL_PORT              | int                 | No                    | Sets Django's [EMAIL_PORT](https://docs.djangoproject.com/en/1.11/ref/settings/#std:setting-EMAIL_PORT) setting     |
+| MPR_SERVER_FROM_EMAIL       | email               | No                    | Sets Django's [SERVER_EMAIL](https://docs.djangoproject.com/en/1.11/ref/settings/#std:setting-SERVER_EMAIL) setting |
+| MPR_SERVER_TO_EMAILS        | email[, email, ...] | No                    | Used to derive Django's [ADMINS](https://docs.djangoproject.com/en/1.11/ref/settings/#std:setting-ADMINS) setting   |
+| MPR_BACKUP_S3_BUCKET        | string              | Yes (see description) | AWS S3 bucket for storing SQL dumps and submission archives; leave unset to disable backups                         |
+| MPR_BACKUP_PREFIX           | path                | Yes                   | Path to store temporary backup files; defaults to /srv/mwrite-peer-review-backups                                   |
+| MPR_BACKUP_DB_CONFIG_FILE   | path                | Yes                   | Path to M-Write Peer Review's database config JSON file; defaults to /etc/mwrite-peer-review/database.json          |
+| MPR_BACKUP_SUBMISSIONS_PATH | path                | Yes                   | Path to M-Write Peer Review's submission storage path; defaults to /srv/mwrite-peer-review/submissions              |
+| MYSQLDUMP_OPTIONS           | string              | Yes                   | Command line options for mysqldump; required because MySQL 8 has different default behavior than 5.7                |
 
-See the [API's OpenShift deployment](config/server/example/openshift/dc/api-dc.yaml) config for examples.
+See the [API's](config/server/example/openshift/dc/api-dc.yaml) and [job container's](config/server/example/openshift/dc/jobs-dc.yaml) OpenShift deployment config for examples.
   
 ## OpenShift Setup
 
@@ -66,6 +72,12 @@ As mentioned previously, M-Write Peer Review supports being run using Docker; ho
 the OpenShift Container Platform (version 3.6) is used in production.  The instructions below demonstrate how to
 set up an environment given an empty project (referred to hereafter as the `mwrite-peer-review-dev` namespace).
 Refer frequently to the OpenShift Container Platform [documentation](https://docs.openshift.com/container-platform/3.6/dev_guide/index.html).
+
+### Automatic Backups to S3
+
+The jobs container uses a weekly cron job to back up the configured database and submission storage volume to S3.
+See [`dockerfiles/jobs.Dockerfile`](dockerfiles/jobs.Dockerfile) and [`scripts/backup_data.bash`](scripts/backup_data.bash) for
+implementation details.  See [above](#jobs-only-environment-variables) for information about the related environment variables.
 
 ### Accessing Private Github Repositories
 
@@ -140,6 +152,12 @@ These should be created in roughly the following order:
           "HOST": "192.168.99.100",
           "PORT": "3306"
         }
+        ```
+    * `aws_credentials`
+        ```text
+        [default]
+        aws_access_key_id=<...redacted...>
+        aws_secret_access_key=<...redacted...>
         ```
 2. Create the persistent volume claim for submission file storage:
     ```bash

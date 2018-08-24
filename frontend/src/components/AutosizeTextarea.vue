@@ -38,4 +38,7 @@ export default {
 </script>
 
 <style scoped>
+    .mdl-textfield__label {
+        color: #767676;
+    }
 </style>

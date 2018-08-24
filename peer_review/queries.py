@@ -528,13 +528,15 @@ class RubricForm:
                 'description': existing_rubric.description,
                 'prompt_id': existing_prompt.id,
                 'revision_id': existing_revision.id if existing_revision else None,
-                'peer_review_open_date': existing_rubric.peer_review_open_date.strftime(API_DATE_FORMAT),
+                'peer_review_open_date_time': existing_rubric.peer_review_open_date.strftime(API_DATE_FORMAT),
                 'peer_review_open_date_is_prompt_due_date': existing_rubric.peer_review_open_date_is_prompt_due_date,
                 'criteria': [
                     {'id': c.id, 'description': c.description}
                     for c in existing_rubric.criteria.all()
                 ],
-                'review_in_progress': review_is_in_progress
+                'review_in_progress': review_is_in_progress,
+                'peer_review_evaluation_is_mandatory': existing_rubric.peer_review_evaluation_is_mandatory,
+                'peer_review_evaluation_due_date_time': existing_rubric.peer_review_evaluation_due_date.strftime(API_DATE_FORMAT) if existing_rubric.peer_review_evaluation_due_date else None,
             }
         else:
             rubric_data = None
@@ -568,6 +570,21 @@ class Comments:
         return chain(comments_given, comments_received)
 
 
+class Students:
+
+    @staticmethod
+    def reviewers_for_rubric(rubric):
+        reviews = PeerReview.objects.filter(submission__assignment__rubric_for_prompt__id=rubric.id)
+        students = reviews.values('student')
+        return CanvasStudent.objects.filter(id__in=students)
+
+    @staticmethod
+    def non_reviewers_for_rubric(course_id, rubric):
+        reviewers = Students.reviewers_for_rubric(rubric)
+        return CanvasStudent.objects.filter(courses=course_id) \
+            .exclude(id__in=reviewers)
+
+
 class Evaluations:
     @staticmethod
     def _collect_evaluation_data(reviews):
@@ -583,12 +600,14 @@ class Evaluations:
             rubric = prompt.rubric_for_prompt
             peer_review_title = rubric.passback_assignment.title
 
-            # TODO blocked on #278; remove everything but the first line once that's done
-            # due_date_utc = reviews_for_rubric[0].evaluation_due_date_utc
-            due_date_utc = '2018-10-08 23:41:54Z'
+            due_date_utc = reviews_for_rubric[0].evaluation_due_date
+            if due_date_utc:
+                due_date_utc_str = due_date_utc.strftime(API_DATE_FORMAT)
+            else:
+                due_date_utc_str = None
 
+            evaluations_for_rubric = []
             for review in reviews_for_rubric:
-                evaluations_for_rubric = []
 
                 student_id = student_numbers[review.id]
                 ready_for_evaluation = review.comments.exists()
@@ -603,15 +622,15 @@ class Evaluations:
                 evaluations_for_rubric.append({
                     'rubric_id': rubric_id,
                     'peer_review_title': peer_review_title,
-                    'due_date_utc': due_date_utc,
+                    'due_date_utc': due_date_utc_str,
                     'peer_review_id': review.id,
                     'student_id': student_id,
                     'ready_for_evaluation': ready_for_evaluation,
                     'evaluation_is_complete': evaluation_is_complete,
-                    'evaluation_is_mandatory': True  # review.evaluation_is_mandatory # TODO blocked on #278
+                    'evaluation_is_mandatory': review.evaluation_is_mandatory
                 })
 
-                # TODO only add evaluations if all are not completed
+            if some(lambda e: not e['evaluation_is_complete'], evaluations_for_rubric):
                 evaluations.extend(evaluations_for_rubric)
 
         return evaluations

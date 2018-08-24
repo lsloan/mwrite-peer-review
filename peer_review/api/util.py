@@ -74,7 +74,7 @@ def validate_rubric(course_id, params):
                 raise APIException(data={'error': error}, status_code=403)
         except CanvasAssignment.DoesNotExist:
             error = 'The requested revision does not exist.'
-            raise APIException(data={'error': error}, status_code=400)   
+            raise APIException(data={'error': error}, status_code=400)
     else:
         revision_assignment = None
 
@@ -88,18 +88,14 @@ def validate_rubric(course_id, params):
         raise APIException(data={'error': 'One or more blank criteria submitted.'}, status_code=400)
     criteria = [Criterion(description=criterion) for criterion in params['criteria']]
 
-    if 'peer_review_open_date' not in params or not params['peer_review_open_date'].strip():
-        raise APIException(data={'error': 'Missing peer review open date.'}, status_code=400)
-    try:
-        peer_review_open_date = dateutil.parser.parse(params['peer_review_open_date'])
-    except ValueError:
-        error = 'Peer review open date should be a valid ISO 8601 date.'
-        raise APIException(data={'error': error}, status_code=400)
+    pr_open_date_is_prompt_due_date = get_required_parameter_or_400('peer_review_open_date_is_prompt_due_date', params)
+    peer_review_evaluation_is_mandatory = get_required_parameter_or_400('peer_review_evaluation_is_mandatory', params)
 
-    if 'peer_review_open_date_is_prompt_due_date' not in params:
-        error = 'Missing peer review open date is prompt due date flag.'
-        raise APIException(data={'error': error}, status_code=400)
-    pr_open_date_is_prompt_due_date = params['peer_review_open_date_is_prompt_due_date']
+    peer_review_open_date = get_date_parameter_or_400('peer_review_open_date', params)
+    if peer_review_evaluation_is_mandatory:
+        peer_review_evaluation_due_date = get_date_parameter_or_400('peer_review_evaluation_due_date', params)
+    else:
+        peer_review_evaluation_due_date = None
 
     return {
         'prompt_assignment': prompt_assignment,
@@ -108,5 +104,28 @@ def validate_rubric(course_id, params):
         'rubric_description': rubric_description,
         'criteria': criteria,
         'peer_review_open_date': peer_review_open_date,
-        'peer_review_open_date_is_prompt_due_date': pr_open_date_is_prompt_due_date
+        'peer_review_evaluation_due_date': peer_review_evaluation_due_date,
+        'peer_review_open_date_is_prompt_due_date': pr_open_date_is_prompt_due_date,
+        'peer_review_evaluation_is_mandatory': peer_review_evaluation_is_mandatory
     }
+
+
+def get_required_parameter_or_400(key_name, params):
+    if key_name not in params:
+        error = 'Missing required \'{}\' parameter.'.format(key_name)
+        raise APIException(data={'error': error}, status_code=400)
+    return params[key_name]
+
+
+def get_date_parameter_or_400(key_name, params):
+    if key_name not in params:
+        error = 'Missing required \'{}\' parameter.'.format(key_name)
+        raise APIException(data={'error': error}, status_code=400)
+    try:
+        if params[key_name] is None:
+            return None
+        else:
+            return dateutil.parser.parse(params[key_name].strip())
+    except ValueError:
+        error = '\'{}\' parameter should be a valid ISO 8601 date.'.format(key_name)
+        raise APIException(data={'error': error}, status_code=400)
