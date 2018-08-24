@@ -36,6 +36,7 @@ class InstructorDashboardStatus:
       number_of_completed_reviews,
       number_of_assigned_reviews,
       evaluation_due_date,
+      evaluation_mandatory,
       CASE WHEN peer_review_distributions.is_distribution_complete IS TRUE
         THEN TRUE
       ELSE FALSE
@@ -46,7 +47,8 @@ class InstructorDashboardStatus:
       (SELECT
          rubrics.id                      AS rubric_id,
          rubrics.peer_review_open_date   AS open_date,
-         now()                           AS evaluation_due_date, -- FIXME: replace "now" with `peer_review_evaluation_due_date`
+         peer_review_evaluation_due_date AS evaluation_due_date,
+         peer_review_evaluation_is_mandatory AS evaluation_mandatory,
          rubrics.reviewed_assignment_id  AS prompt_id,
          rubrics.passback_assignment_id  AS peer_review_assignment_id,
          count(DISTINCT peer_reviews.id) AS number_of_assigned_reviews
@@ -100,6 +102,7 @@ class InstructorDashboardStatus:
             if row.get('open_date'):
                 row['open_date'] = row['open_date'].strftime(API_DATE_FORMAT)
             row['reviews_in_progress'] = row['reviews_in_progress'] == 1
+            row['evaluation_mandatory'] = row['evaluation_mandatory'] == 1
         return data
 
     @classmethod
@@ -269,9 +272,16 @@ class ReviewStatus:
         else:
             completed_at = None
 
+        try:
+            peer_review.evaluation
+            evaluation_submitted = True
+        except PeerReviewEvaluation.DoesNotExist:
+            evaluation_submitted = False
+
         return {
             'id': peer_review.id,
             'student': student_info,
+            'evaluation_submitted': evaluation_submitted,
             'completed_at': completed_at
         }
 
@@ -300,7 +310,9 @@ class ReviewStatus:
             'rubric': {
                 'peer_review_title': peer_review_assignment.title,
                 'reviews_were_assigned': reviews_were_assigned,
-                'peer_review_due_date': peer_review_due_date
+                'peer_review_due_date': peer_review_due_date,
+                'evaluation_due_date': rubric.peer_review_evaluation_due_date.strftime(API_DATE_FORMAT),
+                'evaluation_mandatory': rubric.peer_review_evaluation_is_mandatory
             },
             'prompt_submitted': True if submission else False
         }

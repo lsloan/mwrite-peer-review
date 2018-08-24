@@ -16,6 +16,7 @@
                     <peer-review-status-card
                         v-for="review in reviewsToBeCompleted"
                         :key="review.id"
+                        :evaluation-mandatory="data.rubric.evaluationMandatory"
                         direction="To"
                         :subject-id="studentId"
                         :subject-name="studentFirstName"
@@ -41,6 +42,7 @@
                     <peer-review-status-card
                         v-for="review in reviewsToBeReceived"
                         :key="review.id"
+                        :evaluation-mandatory="data.rubric.evaluationMandatory"
                         direction="From"
                         :subject-id="studentId"
                         :subject-name="studentFirstName"
@@ -86,6 +88,7 @@ export default {
         rubricId: this.rubricId,
         name: r.student.sortableName,
         email: r.student.email,
+        evaluationSubmitted: r.evaluationSubmitted,
         completedAt: r.completedAt ? moment.utc(r.completedAt) : null
       };
     }
