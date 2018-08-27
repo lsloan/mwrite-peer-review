@@ -2,14 +2,20 @@
     <div>
         <div class="controls">
             <span>View by:</span>
-            <div class="control-button-container">
+            <div class="control-button-container" role="tablist">
                 <button
                     :class="{'control-button': true, 'control-button--active': viewBy === 'reviewer'}"
+                    role="tab"
+                    aria-controls="reviews-by-reviewer"
+                    :aria-selected="viewBy === 'reviewer' ? 'true' : 'false'"
                     @click="viewBy = 'reviewer'">
                     Student
                 </button>
                 <button
                     :class="{'control-button': true, 'control-button--active': viewBy === 'criterion'}"
+                    role="tab"
+                    aria-controls="reviews-by-criterion"
+                    :aria-selected="viewBy === 'criterion' ? 'true' : 'false'"
                     @click="viewBy = 'criterion'">
                     Criteria
                 </button>
@@ -17,8 +23,8 @@
         </div>
         <div class="reviews-body">
             <keep-alive>
-                <reviews-by-reviewer v-if="viewBy === 'reviewer'" :allow-evaluation="true" :data="reviews"/>
-                <reviews-by-criterion v-else-if="viewBy === 'criterion'" :data="reviews"/>
+                <reviews-by-reviewer id="reviews-by-reviewer" role="tabpanel" v-if="viewBy === 'reviewer'" :allow-evaluation="true" :data="reviews"/>
+                <reviews-by-criterion id="reviews-by-criterion" role="tabpanel" v-else-if="viewBy === 'criterion'" :data="reviews"/>
             </keep-alive>
         </div>
     </div>
