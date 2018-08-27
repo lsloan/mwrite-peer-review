@@ -164,10 +164,6 @@ export default {
         font-size: 14px;
     }
 
-    .evaluation-button:focus {
-        outline: 0;
-    }
-
     .radio-controls {
         display: flex;
         flex-direction: row;
