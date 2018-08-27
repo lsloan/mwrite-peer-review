@@ -70,7 +70,6 @@ export default {
       this.$router.back();
     },
     handleKeyDown(event) {
-      console.log('event:', event);
       if(event.keyCode === KEYCODE_TAB) {
         this.handleTab(event);
       }
@@ -85,14 +84,12 @@ export default {
       }
     },
     tabPrevious() {
-      console.log('tabbed previous');
       if(document.activeElement === this.firstFocusableElement) {
         this.lastFocusableElement.focus();
         event.preventDefault();
       }
     },
     tabNext(event) {
-      console.log('tabbed next');
       if(document.activeElement === this.lastFocusableElement) {
         this.firstFocusableElement.focus();
         event.preventDefault();
