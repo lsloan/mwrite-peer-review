@@ -2,10 +2,12 @@
     <transition name="modal">
         <div class="modal-mask">
             <div class="modal-wrapper">
-                <div class="modal-container"
+                <div ref="modal"
+                     class="modal-container"
                      role="dialog"
                      aria-labelledby="modal-title"
-                     v-on:keyup.27="closeModal">
+                     @keyup.27="closeModal"
+                     @keydown="handleKeyDown">
 
                     <div class="modal-header">
                         <div class="modal-titles-container">
@@ -33,6 +35,23 @@
 <script>
 import {MdlButton} from 'vue-mdl';
 
+const KEYCODE_TAB = 9;
+
+const TABS_CLASS = '.mdl-tabs';
+const TAB_BODY_CLASS = '.mdl-tabs__panel';
+const TAB_ACTIVE_CLASS = '.is-active';
+const TAB_IS_ACTIVE_CLASS = `${TAB_BODY_CLASS}${TAB_ACTIVE_CLASS}`;
+const FOCUSABLE_SELECTOR_HEADER = '.modal-header > button, .modal-header > a';
+const FOCUSABLE_SELECTOR_TABS = `${FOCUSABLE_SELECTOR_HEADER}, ${TAB_IS_ACTIVE_CLASS} a, ${TAB_IS_ACTIVE_CLASS} button, ${TAB_IS_ACTIVE_CLASS} [tabindex]`;
+const FOCUSABLE_SELECTOR_NO_TABS = 'a, button, [tabindex]';
+
+const getTabbableElements = modal => {
+  const selector = modal.querySelector(TABS_CLASS)
+    ? FOCUSABLE_SELECTOR_TABS
+    : FOCUSABLE_SELECTOR_NO_TABS;
+  return modal.querySelectorAll(selector);
+};
+
 export default {
   name: 'modal',
   props: ['component', 'child-props'],
@@ -47,6 +66,12 @@ export default {
     closeModal() {
       this.$router.back();
     },
+    handleKeyDown(event) {
+      console.log('key down:', event);
+      if(event.keyCode === KEYCODE_TAB) {
+        console.log('pressed tab');
+      }
+    },
     setTitle(title) {
       this.title = title;
     },
@@ -58,8 +83,12 @@ export default {
     }
   },
   mounted() {
+    console.log('selectors:');
+    console.log(FOCUSABLE_SELECTOR_TABS);
+    console.log(FOCUSABLE_SELECTOR_NO_TABS);
     this.$nextTick(() => {
       this.focusModalTitle();
+      console.log('tabbable elements:', getTabbableElements(this.$refs.modal));
     });
   }
 };
