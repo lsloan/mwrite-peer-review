@@ -36,13 +36,15 @@
 import {MdlButton} from 'vue-mdl';
 
 const KEYCODE_TAB = 9;
+const FRAME_MS = 1000.0 / 60; // every 16.7ms (a.k.a. once per frame @ 60fps)
 
 const TABS_CLASS = '.mdl-tabs';
 const TAB_BODY_CLASS = '.mdl-tabs__panel';
+const TAB_BAR_CLASS = '.mdl-tabs__tab-bar';
 const TAB_ACTIVE_CLASS = '.is-active';
 const TAB_IS_ACTIVE_CLASS = `${TAB_BODY_CLASS}${TAB_ACTIVE_CLASS}`;
-const FOCUSABLE_SELECTOR_HEADER = '.modal-header > button, .modal-header > a';
-const FOCUSABLE_SELECTOR_TABS = `${FOCUSABLE_SELECTOR_HEADER}, ${TAB_IS_ACTIVE_CLASS} a, ${TAB_IS_ACTIVE_CLASS} button, ${TAB_IS_ACTIVE_CLASS} [tabindex]`;
+const FOCUSABLE_SELECTOR_HEADER = '.modal-header > button, .modal-header > a, .controls button';
+const FOCUSABLE_SELECTOR_TABS = `${FOCUSABLE_SELECTOR_HEADER}, ${TAB_BAR_CLASS} a, ${TAB_IS_ACTIVE_CLASS} a, ${TAB_IS_ACTIVE_CLASS} button, ${TAB_IS_ACTIVE_CLASS} input, ${TAB_IS_ACTIVE_CLASS} [tabindex]`;
 const FOCUSABLE_SELECTOR_NO_TABS = 'a, button, [tabindex]';
 
 const getTabbableElements = modal => {
@@ -59,7 +61,9 @@ export default {
   data() {
     return {
       title: '',
-      subtitle: null
+      subtitle: null,
+      tabbableUpdater: null,
+      tabbableElements: []
     };
   },
   methods: {
@@ -80,16 +84,31 @@ export default {
     },
     focusModalTitle() {
       this.$refs.title.focus();
+    },
+    initTabbableUpdater() {
+      if(!this.tabbableUpdater) {
+        console.log(FOCUSABLE_SELECTOR_TABS);
+        // update the list of tabbable items once per frame
+        this.tabbableUpdater = window.setInterval(this.updateTabbableItems, FRAME_MS);
+      }
+    },
+    cleanupTabbableUpdater() {
+      if(this.tabbableUpdater) {
+        window.clearInterval(this.tabbableUpdater);
+      }
+    },
+    updateTabbableItems() {
+      this.tabbableElements = getTabbableElements(this.$refs.modal);
     }
   },
   mounted() {
-    console.log('selectors:');
-    console.log(FOCUSABLE_SELECTOR_TABS);
-    console.log(FOCUSABLE_SELECTOR_NO_TABS);
     this.$nextTick(() => {
       this.focusModalTitle();
-      console.log('tabbable elements:', getTabbableElements(this.$refs.modal));
     });
+    this.initTabbableUpdater();
+  },
+  destroyed() {
+    this.cleanupTabbableUpdater();
   }
 };
 </script>
