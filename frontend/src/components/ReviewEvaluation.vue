@@ -6,7 +6,9 @@
         </div>
         <div v-else>
             <div v-if="!alwaysShow && !showEvaluation">
-                <button class="evaluation-button" @click="showEvaluation = true">Rate This Evaluation</button>
+                <button class="evaluation-button" @click="showEvaluationControls" ref="openButton">
+                    Rate This Evaluation
+                </button>
             </div>
             <form v-else class="evaluation-card" v-on:submit.prevent>
                 <div class="form-section">
@@ -14,7 +16,7 @@
                         <legend class="form-label">Please rate the overall usefulness of this review</legend>
                         <div class="radio-controls">
                             <div class="radio-control">
-                                <input id="usefulness-choice-1" type="radio" v-model="usefulness" value="1"/>
+                                <input id="usefulness-choice-1" type="radio" v-model="usefulness" value="1" ref="firstControl"/>
                                 <label for="usefulness-choice-1">Very unuseful</label>
                             </div>
                             <div class="radio-control">
@@ -55,7 +57,7 @@
                     <mdl-button
                         v-if="!alwaysShow"
                         colored
-                        @click.native="showEvaluation = false">
+                        @click.native="hideEvaluationControls">
                         Cancel
                     </mdl-button>
                 </div>
@@ -87,6 +89,22 @@ export default {
     }
   },
   methods: {
+    showEvaluationControls() {
+      this.showEvaluation = true;
+
+      // $nextTick needed here because the firstControl ref doesn't exist until it's in the DOM
+      this.$nextTick(() => {
+        this.$refs.firstControl.focus();
+      });
+    },
+    hideEvaluationControls() {
+      this.showEvaluation = false;
+
+      // $nextTick needed here because the openButton ref doesn't exist until it's in the DOM
+      this.$nextTick(() => {
+        this.$refs.openButton.focus();
+      });
+    },
     markAsComplete() {
       const {peerReviewId} = this.evaluation;
       this.$store.commit('markEvaluationCompleteForReview', peerReviewId);
