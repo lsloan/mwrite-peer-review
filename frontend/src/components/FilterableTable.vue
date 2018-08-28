@@ -357,7 +357,7 @@ export default {
     .table-heading {
         font-size: 18px;
         color: black;
-        white-space: initial !important;
+        white-space: initial;
     }
 
     .centralized {
