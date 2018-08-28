@@ -46,6 +46,7 @@ urlpatterns = [
                 url(r'^$', api.dispatch_peer_review_request),
                 url(r'^submission/', api.submission_for_review),
                 url(r'^rubric/', api.rubric_for_review),
+                url(r'^evaluation/', api.evaluation_for_review),
             ])),
             url(r'^rubric/(?P<rubric_id>[0-9]+)/', include([
                 url(r'^$', api.review_status),

@@ -1,15 +1,22 @@
 <template>
-    <reviews-by-criterion class="reviews" :data="review"/>
+    <reviews-by-criterion class="reviews" :data="review" :evaluation="evaluation" />
 </template>
 
 <script>
 import {conversions} from '@/services/reviews';
 import ReviewsByCriterion from '@/components/ReviewsByCriterion';
+import {navigateToErrorPage} from '@/router/helpers';
+import api from '@/services/api';
 
 export default {
   name: 'SingleReview',
   props: ['review-id'],
   components: {ReviewsByCriterion},
+  data() {
+    return {
+      evaluation: null
+    };
+  },
   computed: {
     courseId() {
       return this.$store.state.userDetails.courseId;
@@ -37,6 +44,17 @@ export default {
         api: this.$api
       });
     },
+    fetchEvaluation() {
+      api.get('/course/{}/reviews/{}/evaluation', this.courseId, this.reviewId)
+        .then(response => {
+          this.evaluation = response.data;
+        })
+        .catch(reason => {
+          if(reason.response.status !== 404) {
+            navigateToErrorPage(this, null, reason);
+          }
+        });
+    },
     emitTitle() {
       this.$emit('title-resolved', this.promptTitle);
     }
@@ -44,6 +62,7 @@ export default {
   mounted() {
     this.fetchReview()
       .then(this.emitTitle);
+    this.fetchEvaluation();
   }
 };
 </script>

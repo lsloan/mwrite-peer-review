@@ -1,7 +1,7 @@
 <template>
     <div class="peer-review-assignment-card mdl-card mdl-cell mdl-cell--4-col mdl-cell--8-col-tablet mdl-cell--4-col-phone mdl-shadow--2dp">
 
-        <div class="mdl-card__title mdl-card--expand">
+        <div class="mdl-card__title">
             <h2 class="mdl-card__title-text">{{ peerReviewTitle }}</h2>
         </div>
 
@@ -52,13 +52,21 @@
             </div>
         </div>
 
-        <div class="mdl-card__supporting-text">
+        <div class="mdl-card__supporting-text" v-if="reviewsInProgress">
             <div class="icon-container">
                 <i class="material-icons icon-24px">trending_up</i>
-                <span class="icon-caption" v-if="reviewsInProgress">{{ numberOfCompletedReviews }} out of {{ numberOfAssignedReviews }} reviews received</span>
-                <span class="icon-caption" v-else>Reviews not yet assigned</span>
+                <span class="icon-caption">{{ numberOfCompletedReviews }} out of {{ numberOfAssignedReviews }} reviews received</span>
             </div>
         </div>
+
+        <div class="mdl-card__supporting-text" v-if="evaluationDueDate">
+            <div class="icon-container">
+                <i class="material-icons icon-24px">alarm</i>
+                <span class="icon-caption">Evaluations due by {{ evaluationDueDate | utcToLocal(dateFormat) }}</span>
+            </div>
+        </div>
+
+        <div class="mdl-card--expand"></div>
 
         <div class="mdl-card__actions mdl-card--border">
             <router-link class="mdl-button mdl-button--colored mdl-js-button mdl-js-ripple-effect"
@@ -92,6 +100,7 @@ export default {
     'reviews-in-progress',
     'due-date',
     'open-date',
+    'evaluation-due-date',
     'peer-review-assignment-id',
     'peer-review-title',
     'date-format',

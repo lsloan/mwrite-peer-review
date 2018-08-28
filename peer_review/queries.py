@@ -2,6 +2,7 @@ import json
 import logging
 from itertools import chain
 
+from django.http import Http404
 from toolz.dicttoolz import valfilter
 from toolz.functoolz import thread_last
 from toolz.itertoolz import groupby, unique
@@ -34,6 +35,8 @@ class InstructorDashboardStatus:
       peer_review_assignments.due_date_utc AS due_date,
       number_of_completed_reviews,
       number_of_assigned_reviews,
+      evaluation_due_date,
+      evaluation_mandatory,
       CASE WHEN peer_review_distributions.is_distribution_complete IS TRUE
         THEN TRUE
       ELSE FALSE
@@ -44,6 +47,8 @@ class InstructorDashboardStatus:
       (SELECT
          rubrics.id                      AS rubric_id,
          rubrics.peer_review_open_date   AS open_date,
+         peer_review_evaluation_due_date AS evaluation_due_date,
+         peer_review_evaluation_is_mandatory AS evaluation_mandatory,
          rubrics.reviewed_assignment_id  AS prompt_id,
          rubrics.passback_assignment_id  AS peer_review_assignment_id,
          count(DISTINCT peer_reviews.id) AS number_of_assigned_reviews
@@ -92,9 +97,12 @@ class InstructorDashboardStatus:
     def _format_details(data):
         for row in data:
             row['due_date'] = row['due_date'].strftime(API_DATE_FORMAT)
+            if row.get('evaluation_due_date'):
+                row['evaluation_due_date'] = row['evaluation_due_date'].strftime(API_DATE_FORMAT)
             if row.get('open_date'):
                 row['open_date'] = row['open_date'].strftime(API_DATE_FORMAT)
             row['reviews_in_progress'] = row['reviews_in_progress'] == 1
+            row['evaluation_mandatory'] = row['evaluation_mandatory'] == 1
         return data
 
     @classmethod
@@ -264,9 +272,16 @@ class ReviewStatus:
         else:
             completed_at = None
 
+        try:
+            peer_review.evaluation
+            evaluation_submitted = True
+        except PeerReviewEvaluation.DoesNotExist:
+            evaluation_submitted = False
+
         return {
             'id': peer_review.id,
             'student': student_info,
+            'evaluation_submitted': evaluation_submitted,
             'completed_at': completed_at
         }
 
@@ -295,7 +310,12 @@ class ReviewStatus:
             'rubric': {
                 'peer_review_title': peer_review_assignment.title,
                 'reviews_were_assigned': reviews_were_assigned,
-                'peer_review_due_date': peer_review_due_date
+                'peer_review_due_date': peer_review_due_date,
+                'evaluation_due_date': (
+                    rubric.peer_review_evaluation_due_date.strftime(API_DATE_FORMAT)
+                    if rubric.peer_review_evaluation_due_date
+                    else None),
+                'evaluation_mandatory': rubric.peer_review_evaluation_is_mandatory
             },
             'prompt_submitted': True if submission else False
         }
@@ -404,6 +424,11 @@ class ReviewStatus:
                                              .filter(received__gte=rubric.num_criteria) \
                                              .count()
 
+            reviews_with_evaluations = PeerReview.objects.filter(
+                submission__assignment=rubric.reviewed_assignment,
+                submission__author_id=submission.author, evaluation__isnull=False
+            )
+
             if rubric.sections.all():
                 rubric_sections_ids = rubric.sections.values_list('id', flat=True)
                 author_sections = submission.author.sections.filter(
@@ -432,6 +457,8 @@ class ReviewStatus:
                 'total_received':  total_received_num,
                 'received':        received_reviews_num,
                 'sections':        author_sections,
+                'evaluations_given': reviews_with_evaluations.count(),
+                'total_evaluations': received_reviews_num, # because they can't eval more than received
             }
             if not for_api:
                 review['json_sections'] = json.dumps(list(author_sections.values_list('id', flat=True)))
@@ -621,6 +648,28 @@ class Evaluations:
             .order_by('id')
 
         return Evaluations._collect_evaluation_data(reviews)
+
+    @staticmethod
+    def evaluation_for_review(course_id, review_id):
+        reviews = PeerReview.objects.filter(
+            submission__assignment__course_id=course_id,
+            submission__assignment__rubric_for_prompt__id__isnull=False,
+            id=review_id,
+        )\
+            .order_by('id')
+
+        try:
+            evaluation = PeerReviewEvaluation.objects.get(peer_review=reviews)
+            return {
+                'id': evaluation.id,
+                'usefulness': evaluation.usefulness,
+                'usefulness_text': dict(PeerReviewEvaluation.USEFULNESS_CHOICES)[evaluation.usefulness],
+                'comment': evaluation.comment,
+                'peer_review': evaluation.peer_review_id,
+            }
+
+        except PeerReviewEvaluation.DoesNotExist:
+            raise Http404
 
 
 class Reviews:
