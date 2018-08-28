@@ -6,8 +6,8 @@
                      class="modal-container"
                      role="dialog"
                      aria-labelledby="modal-title"
-                     @keyup.27="closeModal"
-                     @keydown="handleKeyDown">
+                     @keyup.esc="closeModal"
+                     @keydown.tab="handleTab">
 
                     <div class="modal-header">
                         <div class="modal-titles-container">
@@ -34,8 +34,6 @@
 
 <script>
 import {MdlButton} from 'vue-mdl';
-
-const KEYCODE_TAB = 9;
 
 const TABS_CLASS = '.mdl-tabs';
 const TAB_BODY_CLASS = '.mdl-tabs__panel';
@@ -68,11 +66,6 @@ export default {
   methods: {
     closeModal() {
       this.$router.back();
-    },
-    handleKeyDown(event) {
-      if(event.keyCode === KEYCODE_TAB) {
-        this.handleTab(event);
-      }
     },
     handleTab(event) {
       this.updateTabbableItems();
