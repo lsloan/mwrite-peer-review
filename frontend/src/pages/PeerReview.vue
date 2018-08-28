@@ -15,11 +15,11 @@
             <p class="preserve-whitespace">{{ rubricDescription }}</p>
         </peer-review-section>
         <form @submit.prevent>
-            <peer-review-section v-for="criterion in criteria" :key="criterion.id">
+            <peer-review-section v-for="(criterion, index) in criteria" :key="criterion.id">
                 <p class="preserve-whitespace" >{{ criterion.description }}</p>
                 <autosize-textarea
                     class="criterion-input"
-                    label="Your comment goes here..."
+                    :label="`Enter your comment for the ${numberToOrdinal(index + 1)} criterion here.`"
                     v-model="responses[criterion.id]"/>
             </peer-review-section>
             <peer-review-section>
@@ -40,6 +40,7 @@ import * as R from 'ramda';
 import {MdlButton, MdlAnchorButton} from 'vue-mdl';
 
 import api from '@/services/api';
+import {numberToOrdinal} from '@/services/util';
 import {default as Snackbar, notificationTime} from '@/components/Snackbar';
 import PeerReviewSection from '@/components/PeerReviewSection';
 import AutosizeTextarea from '@/components/AutosizeTextarea';
@@ -88,6 +89,9 @@ export default {
     }
   },
   methods: {
+    numberToOrdinal(number) {
+      return numberToOrdinal(number);
+    },
     submitReview() {
       if(this.reviewIsComplete) {
         const data = {comments: this.comments};
