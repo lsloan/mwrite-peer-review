@@ -2,7 +2,7 @@
     <div>
         <peer-review-section section-number="1">
             <section>
-                <h2>Download Submission</h2>
+                <h2 ref="firstHeader" tabindex="-1">Download Submission</h2>
                 <mdl-anchor-button :href="submissionDownloadUrl" colored raised>
                     Download
                 </mdl-anchor-button>
@@ -118,6 +118,7 @@ export default {
     this.$api.get('/course/{}/reviews/{}/rubric', this.courseId, this.reviewId).then(r => {
       this.data = r.data;
     });
+    this.$refs.firstHeader.focus();
   }
 };
 </script>
