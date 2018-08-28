@@ -27,7 +27,7 @@ const makeReviewEntry = review => ({
   },
   reviewsReceived: {
     completed: review.received,
-    total: review.totalCompleted
+    total: review.totalReceived
   },
   evaluationsGiven: {
     completed: review.evaluationsGiven,

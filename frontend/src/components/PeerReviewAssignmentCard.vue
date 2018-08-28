@@ -1,8 +1,7 @@
 <template>
-    <div class="peer-review-assignment-card mdl-card mdl-cell mdl-cell--3-col mdl-shadow--2dp">
+    <div class="peer-review-assignment-card mdl-card mdl-cell mdl-cell--4-col mdl-cell--8-col-tablet mdl-cell--4-col-phone mdl-shadow--2dp">
 
         <div class="mdl-card__title">
-            <!-- TODO should be an h1? -->
             <h2 class="mdl-card__title-text">{{ peerReviewTitle }}</h2>
         </div>
 
@@ -79,6 +78,12 @@
                          :to="{name: 'ReviewStatus', params: {rubricId: this.rubricId}}">
                 See Reviews
             </router-link>
+            <router-link v-if="reviewsInProgress"
+                         class="mdl-button mdl-button--colored mdl-js-button mdl-js-ripple-effect"
+                         :to="{name: 'UnassignedStudents', params: {rubricId: rubricId}}">
+                Assign Reviews
+            </router-link>
+
         </div>
 
     </div>
@@ -139,10 +144,6 @@ export default {
 </script>
 
 <style scoped>
-    .peer-review-assignment-card {
-        width: 330px;
-    }
-
     .mdl-card__actions {
         display: block;
         text-align: center;
