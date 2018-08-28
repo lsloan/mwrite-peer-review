@@ -2,11 +2,16 @@
     <transition name="modal">
         <div class="modal-mask">
             <div class="modal-wrapper">
-                <div class="modal-container">
+                <div ref="modal"
+                     class="modal-container"
+                     role="dialog"
+                     aria-labelledby="modal-title"
+                     @keyup.esc="closeModal"
+                     @keydown.tab="handleTab">
 
                     <div class="modal-header">
                         <div class="modal-titles-container">
-                            <span class="modal-title">{{ title }}</span>
+                            <span id="modal-title" ref="title" class="modal-title" tabindex="-1">{{ title }}</span>
                             <span class="modal-subtitle" v-if="subtitle">{{ subtitle }}</span>
                         </div>
                         <mdl-button @click.native="closeModal" class="modal-close-button mdl-button--icon">
@@ -30,6 +35,22 @@
 <script>
 import {MdlButton} from 'vue-mdl';
 
+const TABS_CLASS = '.mdl-tabs';
+const TAB_BODY_CLASS = '.mdl-tabs__panel';
+const TAB_BAR_CLASS = '.mdl-tabs__tab-bar';
+const TAB_ACTIVE_CLASS = '.is-active';
+const TAB_IS_ACTIVE_CLASS = `${TAB_BODY_CLASS}${TAB_ACTIVE_CLASS}`;
+const FOCUSABLE_SELECTOR_HEADER = '.modal-header > button, .modal-header > a, .controls button';
+const FOCUSABLE_SELECTOR_TABS = `${FOCUSABLE_SELECTOR_HEADER}, ${TAB_BAR_CLASS} a, ${TAB_IS_ACTIVE_CLASS} a, ${TAB_IS_ACTIVE_CLASS} button, ${TAB_IS_ACTIVE_CLASS} input, ${TAB_IS_ACTIVE_CLASS} [tabindex]:not([tabindex="-1"])`;
+const FOCUSABLE_SELECTOR_NO_TABS = 'a, button, [tabindex]';
+
+const getTabbableElements = modal => {
+  const selector = modal.querySelector(TABS_CLASS)
+    ? FOCUSABLE_SELECTOR_TABS
+    : FOCUSABLE_SELECTOR_NO_TABS;
+  return modal.querySelectorAll(selector);
+};
+
 export default {
   name: 'modal',
   props: ['component', 'child-props'],
@@ -37,19 +58,55 @@ export default {
   data() {
     return {
       title: '',
-      subtitle: null
+      subtitle: null,
+      firstFocusableElement: null,
+      lastFocusableElement: null
     };
   },
   methods: {
     closeModal() {
       this.$router.back();
     },
+    handleTab(event) {
+      this.updateTabbableItems();
+      if(event.shiftKey) {
+        this.tabPrevious(event);
+      }
+      else {
+        this.tabNext(event);
+      }
+    },
+    tabPrevious() {
+      if(document.activeElement === this.firstFocusableElement) {
+        this.lastFocusableElement.focus();
+        event.preventDefault();
+      }
+    },
+    tabNext(event) {
+      if(document.activeElement === this.lastFocusableElement) {
+        this.firstFocusableElement.focus();
+        event.preventDefault();
+      }
+    },
     setTitle(title) {
       this.title = title;
     },
     setSubtitle(subtitle) {
       this.subtitle = subtitle;
+    },
+    focusModalTitle() {
+      this.$refs.title.focus();
+    },
+    updateTabbableItems() {
+      const tabbableElements = getTabbableElements(this.$refs.modal);
+      this.firstFocusableElement = tabbableElements[0];
+      this.lastFocusableElement = tabbableElements[tabbableElements.length - 1];
     }
+  },
+  mounted() {
+    this.$nextTick(() => {
+      this.focusModalTitle();
+    });
   }
 };
 </script>
