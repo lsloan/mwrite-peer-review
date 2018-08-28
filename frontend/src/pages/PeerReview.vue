@@ -1,9 +1,12 @@
 <template>
     <div>
         <peer-review-section section-number="1">
-            <mdl-anchor-button :href="submissionDownloadUrl" colored raised>
-                Download Submission
-            </mdl-anchor-button>
+            <section>
+                <h2>Download Submission</h2>
+                <mdl-anchor-button :href="submissionDownloadUrl" colored raised>
+                    Download
+                </mdl-anchor-button>
+            </section>
         </peer-review-section>
         <peer-review-section section-number="2">
             <h2>Submit Your Review</h2>
