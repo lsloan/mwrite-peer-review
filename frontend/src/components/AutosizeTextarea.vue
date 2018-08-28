@@ -1,5 +1,6 @@
 <template>
     <div class="mdl-textfield mdl-js-textfield">
+        <label v-if="label" :for="_uid" class="mdl-textfield__label">{{ label }}</label>
         <textarea
             :id="_uid"
             ref="textarea"
@@ -9,7 +10,6 @@
             @input="$emit('input', $event.target.value)"
             :value="value">
         </textarea>
-    <label v-if="label" :for="_uid" class="mdl-textfield__label">{{ label }}</label>
     </div>
 </template>
 
