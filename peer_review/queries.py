@@ -302,7 +302,9 @@ class ReviewStatus:
             pass
 
         peer_review_assignment = rubric.passback_assignment
-        peer_review_due_date = peer_review_assignment.due_date_utc.strftime(API_DATE_FORMAT)
+        peer_review_due_date = peer_review_assignment.due_date_utc
+        if peer_review_due_date:
+            peer_review_due_date = peer_review_due_date.strftime(API_DATE_FORMAT)
         data = {
             'student': {
                 'sortable_name': student.sortable_name,
