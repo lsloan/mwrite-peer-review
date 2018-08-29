@@ -96,7 +96,8 @@ class InstructorDashboardStatus:
     @staticmethod
     def _format_details(data):
         for row in data:
-            row['due_date'] = row['due_date'].strftime(API_DATE_FORMAT)
+            if row.get('due_date'):
+                row['due_date'] = row['due_date'].strftime(API_DATE_FORMAT)
             if row.get('evaluation_due_date'):
                 row['evaluation_due_date'] = row['evaluation_due_date'].strftime(API_DATE_FORMAT)
             if row.get('open_date'):
@@ -544,11 +545,15 @@ class RubricForm:
         else:
             rubric_data = None
 
+        if passback_assignment.due_date_utc:
+            peer_review_due_date = passback_assignment.due_date_utc.strftime(API_DATE_FORMAT)
+        else:
+            peer_review_due_date = None
         return {
             'assignments': {a.id: a.title for a in assignments},
             'validation_info': {a.id: a.validation for a in fetched_assignments},
             'existing_rubric': rubric_data,
-            'peer_review_due_date': passback_assignment.due_date_utc.strftime(API_DATE_FORMAT)
+            'peer_review_due_date': peer_review_due_date
         }
 
 
