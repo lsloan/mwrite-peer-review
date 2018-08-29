@@ -356,23 +356,31 @@ class ReviewStatus:
                 to_be_completed = submission.total_completed_by_a_student
                 completed = submission.num_comments_each_review_per_student \
                     .filter(completed__gte=number_of_criteria)
-                reviews_completed_late = completed \
-                    .filter(comments__commented_at_utc__gte=peer_review_assignment.due_date_utc) \
+                if peer_review_assignment.due_date_utc:
+                    reviews_completed_late = completed \
+                        .filter(comments__commented_at_utc__gte=peer_review_assignment.due_date_utc)
+                    num_reviews_completed_late = reviews_completed_late.count()
+                else:
+                    num_reviews_completed_late = 0
 
                 to_be_received = submission.total_received_of_a_student
                 received = submission.num_comments_each_review_per_submission \
                     .filter(received__gte=number_of_criteria)
-                reviews_received_late = received \
-                    .filter(comments__commented_at_utc__gte=peer_review_assignment.due_date_utc)
+                if peer_review_assignment.due_date_utc:
+                    reviews_received_late = received \
+                        .filter(comments__commented_at_utc__gte=peer_review_assignment.due_date_utc)
+                    num_reviews_received_late = reviews_received_late.count()
+                else:
+                    num_reviews_received_late = 0
 
                 review_info = {
                     'submission_present': True,
                     'total_to_complete': to_be_completed.count(),
                     'completed': completed.count(),
-                    'completed_late': reviews_completed_late.count(),
+                    'completed_late': num_reviews_completed_late,
                     'total_to_receive': to_be_received.count(),
                     'received': received.count(),
-                    'received_late': reviews_received_late.count()
+                    'received_late': num_reviews_received_late
                 }
             else:
                 review_info = {
