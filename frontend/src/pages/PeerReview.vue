@@ -1,9 +1,12 @@
 <template>
     <div>
         <peer-review-section section-number="1">
-            <mdl-anchor-button :href="submissionDownloadUrl" colored raised>
-                Download Submission
-            </mdl-anchor-button>
+            <section>
+                <h2 ref="firstHeader" tabindex="-1">Download Submission</h2>
+                <mdl-anchor-button :href="submissionDownloadUrl" colored raised>
+                    Download
+                </mdl-anchor-button>
+            </section>
         </peer-review-section>
         <peer-review-section section-number="2">
             <h2>Submit Your Review</h2>
@@ -12,11 +15,11 @@
             <p class="preserve-whitespace">{{ rubricDescription }}</p>
         </peer-review-section>
         <form @submit.prevent>
-            <peer-review-section v-for="criterion in criteria" :key="criterion.id">
+            <peer-review-section v-for="(criterion, index) in criteria" :key="criterion.id">
                 <p class="preserve-whitespace" >{{ criterion.description }}</p>
                 <autosize-textarea
                     class="criterion-input"
-                    label="Your comment goes here..."
+                    :label="`Enter your comment for the ${numberToOrdinal(index + 1)} criterion here.`"
                     v-model="responses[criterion.id]"/>
             </peer-review-section>
             <peer-review-section>
@@ -35,6 +38,7 @@
 <script>
 import * as R from 'ramda';
 import {MdlButton, MdlAnchorButton} from 'vue-mdl';
+import {toWordsOrdinal} from 'number-to-words';
 
 import api from '@/services/api';
 import {default as Snackbar, notificationTime} from '@/components/Snackbar';
@@ -85,6 +89,9 @@ export default {
     }
   },
   methods: {
+    numberToOrdinal(number) {
+      return toWordsOrdinal(number);
+    },
     submitReview() {
       if(this.reviewIsComplete) {
         const data = {comments: this.comments};
@@ -111,6 +118,7 @@ export default {
     this.$api.get('/course/{}/reviews/{}/rubric', this.courseId, this.reviewId).then(r => {
       this.data = r.data;
     });
+    this.$refs.firstHeader.focus();
   }
 };
 </script>
