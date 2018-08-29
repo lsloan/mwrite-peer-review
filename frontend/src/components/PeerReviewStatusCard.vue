@@ -105,7 +105,9 @@ export default {
       };
     },
     reviewSubmittedLate() {
-      return this.review.completedAt.isSameOrAfter(this.dueDate);
+      return this.dueDate
+        ? this.review.completedAt.isSameOrAfter(this.dueDate)
+        : false;
     },
     completedAtDisplay() {
       const date = this.review.completedAt;
