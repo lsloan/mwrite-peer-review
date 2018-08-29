@@ -38,9 +38,9 @@
 <script>
 import * as R from 'ramda';
 import {MdlButton, MdlAnchorButton} from 'vue-mdl';
+import {toWordsOrdinal} from 'number-to-words';
 
 import api from '@/services/api';
-import {numberToOrdinal} from '@/services/util';
 import {default as Snackbar, notificationTime} from '@/components/Snackbar';
 import PeerReviewSection from '@/components/PeerReviewSection';
 import AutosizeTextarea from '@/components/AutosizeTextarea';
@@ -90,7 +90,7 @@ export default {
   },
   methods: {
     numberToOrdinal(number) {
-      return numberToOrdinal(number);
+      return toWordsOrdinal(number);
     },
     submitReview() {
       if(this.reviewIsComplete) {
