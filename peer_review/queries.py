@@ -96,7 +96,8 @@ class InstructorDashboardStatus:
     @staticmethod
     def _format_details(data):
         for row in data:
-            row['due_date'] = row['due_date'].strftime(API_DATE_FORMAT)
+            if row.get('due_date'):
+                row['due_date'] = row['due_date'].strftime(API_DATE_FORMAT)
             if row.get('evaluation_due_date'):
                 row['evaluation_due_date'] = row['evaluation_due_date'].strftime(API_DATE_FORMAT)
             if row.get('open_date'):
@@ -301,7 +302,9 @@ class ReviewStatus:
             pass
 
         peer_review_assignment = rubric.passback_assignment
-        peer_review_due_date = peer_review_assignment.due_date_utc.strftime(API_DATE_FORMAT)
+        peer_review_due_date = peer_review_assignment.due_date_utc
+        if peer_review_due_date:
+            peer_review_due_date = peer_review_due_date.strftime(API_DATE_FORMAT)
         data = {
             'student': {
                 'sortable_name': student.sortable_name,
@@ -353,23 +356,31 @@ class ReviewStatus:
                 to_be_completed = submission.total_completed_by_a_student
                 completed = submission.num_comments_each_review_per_student \
                     .filter(completed__gte=number_of_criteria)
-                reviews_completed_late = completed \
-                    .filter(comments__commented_at_utc__gte=peer_review_assignment.due_date_utc) \
+                if peer_review_assignment.due_date_utc:
+                    reviews_completed_late = completed \
+                        .filter(comments__commented_at_utc__gte=peer_review_assignment.due_date_utc)
+                    num_reviews_completed_late = reviews_completed_late.count()
+                else:
+                    num_reviews_completed_late = 0
 
                 to_be_received = submission.total_received_of_a_student
                 received = submission.num_comments_each_review_per_submission \
                     .filter(received__gte=number_of_criteria)
-                reviews_received_late = received \
-                    .filter(comments__commented_at_utc__gte=peer_review_assignment.due_date_utc)
+                if peer_review_assignment.due_date_utc:
+                    reviews_received_late = received \
+                        .filter(comments__commented_at_utc__gte=peer_review_assignment.due_date_utc)
+                    num_reviews_received_late = reviews_received_late.count()
+                else:
+                    num_reviews_received_late = 0
 
                 review_info = {
                     'submission_present': True,
                     'total_to_complete': to_be_completed.count(),
                     'completed': completed.count(),
-                    'completed_late': reviews_completed_late.count(),
+                    'completed_late': num_reviews_completed_late,
                     'total_to_receive': to_be_received.count(),
                     'received': received.count(),
-                    'received_late': reviews_received_late.count()
+                    'received_late': num_reviews_received_late
                 }
             else:
                 review_info = {
@@ -471,10 +482,12 @@ class ReviewStatus:
         if for_api:
             sections = [{'id': s.id, 'name': s.name} for s in sections]
             due_date = rubric.passback_assignment.due_date_utc
+            if due_date:
+                due_date = due_date.strftime(API_DATE_FORMAT)
             rubric = {
                 'id': rubric.id,
                 'peer_review_title': rubric.passback_assignment.title,
-                'peer_review_due_date': due_date.strftime(API_DATE_FORMAT)
+                'peer_review_due_date': due_date
             }
 
         course = CanvasCourse.objects.get(id=course_id)
@@ -544,11 +557,15 @@ class RubricForm:
         else:
             rubric_data = None
 
+        if passback_assignment.due_date_utc:
+            peer_review_due_date = passback_assignment.due_date_utc.strftime(API_DATE_FORMAT)
+        else:
+            peer_review_due_date = None
         return {
             'assignments': {a.id: a.title for a in assignments},
             'validation_info': {a.id: a.validation for a in fetched_assignments},
             'existing_rubric': rubric_data,
-            'peer_review_due_date': passback_assignment.due_date_utc.strftime(API_DATE_FORMAT)
+            'peer_review_due_date': peer_review_due_date
         }
 
 

@@ -31,16 +31,14 @@
             <div class="icon-container">
                 <i class="material-icons icon-24px">date_range</i>
                 <span class="icon-caption">
-
                     <template v-if="rubricExists">
                         <template v-if="reviewsInProgress">Opened</template>
                         <template v-else>Will open</template>
+
+                        <template v-if="openDate">{{ openDate | utcToLocal(dateFormat) }}</template>
+                        <template v-else>anytime</template>
                     </template>
                     <template v-else>Rubric has not been created</template>
-
-                    <template v-if="dueDate">{{ openDate | utcToLocal(dateFormat) }}</template>
-                    <template v-else>anytime</template>
-
                 </span>
             </div>
         </div>
@@ -48,7 +46,11 @@
         <div class="mdl-card__supporting-text">
             <div class="icon-container">
                 <i class="material-icons icon-24px">query_builder</i>
-                <span class="icon-caption">Due by {{ dueDate | utcToLocal(dateFormat) }}</span>
+                <span class="icon-caption">
+                    Due
+                    <template v-if="dueDate">by {{ dueDate | utcToLocal(dateFormat) }}</template>
+                    <template v-else>anytime</template>
+                </span>
             </div>
         </div>
 

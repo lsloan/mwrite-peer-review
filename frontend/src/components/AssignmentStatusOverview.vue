@@ -15,7 +15,7 @@ import moment from 'moment';
 import StatusOverviewCard from '@/components/StatusOverviewCard';
 
 const convertRubricDates = r => R.merge(r, {
-  dueDate: moment.utc(r.dueDate),
+  dueDate: r.dueDate ? moment.utc(r.dueDate) : null,
   promptDueDate: moment.utc(r.promptDueDate)
 });
 

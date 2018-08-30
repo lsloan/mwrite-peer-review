@@ -136,7 +136,9 @@ export default {
       };
     },
     dueDatePassed() {
-      return this.now.isSameOrAfter(this.rubric.dueDate);
+      return this.rubric.dueDate
+        ? this.now.isSameOrAfter(this.rubric.dueDate)
+        : false;
     },
     reviewProblemsExist() {
       const promptMissing = !this.rubric.reviewInfo.submissionPresent && this.rubric.reviewsWereDistributed;

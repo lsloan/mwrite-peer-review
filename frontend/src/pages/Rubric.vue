@@ -4,11 +4,37 @@
             <div class="mdl-grid">
                 <div class="mdl-cell mdl-cell--1-col mdl-cell--1-col-tablet mdl-cell-1-col-phone"></div>
                 <mdl-card
-                        class="read-only-rubric-card mdl-shadow--2dp mdl-cell mdl-cell--10-col mdl-cell--6-col-tablet mdl-cell-2-col-phone"
+                        class="no-min-height-rubric-card mdl-shadow--2dp mdl-cell mdl-cell--10-col mdl-cell--6-col-tablet mdl-cell-2-col-phone"
                         supporting-text="Reviews are in progress, so this rubric is now read-only."></mdl-card>
                 <div class="mdl-cell mdl-cell--1-col mdl-cell--1-col-tablet mdl-cell-1-col-phone"></div>
             </div>
         </template>
+
+        <div class="mdl-grid">
+            <div class="mdl-cell mdl-cell--1-col mdl-cell--1-col-tablet mdl-cell-1-col-phone"></div>
+            <mdl-card
+                class="no-min-height-rubric-card mdl-shadow--2dp mdl-cell mdl-cell--10-col mdl-cell--6-col-tablet mdl-cell-2-col-phone"
+                title="Peer Review"
+                supporting-text="slot">
+                <div slot="supporting-text">
+                    <div class="mdl-card__supporting-text">
+                        <p>
+                            <template v-if="peerReviewDueDate">
+                                Peer reviews
+                                <template v-if="reviewIsInProgress">are</template>
+                                <template v-else>will be</template>
+                                due on {{ peerReviewDueDateDisplay }}.
+                            </template>
+                            <template v-else>
+                                You have not selected a peer review due date in Canvas.  You can proceed anyway if that's
+                                what was intended.
+                            </template>
+                        </p>
+                    </div>
+                </div>
+            </mdl-card>
+            <div class="mdl-cell mdl-cell--1-col mdl-cell--1-col-tablet mdl-cell-1-col-phone"></div>
+        </div>
 
         <div class="mdl-grid">
             <div class="mdl-cell mdl-cell--1-col mdl-cell--1-col-tablet mdl-cell-1-col-phone"></div>
@@ -105,7 +131,7 @@
                         id-suffix="peer-review-evaluation-due-date-time"
                         text="Please select the peer review evaluation due date:"
                         :disabled="reviewIsInProgress"
-                        :available-start-date="peerReviewDueDate"
+                        :available-start-date="peerReviewEvaluationDueDateBeginningBound"
                         v-model="models.peerReviewEvaluationDueDateTime" />
                     <div class="mdl-card__supporting-text">
                         <p v-if="models.peerReviewEvaluationIsMandatory">
@@ -116,8 +142,14 @@
                                 due at {{ peerReviewEvaluationDueDateDisplay }}.
                             </template>
                             <template v-else>
-                                Please select a peer review evaluation due date after the peer review due date
-                                ({{ peerReviewDueDateDisplay }}).
+                                Please select a peer review evaluation due date after the
+                                <template v-if="peerReviewDueDate">
+                                    peer review due date ({{ peerReviewDueDateDisplay }})
+                                </template>
+                                <template v-else>
+                                    peer review open date ({{ peerReviewOpenDateDisplay }})
+                                </template>
+                                .
                             </template>
                         </p>
                         <p v-else>
@@ -426,9 +458,19 @@ export default {
       if(!this.peerReviewOpenDate) {
         return false;
       }
-      const peerReviewDueAfterPrompt = this.peerReviewOpenDate.isSameOrAfter(this.promptDueDate);
-      const peerReviewDueAfterOpening = this.peerReviewOpenDate.isSameOrBefore(this.peerReviewDueDate);
-      return peerReviewDueAfterPrompt && peerReviewDueAfterOpening;
+      else if(this.peerReviewDueDate) {
+        const peerReviewDueAfterPrompt = this.peerReviewOpenDate.isSameOrAfter(this.promptDueDate);
+        const peerReviewDueAfterOpening = this.peerReviewOpenDate.isSameOrBefore(this.peerReviewDueDate);
+        return peerReviewDueAfterPrompt && peerReviewDueAfterOpening;
+      }
+      else {
+        return true;
+      }
+    },
+    peerReviewEvaluationDueDateBeginningBound() {
+      return this.peerReviewDueDate
+        ? this.peerReviewDueDate
+        : this.peerReviewOpenDate;
     },
     peerReviewEvaluationDueDateIsValid() {
       if(!this.models.peerReviewEvaluationIsMandatory) {
@@ -436,7 +478,7 @@ export default {
       }
       else {
         if(this.models.peerReviewEvaluationDueDateTime) {
-          return this.models.peerReviewEvaluationDueDateTime.isAfter(this.peerReviewDueDate);
+          return this.models.peerReviewEvaluationDueDateTime.isAfter(this.peerReviewEvaluationDueDateBeginningBound);
         }
         else {
           return false;
@@ -462,7 +504,7 @@ export default {
           this.assignmentNamesById = assignments;
           this.validations = validationInfo;
           this.existingRubric = existingRubric;
-          this.peerReviewDueDate = moment.utc(peerReviewDueDate);
+          this.peerReviewDueDate = peerReviewDueDate ? moment.utc(peerReviewDueDate) : null;
         });
     },
     initializeModels() {
@@ -621,7 +663,7 @@ export default {
         margin-top: 25px;
     }
 
-    .read-only-rubric-card {
+    .no-min-height-rubric-card {
         min-height: 0;
     }
 
