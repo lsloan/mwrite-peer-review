@@ -26,7 +26,7 @@ spec:
       dockerfilePath: dockerfiles/jobs.Dockerfile
       from:
         kind: ImageStreamTag
-        name: python:3-alpine
+        name: python:3.6-alpine3.7
         namespace: mwrite-peer-review-dev
     type: Source
   triggers:

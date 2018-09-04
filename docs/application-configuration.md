@@ -19,23 +19,24 @@ pass these as environment variables in OpenShift.
 
 The API and jobs containers derive their runtime configuration from the following environment variables:
 
-| Variable                         | Type                  | Optional (Default) | Description                                                                                                                        |
-| -------------------------------- | --------------------- | ------------------ | ---------------------------------------------------------------------------------------------------------------------------------- |
-| MPR_DEBUG_MODE                   | boolean               | Yes (false)        | Sets Django's [DEBUG](https://docs.djangoproject.com/en/1.11/ref/settings/#debug) setting                                          |
-| MPR_ALLOWED_HOSTS                | string[, string, ...] | No                 | Sets Django's [ALLOWED_HOSTS](https://docs.djangoproject.com/en/1.11/ref/settings/#allowed-hosts) setting                          |
-| MPR_APP_HOST                     | string                | No                 | Used to identify LTI external tool assignments as belonging to this app                                                            |
-| MPR_LANDING_ROUTE                | url                   | No                 | URL to redirect user after successful LTI launch                                                                                   | 
-| MPR_FRONTEND_RESOURCES_DOMAIN    | domain name only      | No                 | Frontend site's domain name; used for CORS whitelist                                                                               | 
-| MPR_LMS_URL                      | url                   | No                 | LMS (Canvas) URL; used for X-Frame-Options: ALLOW-FROM entry for iframe launches                                                   | 
-| MPR_CANVAS_API_URL               | url                   | No                 | Canvas API URL; used for all Canvas API calls                                                                                      | 
-| MPR_CANVAS_API_TOKEN             | token                 | No                 | Canvas API token; used for all Canvas API calls                                                                                    | 
-| MPR_SECRET_KEY_PATH              | file path             | No                 | File to use for Django's [SECRET_KEY](https://docs.djangoproject.com/en/1.11/ref/settings/#secret-key) setting                     |
-| MPR_SUBMISSIONS_PATH             | directory path        | No                 | Directory for submission storage; can be read-only for the API but must be read-write for the jobs container                       |
-| MPR_LTI_CREDENTIALS_PATH         | json file path        | No                 | JSON file for LTI credentials                                                                                                      |
-| MPR_DB_CONFIG_PATH               | json file path        | No                 | JSON file for Django's [DATABASES](https://docs.djangoproject.com/en/1.11/ref/settings/#databases) `'default'` entry               |
-| MPR_TIMEZONE                     | Unix timezone         | No                 | Sets Django's [TIME_ZONE](https://docs.djangoproject.com/en/1.11/ref/settings/#time-zone) setting                                  | 
-| MPR_SESSION_COOKIE_DOMAIN        | domain name only      | No                 | Sets Django's [SESSION_COOKIE_DOMAIN](https://docs.djangoproject.com/en/1.11/ref/settings/#session-cookie-domain) setting for CORS |
-| MPR_CSRF_COOKIE_DOMAIN           | domain name only      | No                 | Sets Django's [CSRF_COOKIE_DOMAIN](https://docs.djangoproject.com/en/1.11/ref/settings/#csrf-cookie-domain) setting for CORS       |
+| Variable                         | Type                  | Optional (Default)   | Description                                                                                                                        |
+| -------------------------------- | --------------------- | -------------------- | ---------------------------------------------------------------------------------------------------------------------------------- |
+| MPR_DEBUG_MODE                   | boolean               | Yes (false)          | Sets Django's [DEBUG](https://docs.djangoproject.com/en/1.11/ref/settings/#debug) setting                                          |
+| MPR_ALLOWED_HOSTS                | string[, string, ...] | No                   | Sets Django's [ALLOWED_HOSTS](https://docs.djangoproject.com/en/1.11/ref/settings/#allowed-hosts) setting                          |
+| MPR_APP_HOST                     | string                | No                   | Used to identify LTI external tool assignments as belonging to this app                                                            |
+| MPR_LANDING_ROUTE                | url                   | No                   | URL to redirect user after successful LTI launch                                                                                   | 
+| MPR_FRONTEND_RESOURCES_DOMAIN    | domain name only      | No                   | Frontend site's domain name; used for CORS whitelist                                                                               | 
+| MPR_LMS_URL                      | url                   | No                   | LMS (Canvas) URL; used for X-Frame-Options: ALLOW-FROM entry for iframe launches                                                   | 
+| MPR_CANVAS_API_URL               | url                   | No                   | Canvas API URL; used for all Canvas API calls                                                                                      | 
+| MPR_CANVAS_API_TOKEN             | token                 | No                   | Canvas API token; used for all Canvas API calls                                                                                    | 
+| MPR_SECRET_KEY_PATH              | file path             | No                   | File to use for Django's [SECRET_KEY](https://docs.djangoproject.com/en/1.11/ref/settings/#secret-key) setting                     |
+| MPR_SUBMISSIONS_PATH             | directory path        | No                   | Directory for submission storage; can be read-only for the API but must be read-write for the jobs container                       |
+| MPR_LTI_CREDENTIALS_PATH         | json file path        | No                   | JSON file for LTI credentials                                                                                                      |
+| MPR_DB_CONFIG_PATH               | json file path        | No                   | JSON file for Django's [DATABASES](https://docs.djangoproject.com/en/1.11/ref/settings/#databases) `'default'` entry               |
+| MPR_TIMEZONE                     | Unix timezone         | No                   | Sets Django's [TIME_ZONE](https://docs.djangoproject.com/en/1.11/ref/settings/#time-zone) setting                                  | 
+| MPR_SESSION_COOKIE_DOMAIN        | domain name only      | No                   | Sets Django's [SESSION_COOKIE_DOMAIN](https://docs.djangoproject.com/en/1.11/ref/settings/#session-cookie-domain) setting for CORS |
+| MPR_CSRF_COOKIE_DOMAIN           | domain name only      | No                   | Sets Django's [CSRF_COOKIE_DOMAIN](https://docs.djangoproject.com/en/1.11/ref/settings/#csrf-cookie-domain) setting for CORS       |
+| DJANGO_SETTINGS_MODULE           | Python module         | Yes (API); no (jobs) | Overrides the default settings file; must be set for the jobs container for cron to pick up environment variables                  |
 
 ### jobs-only Environment Variables
 
