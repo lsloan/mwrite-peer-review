@@ -120,8 +120,8 @@ $ source venv/bin/activate
 $ source config/local/server.env
 ```
 
-*(Tip: You can combine the above two commands in a bash alias to save a few keystrokes.)*
-*I.e., put the following in your `~/.bashrc`: `alias mpr='source venv/bin/activate && source config/local/server.env'`'*
+*(Tip: You can combine the above two commands in a bash alias to save a few keystrokes. I.e., put the following in your
+`~/.bashrc`: `alias mpr='source venv/bin/activate && source config/local/server.env'`)*
 
 ### Install Backend Dependencies
 
