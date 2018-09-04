@@ -1,15 +1,15 @@
 # OpenShift Setup and Deployment 
 
-M-Write Peer Review is intended to be hosted using Docker containers, and comes with three Dockerfiles
-for the different parts of the application.  They are:
+M-Write Peer Review uses container-based deployments and is intended to be hosted using Docker.  It comes with three Dockerfiles for the different parts of the application.
 
-- [dockerfiles/api.Dockerfile](dockerfiles/api.Dockerfile) -- The Django-based API (and legacy views, for now) hosted with [gunicorn](http://gunicorn.org/)
+These are:
+- [dockerfiles/api.Dockerfile](dockerfiles/api.Dockerfile) -- The Django-based API served by [gunicorn](http://gunicorn.org/)
 - [dockerfiles/frontend.Dockerfile](dockerfiles/frontend.Dockerfile) -- A Vue.js SPA frontend hosted with Apache httpd
-- [dockerfiles/jobs.Dockerfile](dockerfiles/jobs.Dockerfile) -- A backend container for scheduled jobs (currently just review distribution)
+- [dockerfiles/jobs.Dockerfile](dockerfiles/jobs.Dockerfile) -- A backend container for scheduled jobs (currently, review distribution and automated backups to S3)
 
 With the proper build arguments (see [here](#build-configuration)) and runtime environment variables (see [here](#runtime-environment)),
 this app should be able to be run just using Docker; however, documentation for running M-Write Peer Review
-using the OpenShift Container Platform is also provided.
+using the OpenShift Container Platform is also provided below.
 
 ## Build Configuration
 
