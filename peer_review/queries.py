@@ -171,10 +171,24 @@ class StudentDashboardStatus:
 
     @staticmethod
     def _sort_and_format(data):
-        sorted_data = sorted(data, key=lambda r: r['due_date_utc'])
-        for review in sorted_data:
+        data_by_due_date_present = groupby(lambda r: r.get('due_date_utc') is not None, data)
+        logger.debug(data_by_due_date_present.keys())
+
+        if True in data_by_due_date_present:
+            data_with_due_dates = data_by_due_date_present[True]
+        else:
+            data_with_due_dates = []
+
+        if False in data_by_due_date_present:
+            data_without_due_dates = data_by_due_date_present[False]
+        else:
+            data_without_due_dates = []
+
+        sorted_data_with_due_dates = list(sorted(data_with_due_dates, key=lambda r: r['due_date_utc']))
+        for review in sorted_data_with_due_dates:
             review['due_date_utc'] = review['due_date_utc'].strftime(API_DATE_FORMAT)
-        return sorted_data
+
+        return sorted_data_with_due_dates + data_without_due_dates
 
     @staticmethod
     def _review_completion_status(qs):
