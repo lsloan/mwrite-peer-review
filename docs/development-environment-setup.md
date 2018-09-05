@@ -82,7 +82,8 @@ something
 #### `server.env`
 
 Most of M-Write Peer Review's configuration is derived from environment variables.  The following is a minimal example;
-make sure to replace the `<... ...>` placeholders with the real values.
+make sure to replace the `<... ...>` placeholders with the real values.  See
+[Application Configuration](application-configuration.md) for more information.
 
 ```bash
 export PS1="(mpr env) $PS1"
