@@ -34,6 +34,12 @@ is authorized to see (the API also does this, so this is more of a convenience t
 display a "permission denied" page).  See [here](/frontend/src/router/index.js), [here](/frontend/src/router/guards.js)
 and [here](/frontend/src/router/helpers.js) for implementation details.
 
+## Ramda
+
+M.P.R.'s frontend development has trended in a
+[functional-relational](https://github.com/papers-we-love/papers-we-love/blob/master/design/out-of-the-tar-pit.pdf)
+direction (see [below](#fetching-and-using-data)), and it makes heavy use of [Ramda](https://ramdajs.com/).
+
 ## Fetching and Using Data
 
 There are many views in the app that "hydrate" their components with the data from a single API call.  This is fine as
