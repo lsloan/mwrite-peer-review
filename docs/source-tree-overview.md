@@ -32,7 +32,7 @@ Backend (pip) dependency configuration
 
 ### `README.md`
 
-Documentation [table of contents](README.md)
+Documentation [table of contents](../README.md)
 
 ## `build/`
 
@@ -52,7 +52,7 @@ a specific environment (e.g. dev, test, prod) for the frontend.
 
 This directory holds server configuration for local development.  **This directory is `.gitignore`d (with the exception
 of `server/example`) and should *not* be checked into source control.**  Any files you create for setting up a new
-development environment should go here (see [Development Environment Setup](docs/development-environment-setup.md)).
+development environment should go here (see [Development Environment Setup](development-environment-setup.md)).
 
 ### `server/example/`
 
@@ -75,7 +75,7 @@ This directory holds the Python code that allows Django to handle LTI launch req
 ## `dockerfiles/`
 
 This directory holds the Dockerfiles used for building the containers used for hosting the app.  See
-[Application Configuration](docs/application-configuration.md) for more information.
+[Application Configuration](application-configuration.md) for more information.
 
 ## `docs/`
 
