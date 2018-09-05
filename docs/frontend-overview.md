@@ -50,6 +50,8 @@ In general, you should consider these as best practices:
 * If data is shared between multiple subtrees / across different sections of the app, use Vuex to pull normalized data
 from the API and denormalize it with [Vuex getters](https://vuex.vuejs.org/guide/getters.html) or component-level
 computed properties (I like to keep references to the Vuex `$store` as high in the component tree as possible -- ideally
-at the page-level component, but YMMV)
+at the page-level component -- but YMMV)
 * Regardless, try to keep mutable state to as few `data` entries as possible, and use computed properties for any
 transformations that you need to do
+
+See [here](/frontend/src/store/index.js) for Vuex store implementation details.
