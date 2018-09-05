@@ -61,3 +61,29 @@ The API uses the `authorized_endpoint` and `authorized_json_endpoint` (see
 
 The frontend also keeps track of the current user's role and uses it for routing.  See
 [here](frontend-overview.md#routing) for more information.
+
+## Third Party Cookies In Safari `iframe`s
+
+Apple has taken the unfortunate position that Safari should refuse to store cookies from third-party domains in
+`iframe`s (like the one Canvas uses for LTI integrations).  In other words, if a user has never visited M.P.R.'s domain
+before *outside of an `iframe`* then the LTI launch request technically succeeds, but Safari refuses to store the
+session and CSRF token cookies.
+
+To get around, we use this ~~hack~~ "creative" solution: a Django middleware (see
+[`peer_review.middleware`](/peer_review/middleware.py)) is used to detect when the following is true:
+1. The user is using Safari
+2. The user is a first-time visitor (i.e., the Safari launch cookie does not exist -- more on this below)
+
+If these conditions are true, the API serves a special Safari landing page with a "Launch" button.  When the user
+clicks this button, it:
+1. Opens a new popup window to `/safari`
+2. The API sets a Safari launch cookie on `/safari` (see [here](/peer_review/api/special.py#L47))
+3. From the `iframe` side, adds an event listener (see [here](/peer_review/templates/safari_launch_iframe.html)) to the
+popup's `load` event that
+    1. Closes the popup
+    2. Refreshes the `iframe`'s parent page (i.e., the Canvas external tool page) -- *not* just the `iframe`
+4. As the Canvas external tool page reloads, it sends a second LTI launch request to M.P.R.  This launch also succeeds,
+but since Safari already has the cookie set in step 2, this time it stores the session cookie and CSRF token cookie.
+
+Once this process is complete, users should not see the Safari-specific launch page again unless they clear their
+cookies.
