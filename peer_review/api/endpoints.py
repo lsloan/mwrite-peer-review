@@ -85,7 +85,10 @@ def all_peer_review_assignment_details(request, course_id):
     assignments = etl.persist_assignments(course_id)
     fetched_assignment_ids = tuple(map(lambda a: a.id, assignments))
 
-    details = InstructorDashboardStatus.get(course_id, fetched_assignment_ids)
+    if fetched_assignment_ids:
+        details = InstructorDashboardStatus.get(course_id, fetched_assignment_ids)
+    else:
+        details = []
 
     validations = {a.id: a.validation for a in assignments}
     details_with_validations = merge_validations(details, validations)
