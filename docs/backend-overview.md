@@ -46,10 +46,10 @@ implementation details).
 ### Session Management, Authentication and Authorization
 
 M.P.R. use's Django's [session system](https://docs.djangoproject.com/en/1.11/topics/http/sessions/), but uses an
-custom [authentication backend](https://docs.djangoproject.com/en/1.11/topics/auth/customizing/) (written by @ksofa) for
-handling LTI launch requests.  See [Authentication and Authorization](authentication-and-authorization.md),
-[the `djangolti` package](/djangolti) and [`mwrite_peer_review.settings.api`](/mwrite_peer_review/settings/api.py) for
-more details.
+custom [authentication backend](https://docs.djangoproject.com/en/1.11/topics/auth/customizing/) (written by
+[@ksofa2](https://github.com/ksofa2) and modified to assign user roles) for handling LTI launch requests.  See
+[Authentication and Authorization](authentication-and-authorization.md), [the `djangolti` package](/djangolti) and
+[`mwrite_peer_review.settings.api`](/mwrite_peer_review/settings/api.py) for more details.
 
 ### Routing
 
