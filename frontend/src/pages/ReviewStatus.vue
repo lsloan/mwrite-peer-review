@@ -1,7 +1,7 @@
 <template>
     <filterable-table
         class="review-status-table"
-        :table-name="courseName"
+        :table-name="peerReviewTitle"
         :entries="reviews"
         :row-classes="rowClasses"
         :is-loading="!Boolean(data)"
@@ -27,7 +27,11 @@ const makeReviewEntry = review => ({
   },
   reviewsReceived: {
     completed: review.received,
-    total: review.totalCompleted
+    total: review.totalReceived
+  },
+  evaluationsGiven: {
+    completed: review.evaluationsGiven,
+    total: review.totalEvaluations
   }
 });
 
@@ -74,6 +78,11 @@ export default {
           key: 'reviewsReceived',
           description: 'Reviews Received',
           transform: reviewsForDisplay
+        },
+        {
+          key: 'evaluationsGiven',
+          description: 'Evaluations Given',
+          transform: reviewsForDisplay
         }
       ]
     };
@@ -112,8 +121,10 @@ export default {
     courseId() {
       return this.$store.state.userDetails.courseId;
     },
-    courseName() {
-      return this.$store.state.userDetails.courseName;
+    peerReviewTitle() {
+      return this.data
+        ? this.data.rubric.peerReviewTitle
+        : '';
     }
   },
   methods: {
@@ -126,9 +137,16 @@ export default {
   },
   mounted() {
     this.pageLoadTime = moment().utc();
-    this.$api.get('/course/{}/reviews/rubric/{}', this.courseId, this.rubricId).then(r => {
-      this.data = r.data;
-    });
+    this.$api.get('/course/{}/reviews/rubric/{}', this.courseId, this.rubricId)
+      .then(r => {
+        this.data = r.data;
+      })
+      .then(() => {
+        this.$store.commit('updateBreadcrumbInfo', {
+          title: `${this.data.rubric.peerReviewTitle} Reviews`,
+          rubricId: this.data.rubric.id
+        });
+      });
   }
 };
 </script>

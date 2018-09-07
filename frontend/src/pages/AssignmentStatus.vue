@@ -1,7 +1,7 @@
 <template>
     <div>
         <div class="mdl-grid">
-            <h1>{{ studentName }}</h1>
+            <h2>{{ studentName }}</h2>
             <div class="mdl-layout-spacer"></div>
             <mdl-anchor-button class="data-download-button" raised :href="dataDownloadUrl">
                 Download
@@ -54,6 +54,10 @@ export default {
       const {studentInfo: {fullName = ''} = {}} = this.data;
       return fullName;
     },
+    studentSortableName() {
+      const {studentInfo: {sortableName = ''} = {}} = this.data;
+      return sortableName;
+    },
     prompts() {
       const overviewEntry = {
         to: {
@@ -87,26 +91,39 @@ export default {
       return this.rubricId ? `${baseUrl}rubric/${this.rubricId}/` : baseUrl;
     }
   },
-  mounted() {
-    Promise.all([
-      this.$api.get('/course/{}/students/{}/', this.courseId, this.studentId),
-      this.$api.get('/course/{}/rubric/all/', this.courseId)
-    ]).then(([{data: studentInfo}, {data: rubrics}]) => {
+  methods: {
+    updateData([{data: studentInfo}, {data: rubrics}]) {
       this.data = {
         studentInfo: studentInfo,
         rubrics: rubrics
       };
+    },
+    updateBreadcrumb() {
+      this.$store.commit('updateBreadcrumbInfo', {
+        studentId: this.studentId,
+        studentName: this.studentSortableName
+      });
+    }
+  },
+  mounted() {
+    Promise.all([
+      this.$api.get('/course/{}/students/{}/', this.courseId, this.studentId),
+      this.$api.get('/course/{}/rubric/all/', this.courseId)
+    ]).then(data => {
+      this.updateData(data);
+      this.updateBreadcrumb();
     });
   }
 };
 </script>
 
 <style scoped>
-    h1 {
+    h2 {
         font-family: "Roboto","Helvetica","Arial",sans-serif;
         font-size: 28px;
         line-height: 28px;
         margin: 8px 0;
+        letter-spacing: -0.56px;
     }
 
     .data-download-button {

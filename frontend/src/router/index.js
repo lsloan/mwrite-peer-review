@@ -7,6 +7,7 @@ import Modal from '@/components/Modal';
 import ReviewsGiven from '@/components/ReviewsGiven';
 import ReviewsReceived from '@/components/ReviewsReceived';
 import SingleReview from '@/components/SingleReview';
+import SingleReviewForEvaluation from '@/components/SingleReviewForEvaluation';
 
 import Error from '@/pages/Error';
 import InstructorDashboard from '@/pages/InstructorDashboard';
@@ -16,6 +17,7 @@ import AssignmentStatus from '@/pages/AssignmentStatus';
 import Rubric from '@/pages/Rubric';
 import StudentDashboard from '@/pages/StudentDashboard';
 import PeerReview from '@/pages/PeerReview';
+import ManualDistribution from '@/pages/ManualDistribution';
 
 Vue.use(Router);
 
@@ -48,8 +50,13 @@ const router = new Router({
       name: 'Rubric',
       component: Rubric,
       beforeEnter: authenticatedInstructorsOnly,
-      // TODO needs breadcrumbPathComponents
-      props: (route) => ({peerReviewAssignmentId: route.params.peerReviewAssignmentId})
+      props: (route) => ({peerReviewAssignmentId: route.params.peerReviewAssignmentId}),
+      meta: {
+        breadcrumbPathComponents: info => ([
+          {text: 'Peer Review', href: '/instructor/dashboard'},
+          {text: info['title'], href: `/instructor/rubric/peer_review_assignment/${info.peerReviewAssignmentId}`}
+        ])
+      }
     },
     {
       path: '/instructor/students',
@@ -64,16 +71,33 @@ const router = new Router({
       name: 'ReviewStatus',
       component: ReviewStatus,
       beforeEnter: authenticatedInstructorsOnly,
-      props: (route) => ({rubricId: route.params.rubricId})
-      // TODO needs breadcrumbPathComponents
+      props: (route) => ({rubricId: route.params.rubricId}),
+      meta: {
+        breadcrumbPathComponents: info => ([
+          {text: 'Peer Review', href: '/instructor/dashboard'},
+          {text: info['title'], href: `/instructor/reviews/rubric/${info.rubricId}`}
+        ])
+      }
+    },
+    {
+      path: '/instructor/reviews/rubric/:rubricId/unassigned',
+      name: 'UnassignedStudents',
+      component: ManualDistribution,
+      beforeEnter: authenticatedInstructorsOnly,
+      props: route => ({rubricId: route.params.rubricId})
     },
     {
       path: '/instructor/reviews/student/:studentId',
       name: 'AssignmentStatus',
       component: AssignmentStatus,
       beforeEnter: authenticatedInstructorsOnly,
-      props: route => ({studentId: parseInt(route.params.studentId)})
-      // TODO needs breadcrumbPathComponents
+      props: route => ({studentId: parseInt(route.params.studentId)}),
+      meta: {
+        breadcrumbPathComponents: info => ([
+          {text: 'Students', href: '/instructor/students'},
+          {text: info.studentName, href: `/instructor/reviews/student/${info.studentId}`}
+        ])
+      }
     },
     {
       path: '/instructor/reviews/student/:studentId/rubric/:rubricId',
@@ -91,8 +115,14 @@ const router = new Router({
           component: Modal,
           props: route => ({component: SingleReview, childProps: {reviewId: route.params.reviewId}})
         }
-      ]
-      // TODO needs breadcrumbPathComponents
+      ],
+      meta: {
+        breadcrumbPathComponents: info => ([
+          {text: 'Peer Review', href: '/instructor/dashboard'},
+          {text: info.peerReviewTitle, href: `/instructor/reviews/rubric/${info.rubricId}`},
+          {text: info.studentName, href: `/instructor/reviews/student/${info.studentId}/rubric/${info.rubricId}`}
+        ])
+      }
     },
     {
       path: '/student/dashboard',
@@ -103,13 +133,19 @@ const router = new Router({
           path: 'student/:studentId/reviews/:rubricId/given/',
           name: 'ReviewsGiven',
           component: Modal,
-          props: (route) => ({component: ReviewsGiven, childProps: route.params})
+          props: route => ({component: ReviewsGiven, childProps: route.params})
         },
         {
           path: 'student/:studentId/reviews/:rubricId/received/',
           name: 'ReviewsReceived',
           component: Modal,
-          props: (route) => ({component: ReviewsReceived, childProps: route.params})
+          props: route => ({component: ReviewsReceived, childProps: route.params})
+        },
+        {
+          path: 'student/:studentId/evaluation/:peerReviewId',
+          name: 'MandatoryEvaluation',
+          component: Modal,
+          props: route => ({component: SingleReviewForEvaluation, childProps: route.params})
         }
       ]
     },

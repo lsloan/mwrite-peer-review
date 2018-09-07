@@ -1,10 +1,12 @@
 <template>
-    <reviews-by-criterion class="reviews" :data="entries"/>
+    <reviews-by-criterion class="reviews" :data="review" :evaluation="evaluation" />
 </template>
 
 <script>
-import {denormalizers} from '@/services/reviews';
+import {conversions} from '@/services/reviews';
 import ReviewsByCriterion from '@/components/ReviewsByCriterion';
+import {navigateToErrorPage} from '@/router/helpers';
+import api from '@/services/api';
 
 export default {
   name: 'SingleReview',
@@ -12,28 +14,55 @@ export default {
   components: {ReviewsByCriterion},
   data() {
     return {
-      data: {}
+      evaluation: null
     };
   },
   computed: {
     courseId() {
       return this.$store.state.userDetails.courseId;
     },
-    entries() {
-      const {entries = []} = this.data;
-      return denormalizers['criterion'](entries);
+    comments() {
+      const reviewId = parseInt(this.reviewId);
+      return this.$store.getters.commentsBy.peerReview[reviewId];
     },
-    title() {
-      const {promptTitle = ''} = this.data;
-      return promptTitle;
+    review() {
+      return this.comments
+        ? [this.comments].map(conversions.criterion)
+        : [];
+    },
+    promptTitle() {
+      return this.comments && this.comments.length > 0
+        ? this.comments[0].promptTitle
+        : '';
+    }
+  },
+  methods: {
+    fetchReview() {
+      return this.$store.dispatch('fetchCommentsForReview', {
+        courseId: this.courseId,
+        peerReviewId: this.reviewId,
+        api: this.$api
+      });
+    },
+    fetchEvaluation() {
+      api.get('/course/{}/reviews/{}/evaluation', this.courseId, this.reviewId)
+        .then(response => {
+          this.evaluation = response.data;
+        })
+        .catch(reason => {
+          if(reason.response.status !== 404) {
+            navigateToErrorPage(this, null, reason);
+          }
+        });
+    },
+    emitTitle() {
+      this.$emit('title-resolved', this.promptTitle);
     }
   },
   mounted() {
-    this.$api.get('/course/{}/reviews/{}', this.courseId, this.reviewId)
-      .then(r => {
-        this.data = r.data;
-        this.$emit('title-resolved', this.title);
-      });
+    this.fetchReview()
+      .then(this.emitTitle);
+    this.fetchEvaluation();
   }
 };
 </script>

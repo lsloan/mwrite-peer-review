@@ -46,14 +46,22 @@ urlpatterns = [
                 url(r'^$', api.dispatch_peer_review_request),
                 url(r'^submission/', api.submission_for_review),
                 url(r'^rubric/', api.rubric_for_review),
+                url(r'^evaluation/', api.evaluation_for_review),
             ])),
-            url(r'^rubric/(?P<rubric_id>[0-9]+)/', api.review_status),
+            url(r'^rubric/(?P<rubric_id>[0-9]+)/', include([
+                url(r'^$', api.review_status),
+                url(r'unassigned/', api.non_reviewers_for_rubric),
+                url(r'assign/', api.add_students_to_distribution)
+            ])),
             url(r'^student/(?P<student_id>[0-9]+)/', include([
                 url(r'^assigned', api.assigned_work),
                 url(r'^completed', api.completed_work),
                 url(r'^given/(?P<rubric_id>[0-9]+)', api.reviews_given),
                 url(r'^received/(?P<rubric_id>[0-9]+)', api.reviews_received),
-                url(r'^evaluation/(?P<peer_review_id>[0-9]+)', api.submit_peer_review_evaluation)
+                url(r'^evaluation/', include([
+                    url(r'(?P<peer_review_id>[0-9]+)/', api.submit_peer_review_evaluation),
+                    url(r'pending/', api.peer_review_evaluations)
+                ]))
             ]))
         ])),
 

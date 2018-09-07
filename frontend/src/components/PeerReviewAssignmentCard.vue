@@ -1,8 +1,7 @@
 <template>
-    <div class="peer-review-assignment-card mdl-card mdl-cell mdl-cell--3-col mdl-shadow--2dp">
+    <div class="peer-review-assignment-card mdl-card mdl-cell mdl-cell--4-col mdl-cell--8-col-tablet mdl-cell--4-col-phone mdl-shadow--2dp">
 
-        <div class="mdl-card__title mdl-card--expand">
-            <!-- TODO should be an h1? -->
+        <div class="mdl-card__title">
             <h2 class="mdl-card__title-text">{{ peerReviewTitle }}</h2>
         </div>
 
@@ -32,16 +31,14 @@
             <div class="icon-container">
                 <i class="material-icons icon-24px">date_range</i>
                 <span class="icon-caption">
-
                     <template v-if="rubricExists">
                         <template v-if="reviewsInProgress">Opened</template>
                         <template v-else>Will open</template>
+
+                        <template v-if="openDate">{{ openDate | utcToLocal(dateFormat) }}</template>
+                        <template v-else>anytime</template>
                     </template>
                     <template v-else>Rubric has not been created</template>
-
-                    <template v-if="dueDate">{{ openDate | utcToLocal(dateFormat) }}</template>
-                    <template v-else>anytime</template>
-
                 </span>
             </div>
         </div>
@@ -49,7 +46,11 @@
         <div class="mdl-card__supporting-text">
             <div class="icon-container">
                 <i class="material-icons icon-24px">query_builder</i>
-                <span class="icon-caption">Due by {{ dueDate | utcToLocal(dateFormat) }}</span>
+                <span class="icon-caption">
+                    Due
+                    <template v-if="dueDate">by {{ dueDate | utcToLocal(dateFormat) }}</template>
+                    <template v-else>anytime</template>
+                </span>
             </div>
         </div>
 
@@ -59,6 +60,15 @@
                 <span class="icon-caption">{{ numberOfCompletedReviews }} out of {{ numberOfAssignedReviews }} reviews received</span>
             </div>
         </div>
+
+        <div class="mdl-card__supporting-text" v-if="evaluationDueDate">
+            <div class="icon-container">
+                <i class="material-icons icon-24px">alarm</i>
+                <span class="icon-caption">Evaluations due by {{ evaluationDueDate | utcToLocal(dateFormat) }}</span>
+            </div>
+        </div>
+
+        <div class="mdl-card--expand"></div>
 
         <div class="mdl-card__actions mdl-card--border">
             <router-link class="mdl-button mdl-button--colored mdl-js-button mdl-js-ripple-effect"
@@ -70,6 +80,12 @@
                          :to="{name: 'ReviewStatus', params: {rubricId: this.rubricId}}">
                 See Reviews
             </router-link>
+            <router-link v-if="reviewsInProgress"
+                         class="mdl-button mdl-button--colored mdl-js-button mdl-js-ripple-effect"
+                         :to="{name: 'UnassignedStudents', params: {rubricId: rubricId}}">
+                Assign Reviews
+            </router-link>
+
         </div>
 
     </div>
@@ -86,6 +102,7 @@ export default {
     'reviews-in-progress',
     'due-date',
     'open-date',
+    'evaluation-due-date',
     'peer-review-assignment-id',
     'peer-review-title',
     'date-format',
@@ -129,10 +146,6 @@ export default {
 </script>
 
 <style scoped>
-    .peer-review-assignment-card {
-        width: 330px;
-    }
-
     .mdl-card__actions {
         display: block;
         text-align: center;

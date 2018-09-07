@@ -1,29 +1,41 @@
 <template>
     <div>
-        <div class="mdl-grid">
+        <div class="mdl-grid" v-if="tableName">
             <div class="mdl-cell mdl-cell--12-col">
                 <h1 class="title">{{ tableName }}</h1>
             </div>
         </div>
-        <div class="mdl-grid">
-            <div v-for="{key, filter: {type, makeFilterChoices}} in filterableColumns"
+        <div class="mdl-grid" v-if="tableControls.length > 0">
+            <!-- TODO this section needs to be broken up into separate components -->
+            <div v-for="{controlType, key, data} in tableControls"
                  :key="key"
-                 class="mdl-cell mdl-cell--3-col mdl-cell--3-col-tablet mdl-cell--4-col-phone">
-                <div v-if="type === 'absolute'" class="mdl-textfield flexbox">
-                    <input v-model="filterValues[key]"
+                 class="filter-container mdl-cell mdl-cell--3-col mdl-cell--3-col-tablet mdl-cell--4-col-phone">
+
+                <!-- filter types -->
+                <div v-if="controlType === 'filter' && data.filter.type === 'absolute'" class="mdl-textfield flexbox">
+                    <input v-model="filterValues[data.key]"
                             class="mdl-textfield__input clickable absolute-filter"
                             type="text"
                             placeholder="Search for a student">
                     <i class="material-icons filter-icon">search</i>
                 </div>
-                <div v-else-if="type === 'choices'"
+                <div v-else-if="controlType === 'filter' && data.filter.type === 'choices'"
                      class="mdl-textfield">
                     <dropdown
                         :id="key"
                         label="Section Filter"
-                        v-model="filterValues[key]"
-                        :options="makeFilterChoices(entries)"
+                        v-model="filterValues[data.key]"
+                        :options="data.filter.makeFilterChoices(entries)"
                         :disabled="false"/>
+                </div>
+
+                <!-- control types -->
+                <div v-if="controlType === 'control' && data.type === 'button'" class="control-button">
+                    <button type="button"
+                            class="mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect mdl-button--accent"
+                            @click="data.eventBus.$emit(data.event)">
+                        {{ data.caption }}
+                    </button>
                 </div>
             </div>
             <div class="mdl-cell mdl-cell--6-col mdl-cell--2-col-tablet mdl-cell--hide-phone"></div>
@@ -42,24 +54,26 @@
                     </thead>
                     <tbody>
                         <tr v-if="isLoading">
-                            <td colspan="2" class="centralized student-table-cell">
+                            <td :colspan="columnMapping.length" class="centralized student-table-cell">
                                 <mdl-spinner single-color></mdl-spinner>
                             </td>
                         </tr>
                         <tr v-else
-                            v-on:click="rowClickHandler(row.id)"
+                            v-on:click="clickRow(row.id)"
                             v-for="row in paginatedFilteredEntries" :key="row.index"
                             :class="resolveRowClasses(row)">
-                            <td v-for="{key, transform} in columnMapping"
+                            <td v-for="{key, transform, component} in columnMapping"
                                 :key="key"
-                                class="mdl-data-table__cell--non-numeric clickable student-table-cell">
-                                {{ transform(row[key]) }}
+                                :class="tableCellClasses">
+                                <component v-if="component" :is="component" v-bind="transform(row)"/>
+                                <template v-else>{{ transform(row[key]) }}</template>
                             </td>
                         </tr>
                     </tbody>
                 </table>
             </div>
-            <div class="flexbox pagination-container x-scrollable" v-if="isLoading === false">
+            <div v-if="isLoading === false && buttonsToShow.length > 1"
+                 class="flexbox pagination-container x-scrollable">
                 <button class="pagination-button" type="button" v-on:click="goToPrevPage">Prev</button>
 
                 <div v-for="(currentButton, index) in buttonsToShow" v-bind:key="index">
@@ -102,7 +116,11 @@ export default {
     },
     rowClickHandler: Function,
     makeRowLink: Function,
-    filterSessionStorageKey: String
+    filterSessionStorageKey: String,
+    controls: {
+      type: Array,
+      default: () => ([])
+    }
   },
   components: {MdlSpinner, Dropdown},
   data() {
@@ -114,9 +132,31 @@ export default {
     };
   },
   computed: {
+    rowsAreClickable() {
+      return Boolean(this.rowClickHandler);
+    },
+    tableCellClasses() {
+      return {
+        'mdl-data-table__cell--non-numeric': true,
+        'student-table-cell': true,
+        'clickable': this.rowsAreClickable
+      };
+    },
+    tableControls() {
+      const filterControls = this.filterableColumns.map(c => ({
+        key: c.key,
+        controlType: 'filter',
+        data: c
+      }));
+      const controls = this.controls.map(c => ({
+        key: c.key,
+        controlType: 'control',
+        data: c
+      }));
+      return R.reverse(R.concat(filterControls, controls));
+    },
     filterableColumns() {
-      const filterableColumns = this.columnMapping.filter(({filter = null}) => filter);
-      return filterableColumns.reverse();
+      return this.columnMapping.filter(({filter = null}) => filter);
     },
     filterPredicate() {
       const columnsWithFilterValues = this.filterableColumns.filter(c => this.filterValues[c.key]);
@@ -236,6 +276,11 @@ export default {
       }
 
       return range;
+    },
+    clickRow(rowId) {
+      if(this.rowsAreClickable) {
+        this.rowClickHandler(rowId);
+      }
     }
   },
   watch: {
@@ -259,6 +304,14 @@ export default {
 </script>
 
 <style scoped>
+    .filter-container {
+        padding-left: 24px;
+    }
+
+    .control-button {
+        padding: 20px 0;
+    }
+
     .title {
         font-size: 30px;
         font-weight: 700;
@@ -304,6 +357,7 @@ export default {
     .table-heading {
         font-size: 18px;
         color: black;
+        white-space: initial;
     }
 
     .centralized {

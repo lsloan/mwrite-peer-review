@@ -22,21 +22,61 @@
                         ({{ completedAtDisplay }})
                     </template>
                     <template v-else>
-                        {{ source }} did not {{ action }} a peer review {{ adjective }} {{ destination }}
+                        {{ source }} did not submit a peer review for {{ destination }}
                     </template>
                 </span>
             </div>
         </div>
+
+        <div class="mdl-card__supporting-text">
+            <div class="status-line">
+                <i class="material-icons">
+                    <template v-if="review.evaluationSubmitted">
+                        done
+                    </template>
+                    <template v-else>
+                        <template v-if="evaluationMandatory">
+                            announcement
+                        </template>
+                        <template v-else>
+                            chat_bubble_outline
+                        </template>
+                    </template>
+                </i>
+
+                <span>
+                    Evaluation
+                    <template v-if="review.evaluationSubmitted">
+                        {{evaluationAction}}
+                    </template>
+                    <template v-else>
+                        <template v-if="evaluationMandatory">
+                            not {{evaluationAction}}
+                        </template>
+                        <template v-else>
+                            pending
+                        </template>
+                    </template>
+                </span>
+            </div>
+        </div>
+
         <div class="mdl-card__actions mdl-card--border">
             <a class="mdl-button" :href="contactEmailLink" v-if="!review.completedAt">
-                Email {{ contactName }}
+                Email {{source}}
             </a>
-            <router-link v-else
-                class="mdl-button"
-                :to="seeReviewLink">
-                See Review
-            </router-link>
-            <a class="mdl-button" :href="submissionDownloadUrl">See {{ contactName }}'s Submission</a>
+            <template v-else>
+                <router-link
+                    class="mdl-button"
+                    :to="seeReviewLink">
+                    See Review
+                </router-link>
+                <a class="mdl-button" :href="revieweeEmailLink"
+                   v-if="evaluationMandatory && !review.evaluationSubmitted">
+                    Email {{revieweeName}}
+                </a>
+            </template>
+            <a class="mdl-button" :href="submissionDownloadUrl">See {{destination}}'s Submission</a>
         </div>
     </div>
 </template>
@@ -46,7 +86,7 @@ import {sortableNameToFirstName} from '@/services/students';
 
 export default {
   name: 'PeerReviewStatusCard',
-  props: ['review', 'direction', 'subject-id', 'subject-name', 'subject-email', 'due-date'],
+  props: ['review', 'evaluation-mandatory', 'direction', 'subject-id', 'subject-name', 'subject-email', 'due-date'],
   computed: {
     courseId() {
       return this.$store.state.userDetails.courseId;
@@ -65,7 +105,9 @@ export default {
       };
     },
     reviewSubmittedLate() {
-      return this.review.completedAt.isSameOrAfter(this.dueDate);
+      return this.dueDate
+        ? this.review.completedAt.isSameOrAfter(this.dueDate)
+        : false;
     },
     completedAtDisplay() {
       const date = this.review.completedAt;
@@ -75,6 +117,9 @@ export default {
     },
     revieweeName() {
       return sortableNameToFirstName(this.review.name);
+    },
+    revieweeEmailLink() {
+      return `mailto:${this.review.email}`;
     },
     source() {
       return this.direction === 'To'
@@ -86,15 +131,10 @@ export default {
         ? this.revieweeName
         : this.subjectName;
     },
-    action() {
+    evaluationAction() {
       return this.direction === 'To'
-        ? 'submit'
-        : 'receive';
-    },
-    adjective() {
-      return this.direction === 'To'
-        ? 'for'
-        : 'from';
+        ? 'received'
+        : 'submitted';
     },
     contactEmailLink() {
       const email = this.direction === 'To'

@@ -7,6 +7,7 @@ from itertools import chain
 from datetime import datetime
 
 from dateutil.tz import tzutc
+from toolz.itertoolz import join
 from django.db import transaction
 from django.conf import settings
 from django.http import Http404, HttpResponse, JsonResponse
@@ -16,16 +17,18 @@ from rolepermissions.roles import get_user_roles
 from rolepermissions.checkers import has_role
 
 import peer_review.etl as etl
-from peer_review.api.util import merge_validations, validate_rubric, raise_if_not_current_user, \
-    raise_if_peer_review_not_given_to_student
+import peer_review.canvas as canvas
 from peer_review.util import to_camel_case, keymap_all
+from peer_review.distribution import add_to_distribution
 from peer_review.exceptions import ReviewsInProgressException, APIException
 from peer_review.decorators import authorized_endpoint, authorized_json_endpoint, \
     authenticated_json_endpoint, json_body
-from peer_review.models import CanvasCourse, CanvasStudent, CanvasAssignment, CanvasSubmission, \
+from peer_review.api.util import merge_validations, validate_rubric, raise_if_not_current_user, \
+    raise_if_peer_review_not_given_to_student
+from peer_review.models import CanvasCourse, CanvasStudent, CanvasAssignment, \
     Rubric, Criterion, PeerReview, PeerReviewComment, PeerReviewEvaluation, PeerReviewDistribution
 from peer_review.queries import InstructorDashboardStatus, StudentDashboardStatus, ReviewStatus, \
-    RubricForm, Comments
+    RubricForm, Comments, Evaluations, Reviews, Students
 
 
 LOGGER = logging.getLogger(__name__)
@@ -82,7 +85,10 @@ def all_peer_review_assignment_details(request, course_id):
     assignments = etl.persist_assignments(course_id)
     fetched_assignment_ids = tuple(map(lambda a: a.id, assignments))
 
-    details = InstructorDashboardStatus.get(course_id, fetched_assignment_ids)
+    if fetched_assignment_ids:
+        details = InstructorDashboardStatus.get(course_id, fetched_assignment_ids)
+    else:
+        details = []
 
     validations = {a.id: a.validation for a in assignments}
     details_with_validations = merge_validations(details, validations)
@@ -140,53 +146,20 @@ def reviews_given(request, course_id, student_id, rubric_id):
     return _denormalize_reviews_given(reviews)
 
 
-def _denormalize_reviews_received(reviews):
-    peer_review_ids = [r.id for r in reviews]
-    student_numbers = {pr_id: i for i, pr_id in enumerate(peer_review_ids)}
-
-    comments = list(chain(*map(lambda r: r.comments.all(), reviews)))
-    criterion_ids = set(c.criterion_id for c in comments)
-    criterion_numbers = {cr_id: i for i, cr_id in enumerate(criterion_ids)}
-
-    entries = []
-    for comment in comments:
-        try:
-            comment.peer_review.evaluation
-            evaluation_submitted = True
-        except ObjectDoesNotExist:
-            evaluation_submitted = False
-
-        entries.append({
-            'peer_review_id': comment.peer_review_id,
-            'evaluation_submitted': evaluation_submitted,
-            'reviewer_id': student_numbers[comment.peer_review_id],
-            'criterion_id': criterion_numbers[comment.criterion_id],
-            'criterion': comment.criterion.description,
-            'comment_id': comment.id,
-            'comment': comment.comment
-        })
-
-    return entries
-
-
 @authorized_json_endpoint(roles=['student'])
 def reviews_received(request, course_id, student_id, rubric_id):
     raise_if_not_current_user(request, student_id)
+    return Reviews.reviews_received(course_id, student_id, rubric_id=rubric_id)
 
-    reviews = PeerReview.objects.filter(
-        submission__assignment__course_id=course_id,
-        submission__assignment__rubric_for_prompt__id=rubric_id,
-        submission__author_id=student_id
-    )\
-        .order_by('id')
 
-    entries = _denormalize_reviews_received(reviews)
-    prompt_title = Rubric.objects.get(id=rubric_id).reviewed_assignment.title
+@authorized_json_endpoint(roles=['student'])
+def peer_review_evaluations(request, course_id, student_id):
+    return Evaluations.pending_evaluations(course_id, student_id)
 
-    return {
-        'title': prompt_title,
-        'entries': entries
-    }
+
+@authorized_json_endpoint(roles=['instructor'])
+def evaluation_for_review(request, course_id, review_id):
+    return Evaluations.evaluation_for_review(course_id, review_id)
 
 
 @require_POST
@@ -238,8 +211,9 @@ def create_or_update_rubric(request, params, course_id):
             rubric_description = objects['rubric_description']
             criteria = objects['criteria']
             peer_review_open_date = objects['peer_review_open_date']
+            peer_review_evaluation_due_date = objects['peer_review_evaluation_due_date']
             pr_open_date_is_prompt_due_date = objects['peer_review_open_date_is_prompt_due_date']
-
+            peer_review_evaluation_is_mandatory = objects['peer_review_evaluation_is_mandatory']
             rubric, created = Rubric.objects.update_or_create(
                 reviewed_assignment=prompt_assignment,
                 defaults={
@@ -248,7 +222,9 @@ def create_or_update_rubric(request, params, course_id):
                     'passback_assignment': passback_assignment,
                     'revision_assignment': revision_assignment,
                     'peer_review_open_date': peer_review_open_date,
+                    'peer_review_evaluation_due_date': peer_review_evaluation_due_date,
                     'peer_review_open_date_is_prompt_due_date': pr_open_date_is_prompt_due_date,
+                    'peer_review_evaluation_is_mandatory': peer_review_evaluation_is_mandatory,
                     'distribute_peer_reviews_for_sections': False
                 }
             )
@@ -480,17 +456,25 @@ def rubric_status_for_student(request, course_id, rubric_id, student_id):
     return ReviewStatus.detailed_rubric_status_for_student(course_id, student, rubric)
 
 
-@authorized_json_endpoint(roles=['instructor'])
+@authorized_json_endpoint(roles=['instructor', 'student'])
 def single_review(request, course_id, review_id):
+
     try:
         peer_review = PeerReview.objects.get(id=review_id)
+
+        if has_role(request.user, 'student'):
+            logged_in_user_id = int(request.session['lti_launch_params']['custom_canvas_user_id'])
+            review_given_by_user = logged_in_user_id == peer_review.student_id
+            review_received_by_user = logged_in_user_id == peer_review.submission.author_id
+
+            if not review_given_by_user and not review_received_by_user:
+                msg = 'User %s tried to download submission for a peer review (ID %s) they were not assigned'
+                LOGGER.warning(msg, logged_in_user_id, review_id)
+                raise PermissionDenied
+
+        return Reviews.single_review(peer_review)
     except PeerReview.DoesNotExist:
         raise Http404
-
-    return {
-        'prompt_title': peer_review.submission.assignment.title,
-        'entries': _denormalize_reviews_received([peer_review])
-    }
 
 
 # Django doesn't let you declare the HTTP method as part of the URL conf, so...
@@ -505,3 +489,67 @@ def dispatch_peer_review_request(*args, **kwargs):
         msg = 'Unsupported method %s' % request.method
         return JsonResponse({'error': msg}, status=405)
     return view(*args, **kwargs)
+
+
+@authorized_json_endpoint(roles=['instructor'])
+def non_reviewers_for_rubric(request, course_id, rubric_id):
+    try:
+        rubric = Rubric.objects.get(id=rubric_id)
+    except Rubric.DoesNotExist:
+        raise Http404
+
+    etl.persist_students(course_id)
+
+    non_reviewers = Students.non_reviewers_for_rubric(course_id, rubric)
+    submissions = canvas.retrieve('submissions', course_id, rubric.reviewed_assignment.id)
+
+    non_reviewers_and_submission_statuses = join(
+        lambda st: st.id, non_reviewers,
+        lambda su: su['user_id'], submissions
+    )
+
+    entries = []
+    for non_reviewer, submission_status in non_reviewers_and_submission_statuses:
+        submitted = submission_status['workflow_state'] != 'unsubmitted'
+        submitted_late = not submitted or submission_status['late'] is True
+        sections = non_reviewer.sections \
+            .filter(course_id=course_id) \
+            .values_list('name', flat=True)
+        sections_display = ', '.join(sections)
+        entries.append({
+            'student_id': non_reviewer.id,
+            'student_sortable_name': non_reviewer.sortable_name,
+            'student_sections': sections_display,
+            'submitted': submitted,
+            'submitted_late': submitted_late
+        })
+
+    return {
+        'peer_review_title': rubric.passback_assignment.title,
+        'students': entries
+    }
+
+
+@require_POST
+@json_body
+@authorized_json_endpoint(roles=['instructor'], default_status_code=201)
+def add_students_to_distribution(request, params, course_id, rubric_id):
+    try:
+        rubric = Rubric.objects.get(id=rubric_id)
+    except Rubric.DoesNotExist:
+        msg = 'The specified rubric does not exist.'
+        raise APIException(data={'error': msg}, status_code=404)
+
+    if rubric.reviewed_assignment.course_id != int(course_id):
+        msg = 'The specified rubric is not part of that course.'
+        raise APIException(data={'error': msg}, status_code=403)
+
+    student_ids = params['student_ids']
+    students = CanvasStudent.objects.filter(id__in=student_ids)
+    if students.count() != len(student_ids):
+        msg = 'One or more of the specified students do not exist.'
+        raise APIException(data={'error': msg}, status_code=404)
+
+    add_to_distribution(rubric, students)
+
+    return params

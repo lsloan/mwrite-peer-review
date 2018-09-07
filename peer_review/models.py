@@ -108,6 +108,8 @@ class Rubric(models.Model):
     revision_fetch_complete = models.BooleanField(default=False)
     peer_review_open_date_is_prompt_due_date = models.BooleanField(default=True)
     peer_review_open_date = models.DateTimeField(blank=True, null=True)
+    peer_review_evaluation_is_mandatory = models.BooleanField(default=False)
+    peer_review_evaluation_due_date = models.DateTimeField(blank=True, null=True)
     distribute_peer_reviews_for_sections = models.BooleanField(default=False)
     sections = models.ManyToManyField(CanvasSection, blank=True)
 
@@ -141,6 +143,16 @@ class PeerReview(models.Model):
                                 related_name='peer_reviews_for_student')
     submission = models.ForeignKey(CanvasSubmission, on_delete=models.DO_NOTHING,
                                    related_name='peer_reviews_for_submission')
+
+    @property
+    def evaluation_is_mandatory(self):
+        rubric = self.submission.assignment.rubric_for_prompt
+        return rubric.peer_review_evaluation_is_mandatory
+
+    @property
+    def evaluation_due_date(self):
+        rubric = self.submission.assignment.rubric_for_prompt
+        return rubric.peer_review_evaluation_due_date
 
     class Meta:
         db_table = 'peer_reviews'
