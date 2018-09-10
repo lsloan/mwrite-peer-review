@@ -383,12 +383,12 @@ export default {
         : revisionOptions;
     },
     promptIssues() {
-      return this.models.selectedPromptId
+      return this.selectedPromptId
         ? validationInfoAsIssues(this.validations[this.selectedPromptId], true)
         : [];
     },
     revisionIssues() {
-      return this.models.selectedRevisionId
+      return this.selectedRevisionId
         ? validationInfoAsIssues(this.validations[this.selectedRevisionId], false)
         : [];
     },
