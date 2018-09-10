@@ -22,7 +22,7 @@ released
     ```bash
     $ oc get pods # find the current api pod
     $ oc rsh mwrite-peer-review-prod-api-X-YYYYY # where X and YYYYY are found in the previous step
-    \# scripts/backup_data.bash
+    # scripts/backup_data.bash
     ```
 6. Deploy the new build to production
     ```bash
@@ -34,7 +34,7 @@ released
     ```bash
     $ oc get pods # find the new api pod
     $ oc rsh mwrite-peer-review-prod-api-X-YYYYY # where X and YYYYY are found in the previous step
-    \# DJANGO_SETTINGS_MODULE=mwrite_peer_review.settings.api ./manage.py migrate
+    # DJANGO_SETTINGS_MODULE=mwrite_peer_review.settings.api ./manage.py migrate
     ```
     If you need to rollback, either use `manage.py migrate` (see
     [here](https://docs.djangoproject.com/en/1.11/ref/django-admin/#django-admin-migrate)) or restore the database from
