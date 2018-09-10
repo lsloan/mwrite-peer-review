@@ -28,7 +28,7 @@ released
 7. If the new release entails database schema changes, perform a database migration
     ```bash
     $ oc get pods # find the new api pod
-    $ oc rsh <the new api pod's name>
+    $ oc rsh mwrite-peer-review-prod-api-X-YYYYY # where X and YYYYY are found in the previous step
     # DJANGO_SETTINGS_MODULE=mwrite_peer_review.settings.api ./manage.py migrate
     ```
     If you need to rollback, either use `manage.py migrate` (see
