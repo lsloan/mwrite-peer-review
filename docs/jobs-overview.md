@@ -1,9 +1,13 @@
 # Scheduled Jobs Overview
 
-M-Write Peer Review uses a separate container that runs [cron](https://en.wikipedia.org/wiki/Cron) in the foreground to
+M-Write Peer Review uses a separate container that runs [`cron`](https://en.wikipedia.org/wiki/Cron) in the foreground to
 run regularly-scheduled jobs.  See [Application Configuration](application-configuration.md) for information on how
 to configure the jobs container.  Alpine Linux provides BSD-like script folders under `/etc/periodic` to provide easy
 scheduling (see the jobs container's [Dockerfile](/dockerfiles/jobs.Dockerfile) for more information).
+
+Note that since `cron` uses its own user, it does not share the environment variables set in the container's environment
+or OpenShift deployment configuration.  For this reason, the jobs container [startup script](/scripts/start_jobs.bash)
+persists environment variables to `/etc/environment` and the job scripts `source` this file.
 
 ## Error Reporting
 
