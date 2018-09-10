@@ -11,3 +11,4 @@
 * [Data Model](docs/data-model.md)
 * [Authentication and Authorization](docs/authentication-and-authorization.md)
 * [OpenShift Setup and Deployment](docs/openshift-setup-and-deployment.md)
+* [Release Procedure](docs/release-procedure.md)
