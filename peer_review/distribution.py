@@ -88,7 +88,7 @@ def distribute_reviews(rubric, utc_timestamp, force_distribution=False):
             submissions = rubric.reviewed_assignment.canvas_submission_set.filter(author__in=section.students.all())
             author_ids = submissions.values_list('author', flat=True)
             students = CanvasStudent.objects.filter(id__in=author_ids)
-            reviews_for_section, _ = make_distribution(students, submissions)
+            reviews_for_section, _ = make_distribution(rubric.reviewed_assignment.id, students, submissions)
 
             for student_id in reviews_for_section.keys():
                 if student_id in reviews:
