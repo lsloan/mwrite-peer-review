@@ -36,6 +36,9 @@ def add_to_distribution(rubric, students, n=DEFAULT_NUMBER_OF_REVIEWS_PER_STUDEN
 
 
 def make_distribution(students, submissions, n=DEFAULT_NUMBER_OF_REVIEWS_PER_STUDENT):
+    if submissions.count() < (DEFAULT_NUMBER_OF_REVIEWS_PER_STUDENT + 1):
+        raise RuntimeError('Not enough submissions to distribute for assignment %s' % submissions.first().assignment_id)
+
     submissions_by_id = {submission.id: submission for submission in submissions}
 
     submissions_to_review_by_student = {student.id: set() for student in students}
