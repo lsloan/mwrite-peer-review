@@ -3,18 +3,19 @@
 M-Write Peer Review uses container-based deployments and is intended to be hosted using Docker.  It comes with three Dockerfiles for the different parts of the application.
 
 These are:
-- [dockerfiles/api.Dockerfile](dockerfiles/api.Dockerfile) -- The Django-based API served by [gunicorn](http://gunicorn.org/)
-- [dockerfiles/frontend.Dockerfile](dockerfiles/frontend.Dockerfile) -- A Vue.js SPA frontend hosted with Apache httpd
-- [dockerfiles/jobs.Dockerfile](dockerfiles/jobs.Dockerfile) -- A backend container for scheduled jobs (currently, review distribution and automated backups to S3)
+- [dockerfiles/api.Dockerfile](/dockerfiles/api.Dockerfile) -- The Django-based API served by [gunicorn](http://gunicorn.org/)
+- [dockerfiles/frontend.Dockerfile](/dockerfiles/frontend.Dockerfile) -- A Vue.js SPA frontend hosted with Apache httpd
+- [dockerfiles/jobs.Dockerfile](/dockerfiles/jobs.Dockerfile) -- A backend container for scheduled jobs (currently, review distribution and automated backups to S3)
 
-With the proper build arguments (see [here](#build-configuration)) and runtime environment variables (see [here](#runtime-environment)),
-this app should be able to be run just using Docker; however, documentation for running M-Write Peer Review
-using the OpenShift Container Platform is also provided below.
+With the proper build arguments (see [here](/docs/application-configuration.md#build-configuration)) and runtime
+environment variables (see [here](/docs/application-configuration.md#runtime-environment)), this app should be able to
+be run just using Docker; however, documentation for running M-Write Peer Review using the OpenShift Container Platform
+is also provided below.
 
 ## Configuration
 
 M-Write Peer Review uses environment variables to configure both its build and runtime environments.  See
-[Application Configuration](docs/application-configuration.md) for more information.
+[Application Configuration](/docs/application-configuration.md) for more information.
   
 ## Creating A New Production(-Like) Environment In OpenShift
 
@@ -26,8 +27,8 @@ Refer frequently to the OpenShift Container Platform [documentation](https://doc
 ### Automatic Backups to S3
 
 The jobs container uses a weekly cron job to back up the configured database and submission storage volume to S3.
-See [`dockerfiles/jobs.Dockerfile`](dockerfiles/jobs.Dockerfile) and [`scripts/backup_data.bash`](scripts/backup_data.bash) for
-implementation details.  See [Application Configuration](docs/application-configuration.md#jobs-only-environment-variables)
+See [`dockerfiles/jobs.Dockerfile`](/dockerfiles/jobs.Dockerfile) and [`scripts/backup_data.bash`](/scripts/backup_data.bash) for
+implementation details.  See [Application Configuration](/docs/application-configuration.md#jobs-only-environment-variables)
 for information about the related environment variables.
 
 ### Accessing Private Github Repositories
@@ -71,7 +72,7 @@ When using OpenShift, a variety of resources are required:
 - Services
 - Routes
 
-Examples of all of these are available in the [config/server/example/openshift](config/server/example/openshift)
+Examples of all of these are available in the [config/server/example/openshift](/config/server/example/openshift)
 directory; please refer to these (but keep an eye out for `<...redacted...>` entries -- these signify something
 sensitive that will need to be replaced).
 
@@ -179,5 +180,5 @@ These should be created in roughly the following order:
 
 ## Adding The Tool To Canvas
 
-Any LTI method can be used; an example [lti_config.xml](config/server/example/lti_config.xml)
+Any LTI method can be used; an example [lti_config.xml](/config/server/example/lti_config.xml)
 has been included.
