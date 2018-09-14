@@ -9,8 +9,8 @@ The rest of the documentation (but especially [Application Configuration](applic
 2. Create an annotated [tag](https://git-scm.com/book/en/v2/Git-Basics-Tagging) on `master` named for the version to be
 released
     * M-Write Peer Review roughly adheres to a [semantic versioning](https://semver.org/) scheme; that is, it uses
-    three digits in the form X.Y.Z, where X are major versions, Y are minor versions (generally used for per-term releases)
-    and Z are bug fix versions.
+    three numbers in the form X.Y.Z, where X are major versions, Y are minor versions (generally used for per-term
+    releases) and Z are bug fix versions.
 3. Push `master` and the new tag
 4. Start a new build in OpenShift
     ```bash
