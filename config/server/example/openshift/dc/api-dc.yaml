@@ -59,8 +59,6 @@ spec:
           value: peer-review-nonprod.mwrite.openshift.dsc.umich.edu
         - name: MPR_CSRF_COOKIE_DOMAIN
           value: peer-review-nonprod.mwrite.openshift.dsc.umich.edu
-        - name: MPR_GOOGLE_ANALYTICS_TRACKING_ID
-          value: <...redacted...>
         imagePullPolicy: Always
         name: mwrite-peer-review-dev-api
         ports:
