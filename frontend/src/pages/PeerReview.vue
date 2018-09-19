@@ -144,6 +144,6 @@ export default {
     }
 
     .preserve-whitespace {
-        white-space: pre;
+        white-space: pre-wrap;
     }
 </style>
