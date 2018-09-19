@@ -59,18 +59,18 @@ spec:
           value: peer-review-dev.mwrite.openshift.dsc.umich.edu
         - name: MPR_CSRF_COOKIE_DOMAIN
           value: peer-review-dev.mwrite.openshift.dsc.umich.edu
-        - name: MPR_GOOGLE_ANALYTICS_TRACKING_ID
-          value: <...redacted...>
+        - name: DJANGO_SETTINGS_MODULE
+          value: mwrite_peer_review.settings.jobs
         - name: MPR_EMAIL_HOST
           value: mail-relay.itd.umich.edu
         - name: MPR_EMAIL_PORT
           value: "25"
         - name: MPR_SERVER_FROM_EMAIL
-          value: <...redacted...>
+          value: mwrite.peer.review.monitoring@umich.edu
         - name: MPR_SERVER_TO_EMAILS
-          value: <...redacted...>
+          value: mwrite.peer.review.monitoring.test@umich.edu
         - name: MPR_BACKUP_S3_BUCKET
-          value: <...redacted...>
+          value: mwrite-test-1
         imagePullPolicy: Always
         name: mwrite-peer-review-dev-jobs
         ports:
