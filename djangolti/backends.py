@@ -36,9 +36,12 @@ class LtiBackend(ModelBackend):
         return username_string
 
     @staticmethod
-    def _determine_role(lti_launch_request):
-        roles = lti_launch_request.roles
-        if 'Instructor' in roles or 'urn:lti:role:ims/lis/TeachingAssistant' in roles or 'ContentDeveloper' in roles:
+    def determine_role(roles: str) -> str:
+        if (
+            'Instructor' in roles or
+            'urn:lti:role:ims/lis/TeachingAssistant' in roles or
+            'ContentDeveloper' in roles
+        ):
             role = 'instructor'
         else:
             role = 'student'
@@ -73,7 +76,7 @@ class LtiBackend(ModelBackend):
             })
             if created:
                 logger.info('LTI user created (%s)' % username)
-            assign_role(user, LtiBackend._determine_role(lti_launch_request))
+            assign_role(user, LtiBackend.determine_role(lti_launch_request.roles))
         else:
             try:
                 user = UserModel._default_manager.get_by_natural_key(username)
