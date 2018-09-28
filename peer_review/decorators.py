@@ -33,8 +33,18 @@ def has_one_of_roles(**kwargs):
     def decorator(view):
         def wrapper(*args, **kwargs):
             request = args[0]
-            user_roles = [r.get_name() for r in get_user_roles(request.user)]
-            if any(r in valid_roles for r in user_roles):
+
+            ltiRoles = request.session['lti_launch_params']['roles']
+            if (
+                'Instructor' in ltiRoles or
+                'urn:lti:role:ims/lis/TeachingAssistant' in ltiRoles or
+                'ContentDeveloper' in ltiRoles
+            ):
+                userRoles = ['instructor']
+            else:
+                userRoles = ['student']
+
+            if any(r in valid_roles for r in userRoles):
                 return view(*args, **kwargs)
             else:
                 raise PermissionDenied

@@ -36,7 +36,16 @@ LOGGER = logging.getLogger(__name__)
 
 @authenticated_json_endpoint
 def logged_in_user_details(request):
-    roles = [role.get_name() for role in get_user_roles(request.user)]
+    ltiRoles = request.session['lti_launch_params']['roles']
+    if (
+        'Instructor' in ltiRoles or
+        'urn:lti:role:ims/lis/TeachingAssistant' in ltiRoles or
+        'ContentDeveloper' in ltiRoles
+    ):
+        roles = ['instructor']
+    else:
+        roles = ['student']
+
     course_id = request.session['lti_launch_params']['custom_canvas_course_id']
     course_name = request.session['lti_launch_params']['context_title']
     user_id = request.session['lti_launch_params']['custom_canvas_user_id']
