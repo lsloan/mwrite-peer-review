@@ -9,6 +9,7 @@ from rolepermissions.roles import get_user_roles
 from toolz.dicttoolz import keymap
 from toolz.functoolz import thread_first, compose
 
+from djangolti.backends import LtiBackend
 from peer_review.exceptions import APIException
 from peer_review.util import camel_case_keys, snake_case_keys, \
     transform_data_structure, object_to_json
@@ -34,15 +35,7 @@ def has_one_of_roles(**kwargs):
         def wrapper(*args, **kwargs):
             request = args[0]
 
-            ltiRoles = request.session['lti_launch_params']['roles']
-            if (
-                'Instructor' in ltiRoles or
-                'urn:lti:role:ims/lis/TeachingAssistant' in ltiRoles or
-                'ContentDeveloper' in ltiRoles
-            ):
-                userRoles = ['instructor']
-            else:
-                userRoles = ['student']
+            userRoles = [LtiBackend.determine_role(request.session['lti_launch_params']['roles'])]
 
             if any(r in valid_roles for r in userRoles):
                 return view(*args, **kwargs)

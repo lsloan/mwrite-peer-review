@@ -23,6 +23,7 @@ from peer_review.distribution import add_to_distribution
 from peer_review.exceptions import ReviewsInProgressException, APIException
 from peer_review.decorators import authorized_endpoint, authorized_json_endpoint, \
     authenticated_json_endpoint, json_body
+from djangolti.backends import LtiBackend
 from peer_review.api.util import merge_validations, validate_rubric, raise_if_not_current_user, \
     raise_if_peer_review_not_given_to_student
 from peer_review.models import CanvasCourse, CanvasStudent, CanvasAssignment, \
@@ -36,16 +37,7 @@ LOGGER = logging.getLogger(__name__)
 
 @authenticated_json_endpoint
 def logged_in_user_details(request):
-    ltiRoles = request.session['lti_launch_params']['roles']
-    if (
-        'Instructor' in ltiRoles or
-        'urn:lti:role:ims/lis/TeachingAssistant' in ltiRoles or
-        'ContentDeveloper' in ltiRoles
-    ):
-        roles = ['instructor']
-    else:
-        roles = ['student']
-
+    roles = [LtiBackend.determine_role(request.session['lti_launch_params']['roles'])]
     course_id = request.session['lti_launch_params']['custom_canvas_course_id']
     course_name = request.session['lti_launch_params']['context_title']
     user_id = request.session['lti_launch_params']['custom_canvas_user_id']
