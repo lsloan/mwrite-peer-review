@@ -9,6 +9,7 @@ from rolepermissions.roles import get_user_roles
 from toolz.dicttoolz import keymap
 from toolz.functoolz import thread_first, compose
 
+from djangolti.backends import LtiBackend
 from peer_review.exceptions import APIException
 from peer_review.util import camel_case_keys, snake_case_keys, \
     transform_data_structure, object_to_json
@@ -33,8 +34,10 @@ def has_one_of_roles(**kwargs):
     def decorator(view):
         def wrapper(*args, **kwargs):
             request = args[0]
-            user_roles = [r.get_name() for r in get_user_roles(request.user)]
-            if any(r in valid_roles for r in user_roles):
+
+            userRoles = [LtiBackend.determine_role(request.session['lti_launch_params']['roles'])]
+
+            if any(r in valid_roles for r in userRoles):
                 return view(*args, **kwargs)
             else:
                 raise PermissionDenied
