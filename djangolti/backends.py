@@ -76,7 +76,7 @@ class LtiBackend(ModelBackend):
             })
             if created:
                 logger.info('LTI user created (%s)' % username)
-            assign_role(user, LtiBackend.determine_role(lti_launch_request.roles))
+            # assign_role(user, LtiBackend.determine_role(lti_launch_request.roles))
         else:
             try:
                 user = UserModel._default_manager.get_by_natural_key(username)
