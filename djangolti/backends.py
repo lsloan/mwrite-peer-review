@@ -7,8 +7,6 @@ from django.contrib.auth.backends import ModelBackend
 from django.contrib.auth import get_user_model
 from django.contrib.auth.models import AnonymousUser
 
-from rolepermissions.roles import assign_role
-
 from .models import NonceHistory
 from .utils import LtiRequestValidator
 
@@ -76,7 +74,6 @@ class LtiBackend(ModelBackend):
             })
             if created:
                 logger.info('LTI user created (%s)' % username)
-            # assign_role(user, LtiBackend.determine_role(lti_launch_request.roles))
         else:
             try:
                 user = UserModel._default_manager.get_by_natural_key(username)
