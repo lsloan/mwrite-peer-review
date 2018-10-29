@@ -60,7 +60,8 @@ def retrieve(resource, *params):
     route_params = _routes[resource].get('params') if 'params' in _routes[resource] else {}
     while True:
         headers = _make_headers()
-        response = requests.get(url, headers=headers, params=merge(route_params, {'per_page': 500}))  # TODO clean me
+        response = requests.get(url, headers=headers, params=merge(
+            route_params, {'per_page': 100}))  # 100 is Canvas hard maximum
         response.raise_for_status()
         json_data = response.json()
         if isinstance(json_data, dict):
