@@ -1,5 +1,5 @@
 <template>
-    <div class="mdl-grid" v-if="data.promptSubmitted && reviewsWereAssigned">
+    <div class="mdl-grid" v-if="reviewsWereAssigned">
         <div class="mdl-cell mdl-cell--6-col">
             <div class="mdl-grid">
                 <div class="mdl-cell mdl-cell--12-col">
@@ -37,7 +37,7 @@
                     </h3>
                 </div>
             </div>
-            <div class="mdl-grid">
+            <div class="mdl-grid" v-if="data.promptSubmitted">
                 <div class="mdl-cell mdl-cell--12-col">
                     <peer-review-status-card
                         v-for="review in reviewsToBeReceived"
@@ -49,6 +49,12 @@
                         :subject-email="data.student.email"
                         :due-date="dueDate"
                         :review="review"/>
+                </div>
+            </div>
+            <div class="mdl-grid" v-else>
+                <div class="mdl-cell mdl-cell--12-col">
+                    {{ studentFirstName }} did not submit the prompt assignment,
+                    so peer reviews will not be received.
                 </div>
             </div>
         </div>
