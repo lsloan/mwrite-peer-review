@@ -35,7 +35,7 @@ const makeReviewEntry = review => ({
   }
 });
 
-const reviewsForDisplay = r => `${r.completed} of ${r.total}`;
+const reviewsForDisplay = r => ((r.total !== null) ? `${r.completed} of ${r.total}` : 'n/a');
 
 export default {
   name: 'review-status',
