@@ -2,6 +2,7 @@ import json
 import logging
 from itertools import chain
 
+from django.db.models.query import QuerySet
 from django.http import Http404
 from toolz.dicttoolz import valfilter
 from toolz.functoolz import thread_last
@@ -301,9 +302,17 @@ class ReviewStatus:
         }
 
     @staticmethod
+    def getAssignedReviewsForStudentCourseIdAssignment(
+        student: CanvasStudent, courseId: int, assignment: CanvasAssignment
+    ) -> QuerySet:
+        return PeerReview.objects.filter(
+            student=student, submission__assignment__course__id=courseId,
+            submission__assignment=assignment)
+
+    @staticmethod
     def detailed_rubric_status_for_student(course_id, student, rubric):
+        prompt = rubric.reviewed_assignment
         try:
-            prompt = rubric.reviewed_assignment
             submission = prompt.canvas_submission_set.get(author__id=student.id)
         except CanvasSubmission.DoesNotExist:
             submission = None
@@ -346,6 +355,15 @@ class ReviewStatus:
                 ReviewStatus._make_peer_review_details(pr, True)
                 for pr in submission.total_received_of_a_student
             ]
+        else:
+            # Find reviews manually assigned to student with no/late submission
+            assignedReviews = ReviewStatus.getAssignedReviewsForStudentCourseIdAssignment(
+                student, course_id, prompt)
+            if (assignedReviews):
+                data['completed'] = [
+                    ReviewStatus._make_peer_review_details(peerReview, False)
+                    for peerReview in assignedReviews
+                ]
 
         return data
 
@@ -436,7 +454,11 @@ class ReviewStatus:
         rubric = Rubric.objects.get(id=rubric_id)
         submissions = rubric.reviewed_assignment.canvas_submission_set.all()
 
-        reviews = []
+        reviewerIds = (PeerReview.objects
+                       .filter(submission_id__in=submissions.values_list('id', flat=True))
+                       .distinct().values_list('student_id', flat=True))
+
+        reviewsByAuthor = {}
         sections = set()
         for submission in submissions:
             total_completed_num = submission.total_completed_by_a_student.count()
@@ -488,7 +510,33 @@ class ReviewStatus:
             if not for_api:
                 review['json_sections'] = json.dumps(list(author_sections.values_list('id', flat=True)))
 
-            reviews.append(review)
+            reviewsByAuthor[submission.author.id] = review
+
+        for missingReviewerId in set(reviewerIds).difference(reviewsByAuthor.keys()):
+            reviewer = CanvasStudent.objects.get(id=missingReviewerId)
+            reviewerSections = [
+                {'id': section.id, 'name': section.name}
+                for section in reviewer.sections.filter(course_id=course_id)]
+            assignedReviews = [
+                ReviewStatus._make_peer_review_details(peerReview, False)
+                for peerReview in ReviewStatus.getAssignedReviewsForStudentCourseIdAssignment(
+                    reviewer, course_id, rubric.reviewed_assignment)]
+            completedReviews = [
+                peerReview for peerReview in assignedReviews if peerReview['completed_at'] is not None
+            ]
+            reviewsByAuthor[reviewer.id] = {
+                'author': {
+                    'id': reviewer.id,
+                    'name': reviewer.sortable_name
+                },
+                'sections': reviewerSections,
+                'total_completed': len(assignedReviews),
+                'completed': len(completedReviews),
+                'total_received': None,
+                'received': None,
+                'evaluations_given': None,
+                'total_evaluations': None,
+            }
 
         sections = list(sections)
         sections.sort(key=lambda s: s.name)
@@ -508,7 +556,7 @@ class ReviewStatus:
         return {
             'course_id': course.id,
             'title':     course.name,
-            'reviews':   reviews,
+            'reviews':   reviewsByAuthor.values(),
             'rubric':    rubric,
             'sections':  sections
         }
