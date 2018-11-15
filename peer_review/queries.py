@@ -512,8 +512,7 @@ class ReviewStatus:
 
             reviewsByAuthor[submission.author.id] = review
 
-        for missingReviewerId in set(reviewerIds).difference(reviewsByAuthor.keys()):
-            reviewer = CanvasStudent.objects.get(id=missingReviewerId)
+        for reviewer in CanvasStudent.objects.filter(id__in=set(reviewerIds).difference(reviewsByAuthor.keys())):
             reviewerSections = [
                 {'id': section.id, 'name': section.name}
                 for section in reviewer.sections.filter(course_id=course_id)]
