@@ -8,6 +8,8 @@ from peer_review.api.special import permission_denied, not_found, server_error, 
 
 
 urlpatterns = [
+    url(r'^watchman/', include('watchman.urls')),
+
     url(r'^safari$', SafariLaunchPopup.as_view(), name='safari_launch_popup'),
 
     url(r'^launch$', djangolti.views.LaunchView.as_view(), name='launch'),

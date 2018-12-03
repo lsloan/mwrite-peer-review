@@ -7,7 +7,7 @@ from toolz.itertoolz import unique, frequencies, take
 from django.db import transaction
 
 from peer_review.etl import persist_students, persist_sections, persist_submissions, persist_assignments
-from peer_review.models import CanvasCourse, CanvasStudent, CanvasAssignment, PeerReview, PeerReviewDistribution
+from peer_review.models import CanvasCourse, CanvasStudent, CanvasAssignment, PeerReview, PeerReviewDistribution, JobLog
 
 log = logging.getLogger('management_commands')
 
@@ -118,8 +118,16 @@ def distribute_reviews(rubric, utc_timestamp, force_distribution=False):
 
 
 # TODO this isn't concurrency safe.  we're going to get around this for now by just using a single instance per course
-def review_distribution_task(utc_timestamp, force_distribution=False):
-    log.info('Starting review distribution at %s' % utc_timestamp.isoformat())
+def review_distribution_task(utc_timestamp: datetime, force_distribution=False):
+    weekday: int = utc_timestamp.weekday()
+    hour: int = utc_timestamp.hour
+    minute: int = (utc_timestamp.minute // 15 ) * 15 # round to (0, 15, 30, 45)
+
+    JobLog.objects.filter(weekday=weekday, hour=hour, minute=minute).delete()
+
+    logMessage = 'Starting review distribution at %s' % utc_timestamp.isoformat()
+    log.info(logMessage)
+    JobLog.objects.create(weekday=weekday, hour=hour, minute=minute, message=logMessage)
 
     log.info('Persisting assignments for all courses')
     for course in CanvasCourse.objects.all():
@@ -166,4 +174,6 @@ def review_distribution_task(utc_timestamp, force_distribution=False):
         log.exception('Review distribution failed due to uncaught exception')
         raise ex
 
-    log.info('Finished review distribution that began at %s' % utc_timestamp.isoformat())
+    logMessage = 'Finished review distribution that began at  %s' % utc_timestamp.isoformat()
+    log.info(logMessage)
+    JobLog.objects.create(weekday=weekday, hour=hour, minute=minute, message=logMessage)
