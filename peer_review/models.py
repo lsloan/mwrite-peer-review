@@ -1,3 +1,4 @@
+from datetime import datetime
 from django.db import models
 
 
@@ -119,6 +120,19 @@ class Rubric(models.Model):
 
     class Meta:
         db_table = 'rubrics'
+
+
+# noinspection PyClassHasNoInit
+class JobLog(models.Model):
+    id = models.AutoField(primary_key=True)
+    timestamp: datetime = models.DateTimeField(blank=False, null=False, auto_now_add=True)
+    weekday = models.IntegerField(blank=False, null=False)
+    hour = models.IntegerField(blank=False, null=False)
+    minute = models.IntegerField(blank=False, null=False)
+    message = models.TextField(blank=False, null=False)
+
+    class Meta:
+        db_table = 'job_log'
 
 
 # noinspection PyClassHasNoInit

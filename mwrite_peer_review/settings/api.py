@@ -14,6 +14,7 @@ import os
 import json
 from os import getenv
 
+import watchman
 
 def read_file_from_env(var):
     filename = os.environ[var]
@@ -72,8 +73,15 @@ INSTALLED_APPS = [
     'rolepermissions',
     'djangolti',
     'peer_review',
-    'corsheaders'
+    'corsheaders',
+    'watchman',
 ]
+
+WATCHMAN_CHECKS = (
+    'watchman.checks.databases',
+    'watchman.checks.storage',
+    'mwrite_peer_review.watchmanChecks.jobsCheck',
+)
 
 MIDDLEWARE = [
     'corsheaders.middleware.CorsMiddleware',
