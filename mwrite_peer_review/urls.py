@@ -1,14 +1,21 @@
 from django.conf import settings
 from django.conf.urls import url, include
+from watchman import views
 
 import djangolti.views
 import peer_review.api.endpoints as api
+from mwrite_peer_review import watchmanViews
 from peer_review.api.debug import DebugLtiParamsView
 from peer_review.api.special import permission_denied, not_found, server_error, SafariLaunchPopup
 
 
 urlpatterns = [
-    url(r'^watchman/', include('watchman.urls')),
+    url(r'^status/', include([
+        url(r'^$', watchmanViews.index, name="status"),
+        url(r'^ping/$', watchmanViews.ping, name="ping"),
+        url(r'^details/$', views.status, name="details"),
+        url(r'^dashboard/$', views.dashboard, name="dashboard"),
+    ])),
 
     url(r'^safari$', SafariLaunchPopup.as_view(), name='safari_launch_popup'),
 
