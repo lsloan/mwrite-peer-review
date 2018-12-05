@@ -10,11 +10,10 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/1.10/ref/settings/
 """
 
-import os
 import json
+import os
 from os import getenv
 
-import watchman
 
 def read_file_from_env(var):
     filename = os.environ[var]
@@ -79,7 +78,6 @@ INSTALLED_APPS = [
 
 WATCHMAN_CHECKS = (
     'watchman.checks.databases',
-    'watchman.checks.storage',
     'mwrite_peer_review.watchmanChecks.jobsCheck',
 )
 
@@ -144,14 +142,12 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'mwrite_peer_review.wsgi.application'
 
-
 # Database
 # https://docs.djangoproject.com/en/1.10/ref/settings/#databases
 
 DATABASES = {
     'default': json.loads(read_file_from_env('MPR_DB_CONFIG_PATH'))
 }
-
 
 # Password validation
 # https://docs.djangoproject.com/en/1.10/ref/settings/#auth-password-validators
@@ -170,7 +166,6 @@ AUTH_PASSWORD_VALIDATORS = [
         'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
     },
 ]
-
 
 # Internationalization
 # https://docs.djangoproject.com/en/1.10/topics/i18n/
