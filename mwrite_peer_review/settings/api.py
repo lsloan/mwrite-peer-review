@@ -10,8 +10,8 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/1.10/ref/settings/
 """
 
-import os
 import json
+import os
 from os import getenv
 
 
@@ -72,8 +72,14 @@ INSTALLED_APPS = [
     'rolepermissions',
     'djangolti',
     'peer_review',
-    'corsheaders'
+    'corsheaders',
+    'watchman',
 ]
+
+WATCHMAN_CHECKS = (
+    'watchman.checks.databases',
+    'mwrite_peer_review.watchmanChecks.jobsCheck',
+)
 
 MIDDLEWARE = [
     'corsheaders.middleware.CorsMiddleware',
@@ -136,14 +142,12 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'mwrite_peer_review.wsgi.application'
 
-
 # Database
 # https://docs.djangoproject.com/en/1.10/ref/settings/#databases
 
 DATABASES = {
     'default': json.loads(read_file_from_env('MPR_DB_CONFIG_PATH'))
 }
-
 
 # Password validation
 # https://docs.djangoproject.com/en/1.10/ref/settings/#auth-password-validators
@@ -162,7 +166,6 @@ AUTH_PASSWORD_VALIDATORS = [
         'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
     },
 ]
-
 
 # Internationalization
 # https://docs.djangoproject.com/en/1.10/topics/i18n/
