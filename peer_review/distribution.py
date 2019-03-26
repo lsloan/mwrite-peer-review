@@ -81,7 +81,7 @@ def distribute_reviews(rubric, utc_timestamp, force_distribution=False):
             log.error(msg)
             raise RuntimeError(msg)
 
-        log.info('Submissions for prompt %d will be distributed only within sections' % rubric.reviewed_assignment.id)
+        log.info('Submissions for course %d prompt %d will be distributed only within sections' % (rubric.reviewed_assignment.course.id, rubric.reviewed_assignment.id))
         reviews = {}
         for section in rubric.sections.all():
             log.info('Distributing reviews for section %d' % section.id)
@@ -98,7 +98,7 @@ def distribute_reviews(rubric, utc_timestamp, force_distribution=False):
 
             reviews.update(reviews_for_section)
     else:
-        log.info('Submissions for prompt %d will be distributed across all sections' % rubric.reviewed_assignment.id)
+        log.info('Submissions for course %d prompt %d will be distributed across all sections' % (rubric.reviewed_assignment.course.id, rubric.reviewed_assignment.id))
         submissions = rubric.reviewed_assignment.canvas_submission_set.all()
         students = CanvasStudent.objects.filter(id__in=submissions.values_list('author', flat=True))
         reviews, _ = make_distribution(rubric.reviewed_assignment.id, students, submissions)
@@ -121,7 +121,9 @@ def distribute_reviews(rubric, utc_timestamp, force_distribution=False):
 def review_distribution_task(utc_timestamp: datetime, force_distribution=False):
     weekday: int = utc_timestamp.weekday()
     hour: int = utc_timestamp.hour
-    minute: int = (utc_timestamp.minute // 15 ) * 15 # round to (0, 15, 30, 45)
+    minute: int = utc_timestamp.minute
+    # FIXME: uncomment line below, commented for debugging
+    # minute = (minute // 15 ) * 15 # round to (0, 15, 30, 45)
 
     JobLog.objects.filter(weekday=weekday, hour=hour, minute=minute).delete()
 
@@ -152,23 +154,31 @@ def review_distribution_task(utc_timestamp: datetime, force_distribution=False):
                 persist_students(course.id)
 
             for prompt in prompts_for_distribution:
-                log.info('Distributing reviews for prompt %d...' % prompt.id)
+                message = 'Distributing reviews for course %d prompt %d...' % (prompt.course.id, prompt.id)
+                attemptNumber = 1 + JobLog.objects.filter(message__startswith=message).count()
+                useFaultTolerance: bool = (attemptNumber > 3) # FIXME: replace static number with parameter
+
+                message += ' (Attempt: %d; Fault tolerance: %s)' % (attemptNumber, useFaultTolerance)
+
+                log.info(message)
+                JobLog.objects.create(weekday=weekday, hour=hour, minute=minute, message=message)
+
 
                 try:
-                    log.info('Fetching and persisting submissions for prompt %d...' % prompt.id)
-                    persist_submissions(prompt)
-                    log.info('Finished persisting submissions for prompt %d' % prompt.id)
+                    log.info('Fetching and persisting submissions for course %d prompt %d...' % (prompt.course.id, prompt.id))
+                    persist_submissions(prompt, useFaultTolerance)
+                    log.info('Finished persisting submissions for course %d prompt %d' % (prompt.course.id, prompt.id))
 
-                    log.info('Distributing for prompt %d for review...' % prompt.id)
+                    log.info('Distributing course %d prompt %d for review...' % (prompt.course.id, prompt.id))
                     with transaction.atomic():
                         distribute_reviews(prompt.rubric_for_prompt, utc_timestamp, force_distribution)
-                    log.info('Finished review distribution for prompt %d' % prompt.id)
+                    log.info('Finished review distribution for course %d prompt %d' % (prompt.course.id, prompt.id))
 
                 except Exception as ex:
                     # TODO expose failed prompt distribution to health check
-                    log.exception('Skipping review distribution for prompt %d due to error' % prompt.id)
+                    log.exception('Skipping review distribution for course %d prompt %d () due to error' % (prompt.course.id, prompt.id))
 
-                log.info('Finished distributing reviews for prompt %d' % prompt.id)
+                log.info('Finished distributing reviews for course %d prompt %d' % (prompt.course.id, prompt.id))
     except Exception as ex:
         # TODO expose failed "all" distribution to health check
         log.exception('Review distribution failed due to uncaught exception')
