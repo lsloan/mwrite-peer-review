@@ -1,4 +1,5 @@
 import logging
+import os
 from datetime import datetime
 from collections import OrderedDict
 
@@ -119,17 +120,11 @@ def distribute_reviews(rubric, utc_timestamp, force_distribution=False):
 
 # TODO this isn't concurrency safe.  we're going to get around this for now by just using a single instance per course
 def review_distribution_task(utc_timestamp: datetime, force_distribution=False):
-    weekday: int = utc_timestamp.weekday()
-    hour: int = utc_timestamp.hour
-    minute: int = utc_timestamp.minute
-    # FIXME: uncomment line below, commented for debugging
-    # minute = (minute // 15 ) * 15 # round to (0, 15, 30, 45)
-
-    JobLog.objects.filter(weekday=weekday, hour=hour, minute=minute).delete()
+    JobLog.deleteOld()
 
     logMessage = 'Starting review distribution at %s' % utc_timestamp.isoformat()
     log.info(logMessage)
-    JobLog.objects.create(weekday=weekday, hour=hour, minute=minute, message=logMessage)
+    JobLog.addMessage(logMessage)
 
     log.info('Persisting assignments for all courses')
     for course in CanvasCourse.objects.all():
@@ -156,12 +151,12 @@ def review_distribution_task(utc_timestamp: datetime, force_distribution=False):
             for prompt in prompts_for_distribution:
                 message = 'Distributing reviews for course %d prompt %d...' % (prompt.course.id, prompt.id)
                 attemptNumber = 1 + JobLog.objects.filter(message__startswith=message).count()
-                useFaultTolerance: bool = (attemptNumber > 3) # FIXME: replace static number with parameter
+                useFaultTolerance: bool = (attemptNumber > int(os.getenv('MPR_DIST_TOLERANCE_ATTEMPTS', 3)))
 
                 message += ' (Attempt: %d; Fault tolerance: %s)' % (attemptNumber, useFaultTolerance)
 
                 log.info(message)
-                JobLog.objects.create(weekday=weekday, hour=hour, minute=minute, message=message)
+                JobLog.addMessage(message)
 
 
                 try:
@@ -186,4 +181,4 @@ def review_distribution_task(utc_timestamp: datetime, force_distribution=False):
 
     logMessage = 'Finished review distribution that began at  %s' % utc_timestamp.isoformat()
     log.info(logMessage)
-    JobLog.objects.create(weekday=weekday, hour=hour, minute=minute, message=logMessage)
+    JobLog.addMessage(logMessage)
