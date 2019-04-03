@@ -81,6 +81,9 @@ WATCHMAN_CHECKS = (
     'mwrite_peer_review.watchmanChecks.jobsCheck',
 )
 
+# TODO: After Nagios updated to use newer curl/wget, remove this code and use Watchman default of 500.
+WATCHMAN_ERROR_CODE = 203
+
 MIDDLEWARE = [
     'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
