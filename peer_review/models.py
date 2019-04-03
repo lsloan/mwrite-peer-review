@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timedelta
 from django.db import models
 
 
@@ -130,6 +130,24 @@ class JobLog(models.Model):
     hour = models.IntegerField(blank=False, null=False)
     minute = models.IntegerField(blank=False, null=False)
     message = models.TextField(blank=False, null=False)
+
+    @classmethod
+    def addMessage(cls, message: str) -> object:
+        """
+        Add a message to the JobLog table.
+
+        :param message: The message to be added to the table.
+        """
+        cls.objects.create(weekday=0, hour=0, minute=0, message=message)
+
+    @classmethod
+    def deleteOld(cls, days: int = 7) -> object:
+        """
+        Delete JobLog entries that are at least `days` old, 7 by default.  The time of day is significant.
+
+        :param days: The minimum number of days old that entries must be in order to be deleted.
+        """
+        cls.objects.filter(timestamp__lt=datetime.now()-timedelta(days=days)).delete()
 
     class Meta:
         db_table = 'job_log'

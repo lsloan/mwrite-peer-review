@@ -13,7 +13,8 @@ from django.utils.dateparse import parse_datetime
 
 from peer_review.util import to_camel_case
 from peer_review.canvas import retrieve
-from peer_review.models import CanvasAssignment, CanvasSection, CanvasStudent, CanvasCourse, CanvasSubmission, Rubric
+from peer_review.models import CanvasAssignment, CanvasSection, CanvasStudent, CanvasCourse, CanvasSubmission, Rubric, \
+    JobLog
 
 log = logging.getLogger(__name__)
 
@@ -177,22 +178,36 @@ def persist_students(course_id):
                 student.sections.add(CanvasSection.objects.get(id=enrollment['course_section_id']))
 
 
-def _download_single_attachment(destination, attachment):
-    attachment_response = requests.get(attachment['url'])
-    attachment_response.raise_for_status()
+def _download_single_attachment(destination, attachment, useFaultTolerance: bool):
     attachment_filename = '%d_%s' % (attachment['id'], attachment['filename'])
+    log.info('Downloading "%s"...' % (attachment_filename))
+    attachment_response = requests.get(attachment['url'])
+
+    try:
+        attachment_response.raise_for_status()
+    except Exception as requestException:
+        if (not useFaultTolerance):
+            raise
+        message = 'Trouble downloading "%s": %s' % (attachment_filename, requestException)
+        JobLog.addMessage(message)
+        log.warning(message)
+        return (attachment_filename, str(requestException))
+
     attachment_path = os.path.join(destination, attachment_filename)
     with open(attachment_path, 'wb') as attachment_file:
         attachment_file.write(attachment_response.content)
-    return attachment_filename
+    return (attachment_filename, None)
 
 
-def _download_multiple_attachments(destination, submission):
+def _download_multiple_attachments(destination, submission, useFaultTolerance: bool):
     submission_id_str = str(submission['id'])
     temp_directory_path = os.path.join(settings.MEDIA_ROOT, 'temporary', submission_id_str)
     os.makedirs(temp_directory_path, exist_ok=True)
+    error = None
     for attachment in submission['attachments']:
-        _download_single_attachment(temp_directory_path, attachment)
+        (filename, error) = _download_single_attachment(temp_directory_path, attachment, useFaultTolerance)
+        if (error):
+            break
     attachment_archive_filename = '%d_submissions.zip' % submission['id']
     attachment_archive_full_path = os.path.join(destination, attachment_archive_filename)
     with ZipFile(attachment_archive_full_path, 'w') as archive_file:
@@ -200,33 +215,56 @@ def _download_multiple_attachments(destination, submission):
             for fn in files:
                 archive_file.write(os.path.join(temp_directory_path, fn),
                                    arcname=os.path.join(submission_id_str, fn))
-    return attachment_archive_filename
+    return (attachment_archive_filename, error)
 
 
-def _convert_submission(raw_submission, filename):
-    return {
+def _convert_submission(raw_submission, filename, error):
+    submissionData = {
         'id': raw_submission['id'],
         'author_id': raw_submission['user_id'],
         'assignment_id': raw_submission['assignment_id'],
         'filename': filename
     }
 
+    if (error is not None):
+        submissionData['error'] = error
 
-def _download_submission(raw_submission):
+    return submissionData
+
+
+def _download_submission(raw_submission, useFaultTolerance: bool):
     attachments = raw_submission['attachments']
     destination = os.path.join(settings.MEDIA_ROOT, 'submissions')
     os.makedirs(destination, exist_ok=True)
     if len(attachments) > 1:
-        filename = _download_multiple_attachments(destination, raw_submission)
+        (filename, error) = _download_multiple_attachments(destination, raw_submission, useFaultTolerance)
     else:
-        filename = _download_single_attachment(destination, raw_submission['attachments'][0])
-    return _convert_submission(raw_submission, filename)
+        (filename, error) = _download_single_attachment(destination, raw_submission['attachments'][0], useFaultTolerance)
+    return _convert_submission(raw_submission, filename, error)
 
 
-def persist_submissions(assignment):
-    thread_last(retrieve('submissions', assignment.course.id, assignment.id),
+def persist_submissions(assignment: CanvasAssignment, useFaultTolerance: bool):
+    submissionData: list = thread_last(retrieve('submissions', assignment.course.id, assignment.id),
                 (remove, lambda s: s['workflow_state'] == 'unsubmitted'),
                 (remove, lambda s: s.get('attachments') is None),
-                (map, lambda s: _download_submission(s)),
+                (map, lambda s: _download_submission(s, useFaultTolerance)),
+                list)
+
+    if (useFaultTolerance is True):
+        errors: list = thread_last(filter(lambda s: s.get('error') is not None, submissionData),
+                             list)
+
+        errorRate: float = len(errors) / len(submissionData)
+        toleranceRate = float(os.getenv('MPR_DIST_TOLERANCE_ERROR_RATE', 0.25))
+
+        if (errorRate > toleranceRate):
+            message = ('Persisting submissions for course (%d), assignment (%d), failed.' 
+                '  Error rate (%f) exceeds fault tolerance (%f).') % \
+                      (assignment.course.id, assignment.id, errorRate, toleranceRate)
+            JobLog.addMessage(message)
+            raise Exception(message)
+
+    thread_last(submissionData,
+                (remove, lambda s: s.get('error') is not None),
                 (map, lambda s: CanvasSubmission.objects.update_or_create(id=s['id'], defaults=dissoc(s, 'id'))),
                 list)
