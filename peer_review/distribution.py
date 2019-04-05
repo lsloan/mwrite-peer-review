@@ -3,6 +3,7 @@ import os
 from datetime import datetime
 from collections import OrderedDict
 
+from django.conf import settings
 from toolz.itertoolz import unique, frequencies, take
 
 from django.db import transaction
@@ -151,7 +152,7 @@ def review_distribution_task(utc_timestamp: datetime, force_distribution=False):
             for prompt in prompts_for_distribution:
                 message = 'Distributing reviews for course %d prompt %d...' % (prompt.course.id, prompt.id)
                 attemptNumber = 1 + JobLog.objects.filter(message__startswith=message).count()
-                useFaultTolerance: bool = (attemptNumber > int(os.getenv('MPR_DIST_TOLERANCE_ATTEMPTS', 3)))
+                useFaultTolerance: bool = (attemptNumber > settings.TOLERANCE_ATTEMPTS)
 
                 message += ' (Attempt: %d; Fault tolerance: %s)' % (attemptNumber, useFaultTolerance)
 
