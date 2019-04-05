@@ -48,6 +48,10 @@ ADMINS = list(map(lambda email: ('', email), getenv_csv('MPR_SERVER_TO_EMAILS'))
 # Storage configuration
 MEDIA_ROOT = os.environ['MPR_SUBMISSIONS_PATH']
 
+TOLERANCE_ATTEMPTS: int = int(os.getenv('MPR_DIST_TOLERANCE_ATTEMPTS', 3))
+TOLERANCE_RATE: float = float(os.getenv('MPR_DIST_TOLERANCE_ERROR_RATE', 0.25))
+TOLERANCE_TEST_ERRONEOUS_FILENAME: str = os.getenv('MPR_TOLERANCE_TEST_ERRONEOUS_FILENAME')
+
 # LTI configuration
 LTI_CONSUMER_SECRETS = None
 LTI_APP_REDIRECT = None
