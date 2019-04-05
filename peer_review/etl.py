@@ -184,6 +184,9 @@ def _download_single_attachment(destination, attachment, useFaultTolerance: bool
     attachment_response = requests.get(attachment['url'])
 
     try:
+        if (settings.DEBUG) and (settings.TOLERANCE_TEST_ERRONEOUS_FILENAME == attachment['filename']):
+            raise Exception('got "%s" test file (see "MPR_TOLERANCE_TEST_ERRONEOUS_FILENAME" in environment)' %
+                            (settings.TOLERANCE_TEST_ERRONEOUS_FILENAME))
         attachment_response.raise_for_status()
     except Exception as requestException:
         if (not useFaultTolerance):
@@ -255,12 +258,11 @@ def persist_submissions(assignment: CanvasAssignment, useFaultTolerance: bool):
                              list)
 
         errorRate: float = len(errors) / len(submissionData)
-        toleranceRate = float(os.getenv('MPR_DIST_TOLERANCE_ERROR_RATE', 0.25))
 
-        if (errorRate > toleranceRate):
+        if (errorRate > settings.TOLERANCE_RATE):
             message = ('Persisting submissions for course (%d), assignment (%d), failed.' 
                 '  Error rate (%f) exceeds fault tolerance (%f).') % \
-                      (assignment.course.id, assignment.id, errorRate, toleranceRate)
+                      (assignment.course.id, assignment.id, errorRate, settings.TOLERANCE_RATE)
             JobLog.addMessage(message)
             raise Exception(message)
 
