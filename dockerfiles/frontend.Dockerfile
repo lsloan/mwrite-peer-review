@@ -12,17 +12,16 @@ RUN apk --no-cache --virtual build-deps add --update nodejs nodejs-npm   && \
     npm install                                                          && \
     npm run build                                                        && \
     cp -Rv /tmp/build/dist/* /usr/local/apache2/htdocs                   && \
-    rm -rf /tmp/build                                                    && \
     apk --no-cache del build-deps
 
 EXPOSE 8080
 
-RUN chown -R root:root /usr/local/apache2/logs /var/lock /var/run/lock
+RUN chown -R root:root /usr/local/apache2/logs /var/lock
 
 RUN chmod 777 /usr/local/apache2/conf /usr/local/apache2/conf/extra
 
 RUN chmod g+rw /usr/local/apache2 /usr/local/apache2/logs /usr/local/apache2/htdocs \
-        /var/lock /var/run/lock
+        /var/lock
 
 WORKDIR $HTTPD_PREFIX
 
