@@ -12,6 +12,9 @@ RUN apk --no-cache --virtual build-deps add --update build-base                 
     pip --no-cache-dir install awscli                                                                && \
     apk --no-cache del build-deps
 
+RUN touch /etc/environment
+RUN chmod g+w /etc/environment
+
 COPY scripts/distribute_reviews.bash /etc/periodic/15min
 COPY scripts/backup_data.bash /etc/periodic/daily
 RUN chmod 0500 /etc/periodic/15min/distribute_reviews.bash
