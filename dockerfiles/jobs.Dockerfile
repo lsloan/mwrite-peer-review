@@ -24,6 +24,12 @@ RUN mv /etc/periodic/daily/backup_data.bash /etc/periodic/weekly/backup_data    
 
 RUN mkdir /root/.aws && ln -s /etc/mwrite-peer-review/aws_credentials /root/.aws/credentials
 
-RUN adduser -D -H -u 1000470000 mpr
+COPY scripts/start_jobs.bash /usr/local/bin/start_jobs.bash
+RUN chown root:root /usr/local/bin/start_jobs.bash
+RUN chmod 4755 /usr/local/bin/start_jobs.bash
 
-CMD scripts/start_jobs.bash
+RUN ls -l /usr/local/bin/start_jobs.bash
+RUN ls -l /etc/crontabs/root
+RUN cat /etc/crontabs/root
+
+CMD /usr/local/bin/start_jobs.bash
