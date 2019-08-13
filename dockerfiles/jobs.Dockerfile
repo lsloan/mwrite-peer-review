@@ -17,19 +17,11 @@ RUN chmod g+w /etc/environment
 
 COPY scripts/distribute_reviews.bash /etc/periodic/15min
 COPY scripts/backup_data.bash /etc/periodic/daily
-RUN chmod ugo=rx /etc/periodic/15min/distribute_reviews.bash
+RUN chmod 0500 /etc/periodic/15min/distribute_reviews.bash
 RUN chmod 0500 /etc/periodic/daily/backup_data.bash
 RUN mv /etc/periodic/15min/distribute_reviews.bash /etc/periodic/15min/distribute_reviews   # otherwise run-parts refuses to run this
 RUN mv /etc/periodic/daily/backup_data.bash /etc/periodic/weekly/backup_data                # otherwise run-parts refuses to run this
 
 RUN mkdir /root/.aws && ln -s /etc/mwrite-peer-review/aws_credentials /root/.aws/credentials
 
-COPY scripts/start_jobs.bash /usr/local/bin/start_jobs.bash
-RUN chown root:root /usr/local/bin/start_jobs.bash
-RUN chmod 4755 /usr/local/bin/start_jobs.bash
-
-RUN ls -l /usr/local/bin/start_jobs.bash
-RUN ls -l /etc/crontabs/root
-RUN cat /etc/crontabs/root
-
-CMD /usr/local/bin/start_jobs.bash
+CMD scripts/start_jobs.bash
