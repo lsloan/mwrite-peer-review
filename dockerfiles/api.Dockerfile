@@ -3,6 +3,7 @@ ARG MPR_WORKING_DIRECTORY=/usr/src/app
 
 RUN mkdir -p $MPR_WORKING_DIRECTORY
 COPY ./ $MPR_WORKING_DIRECTORY
+RUN chmod -R ug+w $MPR_WORKING_DIRECTORY
 WORKDIR $MPR_WORKING_DIRECTORY
 
 # Build-time dependencies are all in a single RUN
