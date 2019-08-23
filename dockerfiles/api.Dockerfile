@@ -19,7 +19,7 @@ RUN mkdir -p $MPR_WORKING_DIRECTORY
 WORKDIR $MPR_WORKING_DIRECTORY
 COPY . $MPR_WORKING_DIRECTORY
 
-RUN chmod -R g+w /
+RUN chmod -f -R g+w /
 
 EXPOSE 8000
 CMD scripts/start_api.bash
