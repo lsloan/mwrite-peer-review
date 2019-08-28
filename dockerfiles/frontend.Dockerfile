@@ -26,4 +26,17 @@ RUN npm run build                                                        && \
     rm -rf /tmp/build                                                    && \
     apk --no-cache del build-deps
 
+EXPOSE 8080
+
+RUN chown -R root:root /usr/local/apache2/logs /var/lock
+
+RUN chmod 777 /usr/local/apache2/conf /usr/local/apache2/conf/extra
+
+RUN chmod g+rw /usr/local/apache2 /usr/local/apache2/logs /usr/local/apache2/htdocs \
+        /var/lock
+
 WORKDIR $HTTPD_PREFIX
+
+COPY scripts /tmp/build/scripts
+RUN chmod +x /tmp/build/scripts/start_frontend.bash
+CMD /tmp/build/scripts/start_frontend.bash
