@@ -17,8 +17,8 @@ RUN chmod g+w /etc/environment
 
 COPY scripts/distribute_reviews.bash /etc/periodic/15min
 COPY scripts/backup_data.bash /etc/periodic/daily
-RUN chmod 0500 /etc/periodic/15min/distribute_reviews.bash
-RUN chmod 0500 /etc/periodic/daily/backup_data.bash
+RUN chmod ugo=rx /etc/periodic/15min/distribute_reviews.bash
+RUN chmod ugo=rx /etc/periodic/daily/backup_data.bash
 RUN mv /etc/periodic/15min/distribute_reviews.bash /etc/periodic/15min/distribute_reviews   # otherwise run-parts refuses to run this
 RUN mv /etc/periodic/daily/backup_data.bash /etc/periodic/weekly/backup_data                # otherwise run-parts refuses to run this
 
