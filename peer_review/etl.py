@@ -253,6 +253,13 @@ def persist_submissions(assignment: CanvasAssignment, useFaultTolerance: bool):
                 (map, lambda s: _download_submission(s, useFaultTolerance)),
                 list)
 
+    if (len(submissionData) == 0):
+        message = ('Persisting submissions for course (%d), assignment (%d), failed.'
+                   '  No submissions were found.') % \
+                  (assignment.course.id, assignment.id)
+        raise Exception(message)
+
+
     if (useFaultTolerance is True):
         errors: list = thread_last(filter(lambda s: s.get('error') is not None, submissionData),
                              list)
