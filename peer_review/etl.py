@@ -254,7 +254,7 @@ def persist_submissions(assignment: CanvasAssignment, useFaultTolerance: bool):
                                        list)
 
     if (len(submissionData) == 0):
-        message = ('Persisting submissions for course (%d), assignment (%d), failed.'
+        message = ('Unable to persist submissions for course (%d), assignment (%d).'
                    '  No submissions were found.') % \
                   (assignment.course.id, assignment.id)
         log.warning(message)
