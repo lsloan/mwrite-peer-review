@@ -122,7 +122,7 @@ def distribute_reviews(rubric, utc_timestamp, force_distribution=False):
                                               is_distribution_complete=True,
                                               distributed_at_utc=utc_timestamp)
     else:
-        log.error('No peer reviews were created for course (%d), assignment (%d), rubric (%d)'
+        log.warning('No peer reviews were created for course (%d), assignment (%d), rubric (%d)'
                   % (rubric.reviewed_assignment.course.id, rubric.reviewed_assignment.id, rubric.id))
 
 
