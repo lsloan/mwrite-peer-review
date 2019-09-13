@@ -41,7 +41,7 @@ def make_distribution(assignment, students, submissions, n=DEFAULT_NUMBER_OF_REV
     if submissions.count() < (DEFAULT_NUMBER_OF_REVIEWS_PER_STUDENT + 1):
         log.warning('Not enough submissions to distribute for course (%d), assignment (%d)'
                     % (assignment.course.id, assignment.id))
-        return
+        return dict(), None
 
     submissions_by_id = {submission.id: submission for submission in submissions}
 
@@ -85,10 +85,12 @@ def distribute_reviews(rubric, utc_timestamp, force_distribution=False):
             log.error(msg)
             raise RuntimeError(msg)
 
-        log.info('Submissions for course %d prompt %d will be distributed only within sections' % (rubric.reviewed_assignment.course.id, rubric.reviewed_assignment.id))
+        log.info('Submissions for course (%d), assignment (%d) will be distributed only within sections'
+                 % (rubric.reviewed_assignment.course.id, rubric.reviewed_assignment.id))
         reviews = {}
         for section in rubric.sections.all():
-            log.info('Distributing reviews for section %d' % section.id)
+            log.info('Distributing reviews for course (%d), assignment (%d), rubric (%d), section (%d)'
+                     % (rubric.reviewed_assignment.course.id, rubric.reviewed_assignment.id, rubric.id, section.id))
             submissions = rubric.reviewed_assignment.canvas_submission_set.filter(author__in=section.students.all())
             author_ids = submissions.values_list('author', flat=True)
             students = CanvasStudent.objects.filter(id__in=author_ids)
@@ -102,7 +104,8 @@ def distribute_reviews(rubric, utc_timestamp, force_distribution=False):
 
             reviews.update(reviews_for_section)
     else:
-        log.info('Submissions for course %d prompt %d will be distributed across all sections' % (rubric.reviewed_assignment.course.id, rubric.reviewed_assignment.id))
+        log.info('Submissions for course (%d), assignment (%d) will be distributed across all sections'
+                 % (rubric.reviewed_assignment.course.id, rubric.reviewed_assignment.id))
         submissions = rubric.reviewed_assignment.canvas_submission_set.all()
         students = CanvasStudent.objects.filter(id__in=submissions.values_list('author', flat=True))
         reviews, _ = make_distribution(rubric.reviewed_assignment, students, submissions)
@@ -112,13 +115,15 @@ def distribute_reviews(rubric, utc_timestamp, force_distribution=False):
                     for submission_id in submission_ids]
 
     if len(peer_reviews) > 0:
-        log.info('Persisting %d peer reviews pairings for rubric %d' % (len(peer_reviews), rubric.id))
+        log.info('Persisting (%d) peer review pairings for course (%d), assignment (%d), rubric (%d)'
+                 % (len(peer_reviews), rubric.reviewed_assignment.course.id, rubric.reviewed_assignment.id, rubric.id))
         PeerReview.objects.bulk_create(peer_reviews)
         PeerReviewDistribution.objects.create(rubric=rubric,
                                               is_distribution_complete=True,
                                               distributed_at_utc=utc_timestamp)
     else:
-        log.error('No peer reviews were created for rubric %d' % rubric.id)
+        log.error('No peer reviews were created for course (%d), assignment (%d), rubric (%d)'
+                  % (rubric.reviewed_assignment.course.id, rubric.reviewed_assignment.id, rubric.id))
 
 
 # TODO this isn't concurrency safe.  we're going to get around this for now by just using a single instance per course
