@@ -17,7 +17,7 @@ def test_distribution(rubric):
     submissions = rubric.reviewed_assignment.canvas_submission_set.all()
     authors = CanvasStudent.objects.filter(id__in=submissions.values_list('author_id', flat=True))
 
-    reviews, counts = make_distribution(authors, submissions)
+    reviews, counts = make_distribution(rubric.reviewed_assignment, authors, submissions)
 
     for student_id, submissions_to_review in reviews.items():
 

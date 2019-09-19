@@ -248,20 +248,27 @@ def _download_submission(raw_submission, useFaultTolerance: bool):
 
 def persist_submissions(assignment: CanvasAssignment, useFaultTolerance: bool):
     submissionData: list = thread_last(retrieve('submissions', assignment.course.id, assignment.id),
-                (remove, lambda s: s['workflow_state'] == 'unsubmitted'),
-                (remove, lambda s: s.get('attachments') is None),
-                (map, lambda s: _download_submission(s, useFaultTolerance)),
-                list)
+                                       (remove, lambda s: s['workflow_state'] == 'unsubmitted'),
+                                       (remove, lambda s: s.get('attachments') is None),
+                                       (map, lambda s: _download_submission(s, useFaultTolerance)),
+                                       list)
+
+    if (len(submissionData) == 0):
+        message = ('Unable to persist submissions for course (%d), assignment (%d).'
+                   '  No submissions were found.') % \
+                  (assignment.course.id, assignment.id)
+        log.warning(message)
+        return
 
     if (useFaultTolerance is True):
         errors: list = thread_last(filter(lambda s: s.get('error') is not None, submissionData),
-                             list)
+                                   list)
 
         errorRate: float = len(errors) / len(submissionData)
 
         if (errorRate > settings.TOLERANCE_RATE):
-            message = ('Persisting submissions for course (%d), assignment (%d), failed.' 
-                '  Error rate (%f) exceeds fault tolerance (%f).') % \
+            message = ('Persisting submissions for course (%d), assignment (%d), failed.'
+                       '  Error rate (%f) exceeds fault tolerance (%f).') % \
                       (assignment.course.id, assignment.id, errorRate, settings.TOLERANCE_RATE)
             JobLog.addMessage(message)
             raise Exception(message)
