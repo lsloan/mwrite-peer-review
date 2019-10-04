@@ -1,16 +1,14 @@
 <template>
-    <div class="mdl-textfield mdl-js-textfield">
-        <label v-if="label" :for="_uid" class="mdl-textfield__label">{{ label }}</label>
         <textarea
             :id="_uid"
             ref="textarea"
-            class="autosize-textarea mdl-textfield__input"
+            class="autosize-textarea"
             rows="1"
             :disabled="disabled"
             @input="$emit('input', $event.target.value)"
+            :placeholder="label"
             :value="value">
         </textarea>
-    </div>
 </template>
 
 <script>
@@ -22,6 +20,7 @@ export default {
   mounted() {
     autosize(this.$refs.textarea);
     componentHandler.upgradeElement(this.$el); // eslint-disable-line no-undef
+    this.$el.value = this.$attrs.value || ''; // Vue.js textarea value bug workaround
   },
   updated() {
     this.$el.MaterialTextfield.checkDirty();
