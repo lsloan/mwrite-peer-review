@@ -18,12 +18,20 @@ export default {
   name: 'autosize-textarea',
   props: ['value', 'disabled', 'label'],
   mounted() {
+    this.$el.value = this.$attrs.value || ''; // Vue.js textarea value bug workaround
     autosize(this.$refs.textarea);
     componentHandler.upgradeElement(this.$el); // eslint-disable-line no-undef
-    this.$el.value = this.$attrs.value || ''; // Vue.js textarea value bug workaround
   },
   updated() {
-    this.$el.MaterialTextfield.checkDirty();
+    /*
+     * TODO: try to emit 'input' event at right time if textarea has a default value
+     * That may trigger validation and allow user to submit changes without visiting
+     * and updating each field of the form first
+     *
+     * emit() example from PeerReview.vue:
+     *
+     *         this.$root.$emit('notification', SUBMIT_REVIEW_INCOMPLETE_MESSAGE);
+     */
   },
   watch: {
     value() {
