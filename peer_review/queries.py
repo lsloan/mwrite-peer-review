@@ -786,6 +786,7 @@ class Reviews:
                     'reviewer_id': student_numbers[peer_review_id],
                     'comment_id': comment.id,
                     'comment': comment.comment,
+                    'criterion_real_id': comment.criterion_id,
                     'criterion_id': criterion_numbers[comment.criterion_id],
                     'criterion': comment.criterion.description
                 }
