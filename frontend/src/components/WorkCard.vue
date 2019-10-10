@@ -27,6 +27,12 @@
                         </i>
                         <span v-if="!entry.isReady">Not Received</span>
                         <span v-else>Submitted</span>
+                        &nbsp;&mdash;&nbsp;
+                        <router-link
+                            :to="makeLink(entry)"
+                            class="start-action-item-button mdl-button mdl-js-button mdl-button--colored">
+                            Edit {{ entry.type }}
+                        </router-link>
                     </div>
 
                 </div>
