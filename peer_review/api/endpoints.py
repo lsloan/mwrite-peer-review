@@ -327,7 +327,8 @@ def submit_peer_review(request, params, course_id, review_id):
         raise APIException(data={'error': 'Criterion IDs do not match.'}, status_code=400)
 
     existing_comments = PeerReviewComment.objects.filter(peer_review=peer_review)
-    if existing_comments.exists():
+    # if existing_comments.exists():
+    if False: # TODO: permanently disable?
         LOGGER.warning(
             'Student %s tried to submit a review that has already been completed',
             student.username
