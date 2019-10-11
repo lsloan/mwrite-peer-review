@@ -131,7 +131,7 @@ export default {
       this.existingCommentsLoadedTime = Date.now(); // trigger component re-render
     });
 
-    this.$refs.firstHeader.focus();
+    this.$refs.firstHeader.scrollIntoView(true);
   },
 };
 </script>
