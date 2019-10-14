@@ -14,23 +14,26 @@
                  class="action-item mdl-cell mdl-cell--4-col">
                 <div class="student-name-container">Student {{ index + 1 }}</div>
                 <div class="action-item-container">
-                    <router-link
-                        v-if="entry.isReady && !entry.isComplete"
-                        :to="makeLink(entry)"
-                        class="start-action-item-button mdl-button mdl-js-button mdl-button--colored">
-                        Start {{ entry.type }}
-                    </router-link>
-                    <div v-else :class="{'action-item-status-container': true, 'action-item-status-container--info': entry.isComplete}">
-                        <i class="material-icons">
-                            <template v-if="entry.isComplete">done</template>
-                            <template v-else-if="!entry.isReady">query_builder</template>
-                        </i>
-                        <span v-if="!entry.isReady">Not Received</span>
-                        <span v-else>Submitted</span>
-                        &nbsp;&mdash;&nbsp;
+                    <div v-if="entry.isReady && !entry.isComplete" class="action-item-status-container">
                         <router-link
                             :to="makeLink(entry)"
                             class="start-action-item-button mdl-button mdl-js-button mdl-button--colored">
+                            Start {{ entry.type }}
+                        </router-link>
+                    </div>
+                    <div v-else class="action-item-status-container">
+                        <router-link
+                            :to="makeLink(entry)"
+                            class="start-action-item-button mdl-button mdl-js-button mdl-button--colored">
+                            <span :class="{'action-item-status-container--info': entry.isComplete}">
+                                <i class="material-icons">
+                                    <template v-if="entry.isComplete">done</template>
+                                    <template v-else-if="!entry.isReady">query_builder</template>
+                                </i>
+                                <span v-if="!entry.isReady">Not Received</span>
+                                <span v-else>Submitted</span>
+                            </span>
+                            &mdash;
                             Edit {{ entry.type }}
                         </router-link>
                     </div>
