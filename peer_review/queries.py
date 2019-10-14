@@ -235,7 +235,6 @@ class StudentDashboardStatus:
 
         return StudentDashboardStatus._unflatten(
             qs,
-            lambda pr: not pr.review_is_complete,
             lambda _: True,
             StudentDashboardStatus._make_assigned_prompt
         )
