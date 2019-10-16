@@ -1,14 +1,14 @@
 <template>
-        <textarea
-            :id="_uid"
-            ref="textarea"
-            class="autosize-textarea"
-            rows="2"
-            :disabled="disabled"
-            @input="$emit('input', $event.target.value)"
-            :placeholder="label"
-            :value="value">
-        </textarea>
+    <textarea
+        :id="_uid"
+        ref="textarea"
+        class="autosize-textarea"
+        rows="2"
+        :disabled="disabled"
+        @input="$emit('input', $event.target.value)"
+        :placeholder="label"
+        :value="value">
+    </textarea>
 </template>
 
 <script>

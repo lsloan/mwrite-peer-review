@@ -127,6 +127,7 @@ export default {
     });
 
     this.$api.get('/course/{}/reviews/{}', this.courseId, this.reviewId).then(r => {
+      // make assoc. array with criterionRealId as key and comment as value
       this.existingComments = Object.fromEntries(Object.values(r.data).map(x => [x.criterionRealId, x.comment]));
       this.existingCommentsLoadedTime = Date.now(); // trigger component re-render
     });
