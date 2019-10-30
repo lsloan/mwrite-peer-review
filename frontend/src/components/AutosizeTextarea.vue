@@ -1,16 +1,14 @@
 <template>
-    <div class="mdl-textfield mdl-js-textfield">
-        <label v-if="label" :for="_uid" class="mdl-textfield__label">{{ label }}</label>
-        <textarea
-            :id="_uid"
-            ref="textarea"
-            class="autosize-textarea mdl-textfield__input"
-            rows="1"
-            :disabled="disabled"
-            @input="$emit('input', $event.target.value)"
-            :value="value">
-        </textarea>
-    </div>
+    <textarea
+        :id="_uid"
+        ref="textarea"
+        class="autosize-textarea"
+        rows="2"
+        :disabled="disabled"
+        @input="$emit('input', $event.target.value)"
+        :placeholder="label"
+        :value="value">
+    </textarea>
 </template>
 
 <script>
@@ -20,11 +18,14 @@ export default {
   name: 'autosize-textarea',
   props: ['value', 'disabled', 'label'],
   mounted() {
+    this.$el.value = this.$attrs.value || ''; // Vue.js textarea value bug workaround
+    if(this.$attrs.value) { // trigger 'input' event to make Vue.js update its field values
+      this.$el.dispatchEvent((new Event('input')));
+    }
     autosize(this.$refs.textarea);
     componentHandler.upgradeElement(this.$el); // eslint-disable-line no-undef
   },
   updated() {
-    this.$el.MaterialTextfield.checkDirty();
   },
   watch: {
     value() {
