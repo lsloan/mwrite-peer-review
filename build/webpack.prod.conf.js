@@ -35,6 +35,7 @@ const webpackConfig = merge(baseWebpackConfig, {
     new webpack.DefinePlugin({
       'process.env': env,
       '__API_URL__': '\'' + process.env['MPR_API_URL'] + '\'',
+      '__MPR_CSRF_COOKIE_NAME__': '\'' + process.env['MPR_CSRF_COOKIE_NAME'] + '\'',
       '__GA_TRACKING_ID__': '\'' + process.env['MPR_GOOGLE_ANALYTICS_TRACKING_ID'] + '\''
     }),
     new UglifyJsPlugin({

@@ -6,7 +6,7 @@ const defaultOptions = {
 };
 
 const defaultPostOptions = Object.assign({
-  xsrfCookieName: 'fp',
+  xsrfCookieName: __MPR_CSRF_COOKIE_NAME__,
   xsrfHeaderName: 'X-CSRFToken'
 }, defaultOptions);
 

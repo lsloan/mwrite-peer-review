@@ -10,6 +10,7 @@ module.exports = {
   },
   globals: {
     '__API_URL__': true,
+    '__MPR_CSRF_COOKIE_NAME__': true,
     '__GA_TRACKING_ID__': true
   },
   extends: [

@@ -31,6 +31,8 @@ spec:
       env:
       - name: MPR_API_URL
         value: https://api.peer-review-nonprod.mwrite.openshift.dsc.umich.edu
+      - name: MPR_CSRF_COOKIE_NAME
+        value: mpr_fp
       - name: MPR_GOOGLE_ANALYTICS_TRACKING_ID
         value: <...redacted...>
     type: Source
