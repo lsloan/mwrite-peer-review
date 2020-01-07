@@ -126,6 +126,16 @@ def persist_assignments(course_id):
                             'no due date!' % (rubric.id, assignment.id)
                         )
                 else:
+                    if assignment.due_date_utc is None:
+                        log.warning('Prompt assignment %d does not have a due date (rubric %d)' %
+                                    (assignment.id, rubric.id))
+                        continue
+
+                    if rubric.peer_review_open_date is None:
+                        log.warning('Rubric %d does not have a due date (assignment %d)' %
+                                    (rubric.id, assignment.id))
+                        continue
+
                     if rubric.peer_review_open_date < assignment.due_date_utc:
                         log.warning('Prompt %d has a due date later than rubric %d\'s peer review open date' %
                                     (assignment.id, rubric.id))
