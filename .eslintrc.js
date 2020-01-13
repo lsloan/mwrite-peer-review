@@ -31,9 +31,10 @@ module.exports = {
     // allow debugger during development
     'no-debugger': process.env.NODE_ENV === 'production' ? 'error' : 'off',
     'semi': ['error', 'always'],
+    'comma-dangle': ['error', 'only-multiline'],
     'space-before-function-paren': ['warn', 'never'],
     'padded-blocks': ['warn', 'never'],
-    'keyword-spacing': ['error', {'overrides': {
+    'keyword-spacing': ['warn', {'overrides': {
       'if': {'after': false},
       'for': {'after': false},
       'while': {'after': false},

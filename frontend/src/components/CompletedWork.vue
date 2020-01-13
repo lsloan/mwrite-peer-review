@@ -32,6 +32,7 @@
                                 <span>/</span>
                                 <span>{{ review.reviews.received.total }}</span>
                                 <span>reviews received</span>
+                                <span v-if="!review.dueDateHasPassed">(available after due date)</span>
                             </div>
                             <div class="completed-work__sub-container">
                                 <span>{{ review.reviews.given.completed }}</span>
@@ -42,8 +43,10 @@
                         </div>
                         <div class="mdl-card__actions mdl-card--border">
                             <router-link v-if="review.reviews.received.completed > 0"
-                                class="mdl-button mdl-js-button mdl-button--colored"
-                                :to="{name: 'ReviewsReceived', params: {studentId: studentId, rubricId: review.rubricId}}">
+                                         :title="!review.dueDateHasPassed ? 'Reviews will be available after due date' : ''"
+                                         :disabled="!review.dueDateHasPassed"
+                                         class="mdl-button mdl-js-button mdl-button--colored"
+                                         :to="review.dueDateHasPassed ? {name: 'ReviewsReceived', params: {studentId: studentId, rubricId: review.rubricId}} : {}">
                                 Reviews I Received
                             </router-link>
                             <router-link v-if="review.reviews.given.completed > 0"

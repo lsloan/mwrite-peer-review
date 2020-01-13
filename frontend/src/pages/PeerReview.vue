@@ -20,6 +20,8 @@
                 <autosize-textarea
                     class="criterion-input"
                     :label="`Enter your comment for the ${numberToOrdinal(index + 1)} criterion here.`"
+                    :value="`${existingCommentForCriterion(criterion)}`"
+                    :key="existingCommentsLoadedTime"
                     v-model="responses[criterion.id]"/>
             </peer-review-section>
             <peer-review-section>
@@ -57,9 +59,11 @@ export default {
   components: {PeerReviewSection, AutosizeTextarea, Snackbar, MdlButton, MdlAnchorButton},
   data() {
     return {
-      data: {},
+      rubric: {},
+      existingComments: {},
       responses: {},
-      submissionInProgress: false
+      submissionInProgress: false,
+      existingCommentsLoadedTime: undefined, // indicate when component needs re-render
     };
   },
   computed: {
@@ -67,10 +71,10 @@ export default {
       return this.$store.state.userDetails.courseId;
     },
     rubricDescription() {
-      return this.data.description || '';
+      return this.rubric.description || '';
     },
     criteria() {
-      const {criteria = []} = this.data;
+      const {criteria = []} = this.rubric;
       return R.sortBy(c => c.id, criteria);
     },
     comments() {
@@ -91,6 +95,9 @@ export default {
   methods: {
     numberToOrdinal(number) {
       return toWordsOrdinal(number);
+    },
+    existingCommentForCriterion(criterion) {
+      return this.existingComments[criterion.id] || '';
     },
     submitReview() {
       if(this.reviewIsComplete) {
@@ -116,10 +123,17 @@ export default {
   },
   mounted() {
     this.$api.get('/course/{}/reviews/{}/rubric', this.courseId, this.reviewId).then(r => {
-      this.data = r.data;
+      this.rubric = r.data;
     });
-    this.$refs.firstHeader.focus();
-  }
+
+    this.$api.get('/course/{}/reviews/{}', this.courseId, this.reviewId).then(r => {
+      // make assoc. array with criterionRealId as key and comment as value
+      this.existingComments = Object.fromEntries(Object.values(r.data).map(x => [x.criterionRealId, x.comment]));
+      this.existingCommentsLoadedTime = Date.now(); // trigger component re-render
+    });
+
+    this.$refs.firstHeader.scrollIntoView(true);
+  },
 };
 </script>
 

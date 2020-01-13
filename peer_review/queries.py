@@ -1,5 +1,7 @@
 import json
 import logging
+import pytz
+from datetime import datetime
 from itertools import chain
 
 from django.db.models.query import QuerySet
@@ -127,11 +129,12 @@ class StudentDashboardStatus:
     def _make_data(entry):
         prompt_id, peer_reviews = entry
         prompt_name = peer_reviews[0].submission.assignment.title
-        due_date_utc = peer_reviews[0].submission.assignment.rubric_for_prompt.passback_assignment.due_date_utc
+        due_date_utc: datetime = peer_reviews[0].submission.assignment.rubric_for_prompt.passback_assignment.due_date_utc
         return {
             'prompt_id':    prompt_id,
             'prompt_name':  prompt_name,
             'due_date_utc': due_date_utc,
+            'due_date_has_passed': due_date_utc < datetime.now(pytz.UTC),
         }
 
     @staticmethod
@@ -235,7 +238,7 @@ class StudentDashboardStatus:
 
         return StudentDashboardStatus._unflatten(
             qs,
-            lambda pr: not pr.review_is_complete,
+            lambda _: True,
             StudentDashboardStatus._make_assigned_prompt
         )
 
@@ -786,6 +789,7 @@ class Reviews:
                     'reviewer_id': student_numbers[peer_review_id],
                     'comment_id': comment.id,
                     'comment': comment.comment,
+                    'criterion_real_id': comment.criterion_id,
                     'criterion_id': criterion_numbers[comment.criterion_id],
                     'criterion': comment.criterion.description
                 }
