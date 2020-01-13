@@ -130,13 +130,12 @@ class StudentDashboardStatus:
         prompt_id, peer_reviews = entry
         prompt_name = peer_reviews[0].submission.assignment.title
         due_date_utc: datetime = peer_reviews[0].submission.assignment.rubric_for_prompt.passback_assignment.due_date_utc
-
         due_date_has_passed: bool = None
 
         try:
             due_date_has_passed = due_date_utc < datetime.now(pytz.UTC)
-        except:
-            pass
+        except TypeError:
+            pass # rare case of no due date; retain None value
 
         return {
             'prompt_id':    prompt_id,
