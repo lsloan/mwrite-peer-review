@@ -228,6 +228,7 @@
                     supporting-text="slot">
                 <div slot="supporting-text" class="mdl-card__supporting-text">
                     <autosize-textarea
+                        class="all-input"
                         v-model="models.description"
                         label="Enter a description for this rubric here."
                         :disabled="reviewIsInProgress"/>
@@ -251,7 +252,7 @@
                                 </button>
                             </div>
                             <div class="mdl-card__supporting-text">
-                                <autosize-textarea v-model="criterion.description" label="Enter a description for this criterion here." :disabled="reviewIsInProgress"></autosize-textarea>
+                                <autosize-textarea class="all-input" v-model="criterion.description" label="Enter a description for this criterion here." :disabled="reviewIsInProgress"></autosize-textarea>
                             </div>
                         </div>
                     </mdl-card>
@@ -608,6 +609,10 @@ export default {
     }
 
     .mdl-textfield {
+        width: 100%;
+    }
+
+    .all-input {
         width: 100%;
     }
 
