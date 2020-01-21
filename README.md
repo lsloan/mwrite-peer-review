@@ -4,7 +4,8 @@
 
 * [Source Tree Overview](docs/source-tree-overview.md)
 * [Application Configuration](docs/application-configuration.md)
-* [Development Environment Setup](docs/development-environment-setup.md)
+* [Development Environment Setup (Non-Docker)](docs/development-environment-setup.md)
+* [Development Environment Setup (Docker-Compose)](docs/development-environment-setup-docker-compose.md)
 * [Frontend Overview](docs/frontend-overview.md)
 * [Backend Overview](docs/backend-overview.md)
 * [Jobs Overview](docs/jobs-overview.md)
