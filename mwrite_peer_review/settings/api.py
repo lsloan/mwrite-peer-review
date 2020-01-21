@@ -89,6 +89,7 @@ WATCHMAN_CHECKS = (
 WATCHMAN_ERROR_CODE = 203
 
 MIDDLEWARE = [
+    'django_cookies_samesite.middleware.CookiesSameSite',
     'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
@@ -119,6 +120,7 @@ SESSION_COOKIE_HTTPONLY = True
 SESSION_EXPIRE_AT_BROWSER_CLOSE = True
 SESSION_COOKIE_DOMAIN = os.environ['MPR_SESSION_COOKIE_DOMAIN']
 SESSION_SAVE_EVERY_REQUEST = True
+SESSION_COOKIE_SAMESITE = getenv('SESSION_COOKIE_SAMESITE', None)
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 CSRF_COOKIE_SECURE = not DEBUG
 CSRF_COOKIE_NAME = getenv('MPR_CSRF_COOKIE_NAME', 'mpr_fp')
