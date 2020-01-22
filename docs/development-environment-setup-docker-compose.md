@@ -102,10 +102,13 @@ docker-compose build
 # Bring all the containers up (add -d to detach them)
 docker-compose up 
 
-### Run database migrations to set up your (new, empty) database and create some users
+The MySQL database files are stored locally in the .data directory. 
+Remove this to clean the database
+
+### Run database migrations to set up your (new, empty) database (if necessary)
 
 ```bash
-$ docker exec -it mwrite_api ./scripts/migrateandcreateusers.bash
+docker exec -it mwrite_api ./scripts/migrateandcreateusers.bash
 ```
 
 ### Create test users
@@ -113,7 +116,8 @@ $ docker exec -it mwrite_api ./scripts/migrateandcreateusers.bash
 These are created by the above script but you can use the create user to add more.
 
 ```bash 
-$ docker exec -it mwrite_api python manage.py createuser --username=test_student2 --password=testpass --role=student
+docker exec -it mwrite_api python manage.py createuser --username=test_student --password=testpass --role=student
+docker exec -it mwrite_api python manage.py createuser --username=test_instructor --password=testpass --role=instructor
 ```
 
 ## Logging In

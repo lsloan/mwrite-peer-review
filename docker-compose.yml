@@ -15,6 +15,7 @@ services:
     ports:
       - "2038:3306"
     volumes:
+      - ./.data/mysql:/var/lib/mysql:delegated
       - ./mysql:/docker-entrypoint-initdb.d/:ro
     container_name: mwrite_mysql
   api:
