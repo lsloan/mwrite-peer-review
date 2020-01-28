@@ -36,6 +36,8 @@ The API and jobs containers derive their runtime configuration from the followin
 | MPR_TIMEZONE                     | Unix timezone         | No                   | Sets Django's [TIME_ZONE](https://docs.djangoproject.com/en/1.11/ref/settings/#time-zone) setting                                  | 
 | MPR_SESSION_COOKIE_DOMAIN        | domain name only      | No                   | Sets Django's [SESSION_COOKIE_DOMAIN](https://docs.djangoproject.com/en/1.11/ref/settings/#session-cookie-domain) setting for CORS |
 | MPR_CSRF_COOKIE_DOMAIN           | domain name only      | No                   | Sets Django's [CSRF_COOKIE_DOMAIN](https://docs.djangoproject.com/en/1.11/ref/settings/#csrf-cookie-domain) setting for CORS       |
+| MPR_SESSION_COOKIE_SECURE            | Python module         | Yes (API); no (jobs) | Sets the value of SESSION_COOKIE_SECURE provided by the API. If this isn't set this will default to `not DEBUG`     |
+| MPR_SESSION_COOKIE_SAMESITE          | Python module         | Yes (API); no (jobs) | Sets the value of SESSION_COOKIE_SAMESITE. You may want to use the string value None. This will default to not being set if this value isn't set   |
 | DJANGO_SETTINGS_MODULE           | Python module         | Yes (API); no (jobs) | Overrides the default settings file; must be set for the jobs container for cron to pick up environment variables                  |
 
 ### jobs-only Environment Variables
