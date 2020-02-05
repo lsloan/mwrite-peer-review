@@ -178,8 +178,9 @@ def review_distribution_task(utc_timestamp: datetime, force_distribution=False):
                     log.info('Finished review distribution for course %d prompt %d' % (prompt.course.id, prompt.id))
 
                 except Exception as ex:
-                    # TODO expose failed prompt distribution to health check
-                    log.exception('Skipping review distribution for course %d prompt %d () due to error' % (prompt.course.id, prompt.id))
+                    # TODO show failed prompt distribution in status API
+                    # TODO determine when is best to log exception, error, or warning.  some cases should just be warning
+                    log.exception('Skipping review distribution for course %d prompt %d due to error' % (prompt.course.id, prompt.id))
 
                 log.info('Finished distributing reviews for course %d prompt %d' % (prompt.course.id, prompt.id))
     except Exception as ex:
