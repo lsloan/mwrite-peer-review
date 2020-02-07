@@ -7,13 +7,12 @@
             </div>
             <div class="mdl-card__supporting-text">
                 <p v-html="errorMessage"></p>
-                <p>If you need help, please <a href="mailto:mwrite.support@umich.edu">reach out to us</a> to report the
-                    problem. Thank you!</p>
+                <p>For additional help, email M-Write Support: <a href="mailto:mwrite.support@umich.edu">mwrite.support@umich.edu</a>.</p>
             </div>
             <div class="mdl-card__actions mdl-card--border">
                 <a class="mdl-button mdl-button--colored mdl-js-button mdl-js-ripple-effect"
                    href="mailto:mwrite.support@umich.edu">
-                    Get Help
+                    Email M-Write Support
                 </a>
             </div>
         </div>
