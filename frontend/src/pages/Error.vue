@@ -6,7 +6,7 @@
                 <h2 class="mdl-card__title-text">We're Sorry</h2>
             </div>
             <div class="mdl-card__supporting-text">
-                <p>{{ errorMessage }}</p>
+                <p v-html="errorMessage"></p>
                 <p>If you need help, please <a href="mailto:mwrite.support@umich.edu">reach out to us</a> to report the
                     problem. Thank you!</p>
             </div>
