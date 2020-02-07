@@ -34,7 +34,7 @@ const router = new Router({
     {
       path: '/permission-denied',
       component: Error,
-      props: {errorMessage: '<p>Due to a browser-related error, M-Write cannot be accessed.  Troubleshooting options:</p><ul><li>Launch a <a href="https://support.google.com/chrome/answer/95464">Chrome Incognito window</a>, navigate to Canvas and try to access M-Write.</li><li><a href="https://support.google.com/accounts/answer/32050">Clear your browser cookies and cache</a> and try to access M-Write again.</li><li>Log out of Canvas and close the browser, then re-open the browser and re-login to your Canvas course to access M-Write again.</li><li>Access M-Write on a different computer.</li></ul>\n'}
+      props: {errorMessage: '<p style="font-size: large">Due to a browser-related error, M-Write cannot be accessed.  Troubleshooting options:</p><ul style="font-size: large"><li>Launch a <a href="https://support.google.com/chrome/answer/95464">Chrome Incognito window</a>, navigate to Canvas and try to access M-Write.</li><li><a href="https://support.google.com/accounts/answer/32050">Clear your browser cookies and cache</a> and try to access M-Write again.</li><li>Log out of Canvas and close the browser, then re-open the browser and re-login to your Canvas course to access M-Write again.</li><li>Access M-Write on a different computer.</li></ul>\n'}
     },
     {
       path: '/instructor/dashboard',
