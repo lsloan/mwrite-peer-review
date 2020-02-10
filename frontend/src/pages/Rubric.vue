@@ -252,7 +252,12 @@
                                 </button>
                             </div>
                             <div class="mdl-card__supporting-text">
-                                <autosize-textarea class="all-input" v-model="criterion.description" label="Enter a description for this criterion here." :disabled="reviewIsInProgress"></autosize-textarea>
+                                <autosize-textarea
+                                    class="all-input"
+                                    v-model="criterion.description"
+                                    :value="`${criterion.description}`"
+                                    label="Enter a description for this criterion here."
+                                    :disabled="reviewIsInProgress"/>
                             </div>
                         </div>
                     </mdl-card>
