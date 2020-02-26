@@ -217,7 +217,8 @@ class PeerReviewComment(models.Model):
     criterion = models.ForeignKey(Criterion, on_delete=models.DO_NOTHING)
     peer_review = models.ForeignKey(PeerReview, on_delete=models.DO_NOTHING, related_name='comments')
     comment = models.TextField()
-    commented_at_utc = models.DateTimeField(blank=True, null=True)
+    commented_at_utc = models.DateTimeField(blank=True, null=True, auto_now_add=True)
+    edited_at_utc = models.DateTimeField(blank=True, null=True, auto_now=True)
 
     class Meta:
         db_table = 'peer_review_comments'
