@@ -7,6 +7,7 @@ from itertools import chain
 from datetime import datetime
 
 from dateutil.tz import tzutc
+from django.db.models import QuerySet
 from toolz.itertoolz import join
 from django.db import transaction
 from django.conf import settings
@@ -326,22 +327,16 @@ def submit_peer_review(request, params, course_id, review_id):
         LOGGER.warning(msg, review_id, student.username)
         raise APIException(data={'error': 'Criterion IDs do not match.'}, status_code=400)
 
-    existing_comments = PeerReviewComment.objects.filter(peer_review=peer_review)
-
-    comments = [
-        PeerReviewComment(
-            criterion_id=c['criterion_id'],
-            comment=c['comment'],
-            commented_at_utc=datetime.now(tzutc()),
-            peer_review=peer_review
-        )
-        for c in comments
-    ]
+    existing_comments: QuerySet = PeerReviewComment.objects.filter(peer_review=peer_review)
 
     with transaction.atomic():
-        existing_comments.delete()
-        for comment in comments:
-            comment.save()
+        for c in comments:
+            updatedComment: PeerReviewComment
+            (updatedComment, _) = existing_comments.get_or_create(
+                criterion_id=c['criterion_id'],
+                peer_review=peer_review)
+            updatedComment.comment = c['comment']
+            updatedComment.save()
 
     return params
 
