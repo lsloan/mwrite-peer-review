@@ -25,8 +25,9 @@
                     v-model="responses[criterion.id]"/>
             </peer-review-section>
             <peer-review-section>
+                <p>Click "Save" to update review. Note that submission time will also update after saving.</p>
                 <mdl-button raised colored @click.native="submitReview" :disabled="!reviewIsComplete || submissionInProgress">
-                    Submit
+                    Save
                 </mdl-button>
                 <mdl-button @click.native="cancelReview">
                     Cancel

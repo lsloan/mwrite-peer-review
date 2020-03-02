@@ -1,7 +1,7 @@
 <template>
     <div>
-        <assigned-work :prompts="prompts" :evaluations="mandatoryEvaluations"/>
         <completed-work :reviews="completedReviews"/>
+        <assigned-work :prompts="prompts" :evaluations="mandatoryEvaluations"/>
         <router-view/>
     </div>
 </template>

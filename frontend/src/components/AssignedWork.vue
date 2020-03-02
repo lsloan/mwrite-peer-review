@@ -3,7 +3,11 @@
         <div class="mdl-grid">
             <div class="mdl-cell mdl-cell--2-col mdl-cell--1-col-tablet mdl-cell--hide-phone"></div>
             <div class="mdl-cell mdl-cell--8-col mdl-cell--6-col-tablet mdl-cell--4-col-phone">
-                <h2>Assigned to me</h2>
+                <h2>Assigned work</h2>
+                <p>Click "Start Review" to leave feedback.
+                    Click "Edit" to revise feedback while the assignment is open.
+                    If "Edit" and then "Save" are used after the due date,
+                    the submission time for the review will update and the submission will be recorded as late.</p>
             </div>
             <div class="mdl-cell mdl-cell--2-col mdl-cell--1-col-tablet mdl-cell--hide-phone"></div>
         </div>
