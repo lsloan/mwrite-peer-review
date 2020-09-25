@@ -496,8 +496,8 @@ def non_reviewers_for_rubric(request, course_id, rubric_id):
 
     entries = []
     for non_reviewer, submission_status in non_reviewers_and_submission_statuses:
-        submitted = submission_status['workflow_state'] != 'unsubmitted'
-        submitted_late = not submitted or submission_status['late'] is True
+        submitted = submission_status['workflow_state'] != 'unsubmitted' and submission_status.get('attachments') is not None
+        submitted_late = submitted and submission_status['late'] is True
         sections = non_reviewer.sections \
             .filter(course_id=course_id) \
             .values_list('name', flat=True)
