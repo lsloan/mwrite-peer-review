@@ -290,10 +290,14 @@ def persist_submissions(assignment: CanvasAssignment, useFaultTolerance: bool):
         log.warning(message)
         return
 
-    if (useFaultTolerance is True):
-        errors: list = thread_last(filter(lambda s: s.get('error') is not None, submissionData),
-                                   list)
+    errors: list = thread_last(
+        filter(lambda s: s.get('error') is not None, submissionData),
+        list)
 
+    log.info('Attempted (%d) submission downloads for course (%d), assignment (%d), with (%d) error(s).' %
+             (len(submissionData), assignment.course.id, assignment.id, len(errors)))
+
+    if (useFaultTolerance is True):
         errorRate: float = len(errors) / len(submissionData)
 
         if (errorRate > settings.TOLERANCE_RATE):
@@ -302,8 +306,16 @@ def persist_submissions(assignment: CanvasAssignment, useFaultTolerance: bool):
                       (assignment.course.id, assignment.id, errorRate, settings.TOLERANCE_RATE)
             JobLog.addMessage(message)
             raise Exception(message)
+        else:
+            message = ('Persisting submissions for course (%d), assignment (%d), successful.'
+                       '  Error rate (%f) within fault tolerance (%f).') % \
+                      (assignment.course.id, assignment.id, errorRate, settings.TOLERANCE_RATE)
+            log.info(message)
 
     thread_last(submissionData,
                 (remove, lambda s: s.get('error') is not None),
                 (map, lambda s: CanvasSubmission.objects.update_or_create(id=s['id'], defaults=dissoc(s, 'id'))),
                 list)
+
+    log.info('Persisting submissions for course (%d), assignment (%d) complete.' %
+             (assignment.course.id, assignment.id))
