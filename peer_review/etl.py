@@ -121,24 +121,27 @@ def persist_assignments(course_id):
                         rubric.peer_review_open_date = assignment.due_date_utc
                         rubric.save()
                     else:
-                        log.error(
-                            'Rubric %d has peer review open date set to prompt %d due date, but this prompt has'
-                            'no due date!' % (rubric.id, assignment.id)
+                        log.warning(
+                            'Rubric (%d) for course (%d) has peer review open date set to prompt "%s" (%d) due date, '
+                            'but prompt has no due date!' %
+                            (rubric.id, course_id, assignment.title, assignment.id)
                         )
                 else:
                     if assignment.due_date_utc is None:
-                        log.warning('Prompt assignment %d does not have a due date (rubric %d)' %
-                                    (assignment.id, rubric.id))
+                        log.warning('Prompt assignment "%s" (%d) for course (%d) does not have a due date '
+                                    '(rubric (%d))' %
+                                    (assignment.title, assignment.id, course_id, rubric.id))
                         continue
 
                     if rubric.peer_review_open_date is None:
-                        log.warning('Rubric %d does not have a due date (assignment %d)' %
-                                    (rubric.id, assignment.id))
+                        log.warning('Rubric (%d) for course (%d) does not have a due date (assignment "%s" (%d))' %
+                                    (rubric.id, course_id, assignment.title, assignment.id))
                         continue
 
                     if rubric.peer_review_open_date < assignment.due_date_utc:
-                        log.warning('Prompt %d has a due date later than rubric %d\'s peer review open date' %
-                                    (assignment.id, rubric.id))
+                        log.warning('Prompt "%s" (%d) for course (%d) has a due date later than rubric (%d)\'s '
+                                    'peer review open date' %
+                                    (assignment.title, assignment.id, course_id, rubric.id))
             except CanvasAssignment.DoesNotExist:
                 pass
             except Rubric.DoesNotExist:
