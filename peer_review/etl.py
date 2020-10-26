@@ -121,24 +121,27 @@ def persist_assignments(course_id):
                         rubric.peer_review_open_date = assignment.due_date_utc
                         rubric.save()
                     else:
-                        log.error(
-                            'Rubric %d has peer review open date set to prompt %d due date, but this prompt has'
-                            'no due date!' % (rubric.id, assignment.id)
+                        log.warning(
+                            'Rubric (%d) for course (%d) has peer review open date set to prompt "%s" (%d) due date, '
+                            'but prompt has no due date!' %
+                            (rubric.id, course_id, assignment.title, assignment.id)
                         )
                 else:
                     if assignment.due_date_utc is None:
-                        log.warning('Prompt assignment %d does not have a due date (rubric %d)' %
-                                    (assignment.id, rubric.id))
+                        log.warning('Prompt assignment "%s" (%d) for course (%d) does not have a due date '
+                                    '(rubric (%d))' %
+                                    (assignment.title, assignment.id, course_id, rubric.id))
                         continue
 
                     if rubric.peer_review_open_date is None:
-                        log.warning('Rubric %d does not have a due date (assignment %d)' %
-                                    (rubric.id, assignment.id))
+                        log.warning('Rubric (%d) for course (%d) does not have a due date (assignment "%s" (%d))' %
+                                    (rubric.id, course_id, assignment.title, assignment.id))
                         continue
 
                     if rubric.peer_review_open_date < assignment.due_date_utc:
-                        log.warning('Prompt %d has a due date later than rubric %d\'s peer review open date' %
-                                    (assignment.id, rubric.id))
+                        log.warning('Prompt "%s" (%d) for course (%d) has a due date later than rubric (%d)\'s '
+                                    'peer review open date' %
+                                    (assignment.title, assignment.id, course_id, rubric.id))
             except CanvasAssignment.DoesNotExist:
                 pass
             except Rubric.DoesNotExist:
@@ -189,6 +192,11 @@ def persist_students(course_id):
 
 
 def _download_single_attachment(destination, attachment, useFaultTolerance: bool):
+    """
+    Try to download an attachment and save to destination directory.
+
+    :return: Tuple of strings containing filename and error message (or None)
+    """
     attachment_filename = '%d_%s' % (attachment['id'], attachment['filename'])
     log.info('Downloading "%s"...' % (attachment_filename))
     attachment_response = requests.get(attachment['url'])
@@ -213,6 +221,11 @@ def _download_single_attachment(destination, attachment, useFaultTolerance: bool
 
 
 def _download_multiple_attachments(destination, submission, useFaultTolerance: bool):
+    """
+    Try to download multiple attachments and save to ZIP file in destination directory.
+
+    :return: Tuple of strings containing filename and error message (or None)
+    """
     submission_id_str = str(submission['id'])
     temp_directory_path = os.path.join(settings.MEDIA_ROOT, 'temporary', submission_id_str)
     os.makedirs(temp_directory_path, exist_ok=True)
@@ -246,6 +259,8 @@ def _convert_submission(raw_submission, filename, error):
 
 
 def _download_submission(raw_submission, useFaultTolerance: bool):
+    log.info('Downloading submission (%d) file(s) from student (%d) for assignment (%d)...' %
+             (raw_submission['id'], raw_submission['user_id'], raw_submission['assignment_id']))
     attachments = raw_submission['attachments']
     destination = os.path.join(settings.MEDIA_ROOT, 'submissions')
     os.makedirs(destination, exist_ok=True)
@@ -257,7 +272,15 @@ def _download_submission(raw_submission, useFaultTolerance: bool):
 
 
 def persist_submissions(assignment: CanvasAssignment, useFaultTolerance: bool):
+    log.info('Persisting submissions for course (%d), assignment (%d)...' %
+             (assignment.course.id, assignment.id))
+
+    courseStudentIds = CanvasStudent.objects \
+        .filter(courses=assignment.course) \
+        .values_list('id', flat=True)
+
     submissionData: list = thread_last(retrieve('submissions', assignment.course.id, assignment.id),
+                                       (remove, lambda s: s['user_id'] not in courseStudentIds),
                                        (remove, lambda s: s['workflow_state'] == 'unsubmitted'),
                                        (remove, lambda s: s.get('attachments') is None),
                                        (map, lambda s: _download_submission(s, useFaultTolerance)),
@@ -270,10 +293,14 @@ def persist_submissions(assignment: CanvasAssignment, useFaultTolerance: bool):
         log.warning(message)
         return
 
-    if (useFaultTolerance is True):
-        errors: list = thread_last(filter(lambda s: s.get('error') is not None, submissionData),
-                                   list)
+    errors: list = thread_last(
+        filter(lambda s: s.get('error') is not None, submissionData),
+        list)
 
+    log.info('Attempted (%d) submission downloads for course (%d), assignment (%d), with (%d) error(s).' %
+             (len(submissionData), assignment.course.id, assignment.id, len(errors)))
+
+    if (useFaultTolerance is True):
         errorRate: float = len(errors) / len(submissionData)
 
         if (errorRate > settings.TOLERANCE_RATE):
@@ -282,8 +309,16 @@ def persist_submissions(assignment: CanvasAssignment, useFaultTolerance: bool):
                       (assignment.course.id, assignment.id, errorRate, settings.TOLERANCE_RATE)
             JobLog.addMessage(message)
             raise Exception(message)
+        else:
+            message = ('Persisting submissions for course (%d), assignment (%d), successful.'
+                       '  Error rate (%f) within fault tolerance (%f).') % \
+                      (assignment.course.id, assignment.id, errorRate, settings.TOLERANCE_RATE)
+            log.info(message)
 
     thread_last(submissionData,
                 (remove, lambda s: s.get('error') is not None),
                 (map, lambda s: CanvasSubmission.objects.update_or_create(id=s['id'], defaults=dissoc(s, 'id'))),
                 list)
+
+    log.info('Persisting submissions for course (%d), assignment (%d) complete.' %
+             (assignment.course.id, assignment.id))
