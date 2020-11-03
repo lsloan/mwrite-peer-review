@@ -1,4 +1,4 @@
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from django.db import models
 
 
@@ -147,7 +147,7 @@ class JobLog(models.Model):
 
         :param days: The minimum number of days old that entries must be in order to be deleted.
         """
-        cls.objects.filter(timestamp__lt=datetime.now()-timedelta(days=days)).delete()
+        cls.objects.filter(timestamp__lt=datetime.now(timezone.utc)-timedelta(days=days)).delete()
 
     class Meta:
         db_table = 'job_log'
