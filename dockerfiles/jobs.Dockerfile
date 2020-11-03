@@ -2,13 +2,21 @@ FROM python:3.6-alpine3.7
 ARG MPR_WORKING_DIRECTORY=/usr/src/app
 
 # Build-time dependencies are all in a single RUN command so that useless layers aren't persisted.
-RUN apk --no-cache --virtual build-deps add --update build-base                                      && \
+RUN apk --no-cache --virtual build-deps add --update build-base curl && \
     apk --no-cache add --update mariadb-dev mysql-client libffi-dev libxml2-dev libxslt-dev bash jq
 
 # Run pip separate from the base build
 COPY requirements.txt /tmp/requirements.txt
 RUN pip --no-cache-dir install -r /tmp/requirements.txt && \
     pip --no-cache-dir install awscli
+
+ARG LIBFAKETIME_VERSION=0.9.8
+WORKDIR /tmp
+# Download the source for libfaketime
+RUN curl -LO https://github.com/wolfcw/libfaketime/archive/v${LIBFAKETIME_VERSION}.tar.gz && tar zxf v${LIBFAKETIME_VERSION}.tar.gz
+WORKDIR /tmp/libfaketime-${LIBFAKETIME_VERSION}/src
+# Build it and clean up the source
+RUN make install && rm /tmp/v${LIBFAKETIME_VERSION}.tar.gz && rm -rf /tmp/libfaketime-${LIBFAKETIME_VERSION}
 
 # Cleanup
 RUN apk --no-cache del build-deps
