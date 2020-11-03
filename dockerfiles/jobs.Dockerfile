@@ -32,6 +32,9 @@ RUN chmod ugo=rx /etc/periodic/daily/backup_data.bash
 RUN mv /etc/periodic/15min/distribute_reviews.bash /etc/periodic/15min/distribute_reviews   # otherwise run-parts refuses to run this
 RUN mv /etc/periodic/daily/backup_data.bash /etc/periodic/weekly/backup_data                # otherwise run-parts refuses to run this
 
+# Make the MPR_WORKING_DIRECTORY group wriable for openshift
+RUN chmod -f -R g+w $MPR_WORKING_DIRECTORY
+
 # Set up credentials for backup_data job
 RUN mkdir /root/.aws && ln -s /etc/mwrite-peer-review/aws_credentials /root/.aws/credentials
 
