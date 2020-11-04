@@ -16,7 +16,7 @@ is also provided below.
 
 M-Write Peer Review uses environment variables to configure both its build and runtime environments.  See
 [Application Configuration](/docs/application-configuration.md) for more information.
-  
+
 ## Creating A New Production(-Like) Environment In OpenShift
 
 As mentioned previously, M-Write Peer Review supports being run using Docker; however, at the time of this writing
@@ -61,7 +61,7 @@ Team), do:
         -p MEMORY_LIMIT=512Mi                                    \
         -p DATABASE_SERVICE_NAME=mwrite-peer-review-dev-db
     ```
-    
+
 ### OpenShift Resources
 
 When using OpenShift, a variety of resources are required:
@@ -182,3 +182,38 @@ These should be created in roughly the following order:
 
 Any LTI method can be used; an example [lti_config.xml](/config/server/example/lti_config.xml)
 has been included.
+
+## Jobs Debugging
+To start a `jobs` pod in debug mode with an interactive shell, using the `mwrite-peer-review-dev` project:
+
+1. Download a copy of the YAML file used to start the pod: https://github.com/tl-its-umich-edu/openshift-jenkins-configs/blob/master/pods/mwrite-peer-review-dev-15m.yaml
+
+2. Starting the pod in debug mode:
+    ```sh
+    oc debug -f mwrite-peer-review-dev-15m.yaml
+    ```
+    That will start an interactive shell, `ash`.  `bash` is also available and can be started on demand.
+    
+3. To start a Python shell with Django and other libraries for MPR loaded, run:
+
+    ```sh
+    ./manage.py shell
+    ```
+
+    * 💡 If the shell doesn't start properly, it may be necessary to set the following environment variable, then try running the shell again:
+
+        ```sh
+        export DJANGO_SETTINGS_MODULE="${DJANGO_SETTINGS_MODULE:-mwrite_peer_review.settings.jobs}"
+        ```
+
+### Using `faketime`
+
+`libfaketime` is installed and can be used to force the pod's clock to be set to any specific time.  Its CLI tool is called `faketime` and can be used like this:
+
+* `faketime '2020-11-08 01:00:00' ./manage.py shell` – Start an interactive Django shell.
+* `faketime '2020-11-08 01:00:00' ./scripts/distribute_reviews.bash` – Start the peer review distribution job.
+
+The latter example was used to verify that a bugfix for a post-DST error was working correctly.
+
+
+
