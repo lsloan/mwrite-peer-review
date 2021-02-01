@@ -1,4 +1,4 @@
-# Setting Up Your Development Environment (Docker version)
+# Development Environment Setup (Docker-Compose)
 
 These instructions will get you started with a development environment for M-Write Peer Review.
 
@@ -6,7 +6,7 @@ These instructions will get you started with a development environment for M-Wri
 
 You will need the following tools first:
 
-* Docker
+* [Docker](https://www.docker.com/products/docker-desktop)
 
 You will also need a Canvas API token (preferably in Canvas Dev) so that the tool can pull assignment data from (at least one) test course(s).  **M-Write Peer Review is tightly integrated with Canvas, and thus this step is required.**
 
@@ -20,12 +20,11 @@ $ git clone https://github.com/M-Write/mwrite-peer-review.git
 
 If you prefer to create a personal fork of this repository, use the GitHub UI and clone that repository instead.
 
-
 ### Create server configuration files
 
-First, create directory under `config/server` to store local configuration files (I generally call mine `local`, making the relative path `config/server/local`).
+First, create a directory under `config/server/local` to store local configuration files.
 
-Create the following files:
+Create the following files inside `config/server/local`:
 
 #### `database.json`
 
@@ -61,18 +60,18 @@ something
 
 #### `.env`
 
+Note: The .env file needs to go at the root level of the project.
+
 Most of M-Write Peer Review's configuration is derived from environment variables.  The following is a minimal example;
 make sure to replace the `<... ...>` placeholders with the real values.  See
 [Application Configuration](application-configuration.md) for more information.
 
 ```bash
-PS1="(mpr env) $PS1"
-
 DJANGO_SETTINGS_MODULE=mwrite_peer_review.settings.api
 MPR_DEBUG_MODE=true
 
 MPR_ALLOWED_HOSTS=localhost,0.0.0.0
-MPR_APP_HOST=api.peer-review-nonprod.mwrite.openshift.dsc.umich.edu
+MPR_APP_HOST=dev-api-mwrite-peer-review.tl.it.umich.edu
 MPR_LANDING_ROUTE=http://localhost:8080
 MPR_FRONTEND_RESOURCES_DOMAIN=localhost:8080
 
@@ -95,15 +94,14 @@ You will `source` this file before running the API.
 ## Backend Setup
 
 Docker compose now can be used to set these all up. The typical pattern is
-# Bring all the containeres down
+# Bring all the conatiners down
 docker-compose down
 # Build all the containers
 docker-compose build
 # Bring all the containers up (add -d to detach them)
 docker-compose up 
 
-The MySQL database files are stored locally in the .data directory. 
-Remove this to clean the database
+The MySQL database files are stored locally in the .data directory.  Remove this directory to clean the database.
 
 ### Run database migrations to set up your (new, empty) database (if necessary)
 
@@ -113,7 +111,7 @@ docker exec -it mwrite_api ./scripts/migrateandcreateusers.bash
 
 ### Create test users
 
-These are created by the above script but you can use the create user to add more.
+These are created by the above script but you can use the `createuser` management command to add more.
 
 ```bash 
 docker exec -it mwrite_api python manage.py createuser --username=test_student --password=testpass --role=student

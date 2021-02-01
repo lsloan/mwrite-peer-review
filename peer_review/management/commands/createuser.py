@@ -20,7 +20,7 @@ class Command(BaseCommand):
         email = options.get('email')
         if password is None:
             password = ''.join(random.sample(string.ascii_letters, RANDOM_PASSWORD_DEFAULT_LENGTH))
-            self.stderr.write ("Password not specified on command line generated password {}".format(password))
+            self.stderr.write(f'Password not specified on command line. Generated password is {password}')
         
         role = options.get('role')
         if role is None:
@@ -30,7 +30,7 @@ class Command(BaseCommand):
             # Might just be changing the user
             user_obj = User.objects.get(username=username)
         except User.DoesNotExist:
-            self.stdout.write ("Creating regular user {}".format(username))
+            self.stdout.write(f'Creating regular user {username}')
             user_obj = User.objects.create_user(username=username, email=email, password=password)
         finally: 
             user_obj.set_password(password)
