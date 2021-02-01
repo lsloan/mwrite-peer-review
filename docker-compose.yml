@@ -41,13 +41,3 @@ services:
     ports:
       - "8080:80"
     container_name: mwrite_frontend
-  jobs:
-    build:
-        context: .
-        dockerfile: dockerfiles/jobs.Dockerfile
-    depends_on:
-      - mysql
-      - api
-    env_file:
-      - .env
-    container_name: mwrite_jobs
