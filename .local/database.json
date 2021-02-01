@@ -1,0 +1,8 @@
+{
+  "ENGINE": "django.db.backends.mysql",
+  "NAME": "mwrite",
+  "USER": "mwrite",
+  "PASSWORD": "mwrite",
+  "HOST": "mwrite_mysql",
+  "PORT": 3306
+}

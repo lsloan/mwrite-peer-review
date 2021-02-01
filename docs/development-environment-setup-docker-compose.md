@@ -22,41 +22,20 @@ If you prefer to create a personal fork of this repository, use the GitHub UI an
 
 ### Create server configuration files
 
-First, create a directory under `config/server/local` to store local configuration files.
-
-Create the following files inside `config/server/local`:
+There is a directory here with local configuration in `.local`
 
 #### `database.json`
 
-Modify the configuration below to match your MySQL instance configuration. This is the defaults for docker
-
-```json
-{
-  "ENGINE": "django.db.backends.mysql",
-  "NAME": "mwrite",
-  "USER": "mwrite",
-  "PASSWORD": "mwrite",
-  "HOST": "mwrite_mysql",
-  "PORT": 3306
-}
-```
+Contains the database configuration credentials, pre-populated for local host
 
 #### `lti_credentials.json`
 
 This is a JSON file that contains a single key-value pair.  The key is the LTI consumer key and the value is the LTI consumer secret.
 
-```json
-{"12345678901234567890": "secret"}
-```
-
 #### `secret.key`
 
 This file is used verbatim for Django's
 [SECRET_KEY](https://docs.djangoproject.com/en/1.11/ref/settings/#std:setting-SECRET_KEY) setting.
-
-```text
-something
-```
 
 #### `.env`
 
@@ -133,3 +112,6 @@ that would normally be set via the LTI launch request.  In particular, M-Write P
 * The user's Canvas username
 
 Once you have entered that information, you will be redirected to the frontend (by default, http://localhost:8080).
+
+## Running the job
+
