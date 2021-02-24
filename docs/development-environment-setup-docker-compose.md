@@ -58,10 +58,10 @@ MPR_LMS_URL=https://umich-dev.instructure.com
 MPR_CANVAS_API_URL=https://umich-dev.instructure.com/api/v1/
 MPR_CANVAS_API_TOKEN=<...your Canvas API token...>
 
-MPR_SECRET_KEY_PATH=config/server/local/secret.key
+MPR_SECRET_KEY_PATH=.local/secret.key
 MPR_SUBMISSIONS_PATH=<...some temporary path...>
-MPR_LTI_CREDENTIALS_PATH=config/server/local/lti_credentials.json
-MPR_DB_CONFIG_PATH=config/server/local/database.json
+MPR_LTI_CREDENTIALS_PATH=.local/lti_credentials.json
+MPR_DB_CONFIG_PATH=.local/database.json
 MPR_TIMEZONE=America/Detroit
 
 MPR_SESSION_COOKIE_DOMAIN=localhost
@@ -114,4 +114,3 @@ that would normally be set via the LTI launch request.  In particular, M-Write P
 Once you have entered that information, you will be redirected to the frontend (by default, http://localhost:8080).
 
 ## Running the job
-
