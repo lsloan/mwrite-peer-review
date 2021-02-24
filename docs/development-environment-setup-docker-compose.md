@@ -75,7 +75,7 @@ You will `source` this file before running the API.
 Docker compose now can be used to set these all up. The typical pattern is
 # Bring all the conatiners down
 docker-compose down
-# Build all the containers
+### Build all the containers
 docker-compose build
 ### Bring all the containers up (add -d to detach them)
 docker-compose up 
