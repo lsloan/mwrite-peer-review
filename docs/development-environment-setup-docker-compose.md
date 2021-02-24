@@ -73,7 +73,7 @@ You will `source` this file before running the API.
 ## Backend Setup
 
 Docker compose now can be used to set these all up. The typical pattern is
-# Bring all the conatiners down
+### Bring all the containers down
 docker-compose down
 ### Build all the containers
 docker-compose build
