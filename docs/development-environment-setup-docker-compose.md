@@ -77,7 +77,7 @@ Docker compose now can be used to set these all up. The typical pattern is
 docker-compose down
 # Build all the containers
 docker-compose build
-# Bring all the containers up (add -d to detach them)
+### Bring all the containers up (add -d to detach them)
 docker-compose up 
 
 The MySQL database files are stored locally in the .data directory.  Remove this directory to clean the database.
