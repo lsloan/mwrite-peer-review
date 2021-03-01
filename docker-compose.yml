@@ -1,0 +1,42 @@
+version: '3'
+
+services:
+  mysql:
+    image: mysql:5.7.26
+    restart: always
+    environment:
+      - MYSQL_HOST=127.0.0.1
+      - MYSQL_DATABASE=mwrite
+      - MYSQL_ROOT_PASSWORD=root
+      - MYSQL_USER=mwrite
+      - MYSQL_PASSWORD=mwrite
+      - MYSQL_PORT=3306
+    entrypoint: ['docker-entrypoint.sh', '--default-authentication-plugin=mysql_native_password']
+    ports:
+      - "2038:3306"
+    volumes:
+      - ./.data/mysql:/var/lib/mysql:delegated
+    container_name: mwrite_mysql
+  api:
+    build:
+        context: .
+        dockerfile: dockerfiles/api.Dockerfile
+    ports:
+      - "8000:8000"
+    depends_on:
+      - mysql
+    env_file:
+      - .env
+    container_name: mwrite_api
+  frontend:
+    build:
+        context: .
+        dockerfile: dockerfiles/frontend.Dockerfile
+        args:
+          - MPR_API_URL=http://localhost:8000
+    depends_on:
+      - mysql
+      - api
+    ports:
+      - "8080:80"
+    container_name: mwrite_frontend

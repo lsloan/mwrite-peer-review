@@ -1,3 +1,5 @@
+.data
+.env
 *.iml
 .idea/
 .vscode/
