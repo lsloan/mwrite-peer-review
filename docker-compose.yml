@@ -34,6 +34,7 @@ services:
         dockerfile: dockerfiles/frontend.Dockerfile
         args:
           - MPR_API_URL=http://localhost:8000
+          - MPR_CSRF_COOKIE_NAME=mpr_fp
     depends_on:
       - mysql
       - api
