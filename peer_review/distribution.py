@@ -135,15 +135,22 @@ def review_distribution_task(utc_timestamp: datetime, force_distribution=False):
     JobLog.addMessage(logMessage)
 
     log.info('Persisting assignments for all courses')
+    # Keep track of all courses that have an error
+    courses_with_error = []
     for course in CanvasCourse.objects.all():
-        log.debug('Persisting assignments for course %d' % course.id)
-        persist_assignments(course.id)
+        try:
+            log.debug('Persisting assignments for course %d' % course.id)
+            persist_assignments(course.id)
+        except Exception as ex:
+            courses_with_error.append(course)
+            log.error(f"Error persisting assignments from course {course.id}: {ex}")
 
     try:
+        # Get the prompts to distribute but exclude the courses that had an error earlier
         prompts_for_distribution = CanvasAssignment.objects.filter(
             rubric_for_prompt__peer_review_distribution=None,
             rubric_for_prompt__peer_review_open_date__lt=utc_timestamp
-        )
+        ).exclude(course__in=courses_with_error)
 
         if not prompts_for_distribution:
             log.info('No prompts ready for review distribution.')
