@@ -114,3 +114,6 @@ that would normally be set via the LTI launch request.  In particular, M-Write P
 Once you have entered that information, you will be redirected to the frontend (by default, http://localhost:8080).
 
 ## Running the job
+
+The easiest way to run the job is get the API pod running and run this command:
+`docker exec -it mwrite_api scripts/distribute_reviews.bash`
