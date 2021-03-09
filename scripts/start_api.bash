@@ -9,7 +9,7 @@ export DJANGO_SETTINGS_MODULE="${DJANGO_SETTINGS_MODULE:-mwrite_peer_review.sett
 
 read DB_HOST DB_PORT < <(echo $(jq -r '.HOST, .PORT' ${MPR_DB_CONFIG_PATH}))
 
-echo 'Waiting for DB...'
+echo "Waiting for DB (${DB_HOST}:${DB_PORT})..."
 while ! nc -z "${DB_HOST}" "${DB_PORT}"; do
   sleep 1 # wait 1 sec., then check again
 done
