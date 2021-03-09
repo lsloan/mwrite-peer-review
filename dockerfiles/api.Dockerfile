@@ -4,7 +4,7 @@ ARG MPR_WORKING_DIRECTORY=/usr/src/app
 # Build-time dependencies are all in a single RUN
 # command so that useless layers aren't persisted.
 RUN apk --no-cache --virtual build-deps add --update build-base curl && \
-    apk --no-cache add --update mariadb-dev libffi-dev libxml2-dev libxslt-dev bash
+    apk --no-cache add --update mariadb-dev libffi-dev libxml2-dev libxslt-dev bash jq
 
 # Run pip separate from the base build in case this changes
 COPY requirements.txt /tmp/requirements.txt
