@@ -103,8 +103,9 @@ In [DEBUG](https://docs.djangoproject.com/en/1.11/ref/settings/#std:setting-DEBU
 login page at http://localhost:8000/accounts/login (assuming you haven't changed the port, etc.).  Navigate to that
 page and log in with the credentials you created [above](#create-test-users).
 
-When you log in, you will next be presented with a debug LTI parameters form.  This lets you set login parameters
+When you log in, you will next be presented with a debug LTI parameters form.  (On page [http://localhost:8000/debug/lti](http://localhost:8000/debug/lti).)  This lets you set login parameters
 that would normally be set via the LTI launch request.  In particular, M-Write Peer Review requires:
+
 * The launch Canvas course ID – Canvas dev. currently has [course ID `36`](https://umich-dev.instructure.com/courses/36) available.
 * The Canvas user ID — Use any of the user IDs shown in the "People" section of the above course.  Note that when logged in as `test_instructor` you can use user IDs of teachers or TAs.
 * The user's LTI role — This must be exactly `Instructor` or `Student`. Letter case is significant.
@@ -115,5 +116,8 @@ Once you have entered that information, you will be redirected to the frontend (
 
 ## Running the job
 
-The easiest way to run the job is get the API pod running and run this command:
-`docker exec -it mwrite_api scripts/distribute_reviews.bash`
+Run the following command in a terminal:
+
+```bash 
+docker exec -it mwrite_api python manage.py distribute_reviews
+```

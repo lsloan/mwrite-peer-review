@@ -27,6 +27,8 @@ services:
       - mysql
     env_file:
       - .env
+    volumes:
+      - .:/usr/src/app:delegated
     container_name: mwrite_api
   frontend:
     build:
