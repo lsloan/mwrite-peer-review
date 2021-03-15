@@ -7,8 +7,7 @@ RUN apk --no-cache --virtual build-deps add --update build-base curl && \
 
 # Run pip separate from the base build
 COPY requirements.txt /tmp/requirements.txt
-RUN pip --no-cache-dir install -r /tmp/requirements.txt && \
-    pip --no-cache-dir install awscli
+RUN pip --no-cache-dir install -r /tmp/requirements.txt
 
 ARG LIBFAKETIME_VERSION=0.9.8
 WORKDIR /tmp
