@@ -69,8 +69,8 @@ class Migration(migrations.Migration):
             ALTER TABLE `auth_permission` CHANGE `codename` `codename` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
             ALTER TABLE `auth_user` CHANGE `password` `password` varchar(128) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
             ALTER TABLE `auth_user` CHANGE `username` `username` varchar(150) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
-            ALTER TABLE `auth_user` CHANGE `first_name` `first_name` varchar(30) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
-            ALTER TABLE `auth_user` CHANGE `last_name` `last_name` varchar(30) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+            ALTER TABLE `auth_user` CHANGE `first_name` `first_name` varchar(150) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+            ALTER TABLE `auth_user` CHANGE `last_name` `last_name` varchar(150) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
             ALTER TABLE `auth_user` CHANGE `email` `email` varchar(254) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
             ALTER TABLE `canvas_submissions` CHANGE `filename` `filename` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
             ALTER TABLE `django_admin_log` CHANGE `object_repr` `object_repr` varchar(200) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
