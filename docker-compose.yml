@@ -17,7 +17,7 @@ services:
       - "2038:3306"
     volumes:
       - ./.data/mysql:/var/lib/mysql:delegated
-    container_name: mwrite_mysql
+    container_name: mwrite_db
   api:
     build:
         context: .
@@ -25,7 +25,7 @@ services:
     ports:
       - "8000:8000"
     depends_on:
-      - mysql
+      - db
     env_file:
       - .env
     volumes:
@@ -39,7 +39,7 @@ services:
           - MPR_API_URL=http://localhost:8000
           - MPR_CSRF_COOKIE_NAME=mpr_fp
     depends_on:
-      - mysql
+      - db
       - api
     ports:
       - "8080:80"
