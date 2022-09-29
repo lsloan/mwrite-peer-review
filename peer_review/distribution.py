@@ -165,6 +165,9 @@ def review_distribution_task(utc_timestamp: datetime, force_distribution=False):
 
             for prompt in prompts_for_distribution:
                 message = 'Distributing reviews for course %d prompt %d...' % (prompt.course.id, prompt.id)
+                jl = JobLog.objects.filter(message__startswith=message)
+                log.debug('jl.query')
+                log.debug(jl.query)
                 attemptNumber = 1 + JobLog.objects.filter(message__startswith=message).count()
                 useFaultTolerance: bool = (attemptNumber > settings.TOLERANCE_ATTEMPTS)
 
