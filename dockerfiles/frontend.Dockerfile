@@ -1,4 +1,4 @@
-FROM httpd:2.4.46-alpine
+FROM httpd:2.4.54-alpine
 ARG MPR_API_URL
 ARG MPR_CSRF_COOKIE_NAME
 

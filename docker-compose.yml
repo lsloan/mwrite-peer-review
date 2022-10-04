@@ -19,6 +19,7 @@ services:
       - ./.data/mysql:/var/lib/mysql:delegated
     container_name: mwrite_db
   api:
+    platform: linux/amd64
     build:
         context: .
         dockerfile: dockerfiles/api.Dockerfile
@@ -32,6 +33,7 @@ services:
       - .:/usr/src/app:delegated
     container_name: mwrite_api
   frontend:
+    platform: linux/amd64
     build:
         context: .
         dockerfile: dockerfiles/frontend.Dockerfile
