@@ -11,7 +11,7 @@ COPY package*.json .eslint* /tmp/build/
 WORKDIR /tmp/build
 
 # Run this APK separate as it probably can be cached
-RUN apk --no-cache --virtual build-deps add --update nghttp2-dev nodejs nodejs-npm && \
+RUN apk --no-cache --virtual build-deps add --update nghttp2-dev nodejs npm && \
     npm install && \
     apk add --no-cache bash
 
