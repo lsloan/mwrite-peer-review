@@ -1,4 +1,4 @@
-FROM httpd:2.4.54-alpine
+FROM httpd:2.4.46-alpine
 ARG MPR_API_URL
 ARG MPR_CSRF_COOKIE_NAME
 
@@ -11,7 +11,7 @@ COPY package*.json .eslint* /tmp/build/
 WORKDIR /tmp/build
 
 # Run this APK separate as it probably can be cached
-RUN apk --no-cache --virtual build-deps add --update nghttp2-dev nodejs npm && \
+RUN apk --no-cache --virtual build-deps add --update nghttp2-dev nodejs nodejs-npm && \
     npm install && \
     apk add --no-cache bash
 
