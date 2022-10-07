@@ -40,7 +40,6 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SECRET_KEY = read_file_from_env('MPR_SECRET_KEY_PATH')
 
 DEBUG = getenv_bool('MPR_DEBUG_MODE')
-DEBUG = True
 
 ALLOWED_HOSTS = getenv_csv('MPR_ALLOWED_HOSTS')
 
@@ -221,25 +220,3 @@ LOGGING = {
         },
     },
 }
-
-# LOGGING = {
-#     'version': 1,
-#     'filters': {
-#         'require_debug_true': {
-#             '()': 'django.utils.log.RequireDebugTrue',
-#         }
-#     },
-#     'handlers': {
-#         'console': {
-#             'level': 'DEBUG',
-#             'filters': ['require_debug_true'],
-#             'class': 'logging.StreamHandler',
-#         }
-#     },
-#     'loggers': {
-#         'django.db.backends': {
-#             'level': 'DEBUG',
-#             'handlers': ['console'],
-#         }
-#     }
-# }

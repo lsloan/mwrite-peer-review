@@ -37,7 +37,6 @@ def getenv_csv(var, default=''):
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 DEBUG = getenv_bool('MPR_DEBUG_MODE')
-DEBUG = True
 SECRET_KEY = 'unused'
 APP_HOST = os.environ['MPR_APP_HOST']
 
@@ -92,68 +91,46 @@ TIME_ZONE = os.environ['MPR_TIMEZONE']
 TIME_OUTPUT_FORMAT = '%b %-d %-I:%M %p'  # if running on Windows, replace - with #
 
 
-# LOGGING = {
-#     'version': 1,
-#     'disable_existing_loggers': False,
-#     'formatters': {
-#         'all': {
-#             'format': ('%(levelname)s %(asctime)s %(module)s %(process)d '
-#                        '%(thread)d %(message)s'),
-#         },
-#         'debug': {
-#             'format': ('%(asctime)s %(levelname)s %(message)s '
-#                        '%(pathname)s:%(lineno)d'),
-#         },
-#         'simple': {
-#             'format': '%(levelname)s %(name)s %(message)s'
-#         },
-#         'access_logs': {
-#             'format': '%(message)s',
-#         },
-#
-#     },
-#     'handlers': {
-#         'console': {
-#             'class': 'logging.StreamHandler',
-#             'formatter': 'debug',
-#         },
-#         'mail_admins': {
-#             'class': 'django.utils.log.AdminEmailHandler',
-#             'formatter': 'debug'
-#         }
-#     },
-#     'loggers': {
-#         '': {
-#             'handlers': ['console'],
-#             'level': 'DEBUG',
-#             # 'propagate': True,
-#         },
-#         'management_commands': {
-#             'handlers': ['mail_admins'],
-#             'level': 'ERROR',
-#             'propagate': True
-#         }
-#     },
-# }
-
 LOGGING = {
     'version': 1,
-    'filters': {
-        'require_debug_true': {
-            '()': 'django.utils.log.RequireDebugTrue',
-        }
+    'disable_existing_loggers': False,
+    'formatters': {
+        'all': {
+            'format': ('%(levelname)s %(asctime)s %(module)s %(process)d '
+                       '%(thread)d %(message)s'),
+        },
+        'debug': {
+            'format': ('%(asctime)s %(levelname)s %(message)s '
+                       '%(pathname)s:%(lineno)d'),
+        },
+        'simple': {
+            'format': '%(levelname)s %(name)s %(message)s'
+        },
+        'access_logs': {
+            'format': '%(message)s',
+        },
+
     },
     'handlers': {
         'console': {
-            'level': 'DEBUG',
-            'filters': ['require_debug_true'],
             'class': 'logging.StreamHandler',
+            'formatter': 'debug',
+        },
+        'mail_admins': {
+            'class': 'django.utils.log.AdminEmailHandler',
+            'formatter': 'debug'
         }
     },
     'loggers': {
-        'django.db.backends': {
-            'level': 'DEBUG',
+        '': {
             'handlers': ['console'],
+            'level': 'DEBUG',
+            # 'propagate': True,
+        },
+        'management_commands': {
+            'handlers': ['mail_admins'],
+            'level': 'ERROR',
+            'propagate': True
         }
-    }
+    },
 }
