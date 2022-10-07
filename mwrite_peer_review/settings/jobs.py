@@ -125,7 +125,7 @@ LOGGING = {
         '': {
             'handlers': ['console'],
             'level': 'DEBUG',
-            # 'propagate': True,
+            'propagate': True,
         },
         'management_commands': {
             'handlers': ['mail_admins'],
