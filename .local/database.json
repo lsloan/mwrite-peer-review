@@ -4,6 +4,6 @@
   "NAME": "mwrite",
   "USER": "mwrite",
   "PASSWORD": "mwrite",
-  "HOST": "mwrite_mysql",
+  "HOST": "mwrite_db",
   "PORT": 3306
 }

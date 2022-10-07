@@ -1,8 +1,8 @@
 version: '3'
 
 services:
-  mysql:
-    image: mysql:5.7.26
+  db:
+    image: mysql:8.0
     restart: always
     environment:
       - MYSQL_HOST=127.0.0.1
@@ -16,21 +16,23 @@ services:
       - "2038:3306"
     volumes:
       - ./.data/mysql:/var/lib/mysql:delegated
-    container_name: mwrite_mysql
+    container_name: mwrite_db
   api:
+    platform: linux/amd64
     build:
         context: .
         dockerfile: dockerfiles/api.Dockerfile
     ports:
       - "8000:8000"
     depends_on:
-      - mysql
+      - db
     env_file:
       - .env
     volumes:
       - .:/usr/src/app:delegated
     container_name: mwrite_api
   frontend:
+    platform: linux/amd64
     build:
         context: .
         dockerfile: dockerfiles/frontend.Dockerfile
@@ -38,7 +40,7 @@ services:
           - MPR_API_URL=http://localhost:8000
           - MPR_CSRF_COOKIE_NAME=mpr_fp
     depends_on:
-      - mysql
+      - db
       - api
     ports:
       - "8080:80"
